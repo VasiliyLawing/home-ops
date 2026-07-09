@@ -1,0 +1,19 @@
+name: Nix CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check flake
+        run: nix flake check --no-build
+      - name: Dry-run media-node build
+        run: nix build .#nixosConfigurations.media-node.config.system.build.toplevel --dry-run

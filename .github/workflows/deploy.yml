@@ -1,0 +1,48 @@
+name: Deploy media-node
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-media-node
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: homelab
+    steps:
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Join Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:ci
+
+      - name: Configure deploy SSH key
+        env:
+          CLAN_SSH_PRIVATE_KEY: ${{ secrets.CLAN_SSH_PRIVATE_KEY }}
+        run: |
+          test -n "$CLAN_SSH_PRIVATE_KEY"
+          mkdir -p ~/.ssh
+          printf '%s\n' "$CLAN_SSH_PRIVATE_KEY" > ~/.ssh/home_ops_deploy_ed25519
+          chmod 600 ~/.ssh/home_ops_deploy_ed25519
+          cat > ~/.ssh/config <<'EOF'
+          Host media-node media-node.*
+            User root
+            IdentityFile ~/.ssh/home_ops_deploy_ed25519
+            IdentitiesOnly yes
+            StrictHostKeyChecking accept-new
+          EOF
+
+      - name: Deploy media-node
+        run: nix develop --command clan machines update media-node
