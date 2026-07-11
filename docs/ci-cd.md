@@ -2,7 +2,7 @@
 
 The repo includes two GitHub Actions:
 
-- `Nix CI`: validates the flake and dry-runs the `media-node` system build.
+- `Nix CI`: validates the flake and dry-runs both machine builds.
 - `Deploy media-node`: manual deploy button that joins Tailscale and runs
   `clan machines update media-node`.
 
@@ -17,7 +17,7 @@ CLAN_SSH_PRIVATE_KEY
 ```
 
 `CLAN_SSH_PRIVATE_KEY` should contain the private deploy key matching the public
-key configured in `modules/common/base.nix`.
+key configured in `machines/media-node/host.nix`.
 
 ## Tailscale policy
 

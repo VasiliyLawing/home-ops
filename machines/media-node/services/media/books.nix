@@ -2,6 +2,7 @@
 
 let
   cfg = config.homeOps.media.books;
+  shared = config.homeOps.media.shared;
 in
 {
   options.homeOps.media.books = {
@@ -25,7 +26,7 @@ in
       listen.port = 8083;
       group = "media";
       options = {
-        calibreLibrary = "/data/media/books";
+        calibreLibrary = "${shared.dataRoot}/media/books";
         enableBookUploading = true;
       };
     };
@@ -38,7 +39,7 @@ in
       ports = [ "127.0.0.1:8099:8080" ];
       volumes = [
         "/var/lib/home-ops/shelfmark:/config"
-        "/data/media/books:/books"
+        "${shared.dataRoot}/media/books:/books"
       ];
       extraOptions = [ "--pull=newer" ];
     };

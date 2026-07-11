@@ -1,53 +1,82 @@
 # Home Ops
 
-Clan-managed NixOS configuration for a public-safe media/transcoding node.
+Clan-managed NixOS monorepo for homelab and workstation machines.
 
-The repo is intentionally optimized for NixOS rather than being a direct Docker
-Compose migration.
+Each machine owns its own project folder under `machines/`. Shared config only
+lives in `shared/` when more than one machine actually needs it.
 
 ## Shape
 
 ```text
 Synology NAS
-└── DSM storage appliance, NFS media export
+`-- DSM storage appliance, NFS media export
 
-media-node
-├── NixOS + Clan
-├── Jellyfin with host GPU access
-├── movies / TV services
-├── books / audiobooks services
-├── music / podcast services
-├── SABnzbd
-├── qBittorrent isolated behind WireGuard
-└── Tailscale + SSH deployment path
+machines/media-node
+|-- NixOS + Clan
+|-- Jellyfin with host GPU access
+|-- movies / TV services
+|-- books / audiobooks services
+|-- music / podcast services
+|-- SABnzbd
+|-- qBittorrent isolated through Gluetun
+`-- Tailscale + SSH deployment path
+
+machines/workstation-wsl
+|-- NixOS-WSL + Clan
+|-- Neovim/dev tooling
+`-- no Tailscale or server services
 ```
 
 ## Layout
 
 ```text
-machines/media-node/            Machine-specific config
-modules/base.nix                 Compatibility import for media-node base
-modules/common/base.nix          Shared users, SSH, Tailscale, Nix settings
-modules/hosts/gmktec-media.nix   GMKtec/media-host hardware profile
-modules/disk.nix                 Disko install layout
-modules/secrets.nix              Host-local generated runtime secrets
-modules/nas-client.nix           Synology NFS mount
-modules/ingress.nix              Caddy routes
-modules/media/shared.nix         Shared media paths and Jellyfin/Jellyseerr
-modules/media/downloads.nix      SABnzbd and VPN-isolated qBittorrent
-modules/media/movies-tv.nix      Sonarr/Radarr/Prowlarr/Bazarr/Recyclarr/etc.
-modules/media/books.nix          Audiobookshelf/Calibre-Web/Shelfmark
-modules/media/music.nix          Lidarr/Navidrome/Aurral
+machines/
+|-- media-node/
+|   |-- configuration.nix
+|   |-- host.nix
+|   |-- disk.nix
+|   |-- secrets.nix
+|   |-- nas-client.nix
+|   |-- scripts/
+|   |   `-- runtime-secrets/
+|   `-- services/
+|       |-- ingress.nix
+|       `-- media/
+|           |-- config/
+|           |-- shared.nix
+|           |-- downloads.nix
+|           |-- buildarr.nix
+|           |-- configarr.nix
+|           |-- qbit-manage.nix
+|           |-- movies-tv.nix
+|           |-- books.nix
+|           `-- music.nix
+|-- workstation-wsl/
+|   |-- configuration.nix
+|   |-- host.nix
+|   `-- services/
+|       `-- neovim.nix
+`-- shared/
+    `-- default.nix
 ```
+
+Nix files declare the system. The only machine-owned scripts are runtime
+secret/bootstrap helpers where code is genuinely clearer than Nix strings.
+Static app config files live under `services/.../config/` only when an app has
+an actual config artifact worth owning in Git. Buildarr owns public indexers,
+Prowlarr app links, and Sonarr/Radarr qBittorrent download-client wiring.
+Configarr owns Sonarr/Radarr quality profiles and TRaSH-Guides sync
+declaratively. qBit Manage is present but disabled by default until qBittorrent
+is enabled on the machine.
 
 ## Before deployment
 
 Replace the public placeholders with real private values:
 
-1. install disk device in `modules/disk.nix`;
-2. SSH public key in `modules/common/base.nix`;
+1. install disk device in `machines/media-node/disk.nix`;
+2. SSH public key in `machines/media-node/host.nix`;
 3. NAS host/export in `machines/media-node/configuration.nix`;
-4. domain names in `modules/ingress.nix`;
-5. Proton/WireGuard values before enabling qBittorrent.
+4. domain names in `machines/media-node/services/ingress.nix`;
+5. Gluetun env file at `/run/secrets/gluetun-env` before enabling qBittorrent.
 
 The Pi monitoring layer is intentionally not present yet.

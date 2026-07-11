@@ -2,6 +2,7 @@
 
 let
   cfg = config.homeOps.media.music;
+  shared = config.homeOps.media.shared;
 in
 {
   options.homeOps.media.music = {
@@ -24,7 +25,7 @@ in
       settings = {
         Address = "127.0.0.1";
         Port = 4533;
-        MusicFolder = "/data/media/music";
+        MusicFolder = "${shared.dataRoot}/media/music";
       };
     };
 
@@ -34,9 +35,9 @@ in
       ports = [ "127.0.0.1:8098:3000" ];
       volumes = [
         "/var/lib/home-ops/aurral:/config"
-        "/data/downloads/aurral:/downloads"
-        "/data/media/music:/music"
-        "/data/media/podcasts:/podcasts"
+        "${shared.dataRoot}/torrents/complete:/downloads"
+        "${shared.dataRoot}/media/music:/music"
+        "${shared.dataRoot}/media/podcasts:/podcasts"
       ];
       extraOptions = [ "--pull=newer" ];
     };

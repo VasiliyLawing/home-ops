@@ -17,3 +17,5 @@ jobs:
         run: nix flake check --no-build
       - name: Dry-run media-node build
         run: nix build .#nixosConfigurations.media-node.config.system.build.toplevel --dry-run
+      - name: Dry-run workstation-wsl build
+        run: nix build .#nixosConfigurations.workstation-wsl.config.system.build.toplevel --dry-run

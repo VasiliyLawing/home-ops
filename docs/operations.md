@@ -9,24 +9,36 @@ homeOps.nas.host = "192.168.1.250";
 homeOps.nas.export = "/volume1/media-stack";
 ```
 
-And, if enabling qBittorrent:
-
-```nix
-homeOps.media.downloads.qbittorrent.vpn.peerPublicKey
-homeOps.media.downloads.qbittorrent.vpn.endpoint
-homeOps.media.downloads.qbittorrent.vpn.address
-homeOps.media.downloads.qbittorrent.vpn.dns
-```
-
-The private key should remain outside the Nix store at:
+These live in:
 
 ```text
-/run/secrets/qbittorrent-wg-private-key
+machines/media-node/configuration.nix
 ```
 
-## Runtime-generated tokens
+If enabling qBittorrent, create a Gluetun env file for your VPN provider and
+place it on the host at:
 
-`modules/secrets.nix` creates stable token files on first boot under:
+```text
+/run/secrets/gluetun-env
+```
+
+This path is declared here:
+
+```nix
+homeOps.media.downloads.gluetun.environmentFile
+```
+
+The Gluetun env file contains VPN private material and must remain outside Git
+and outside the Nix store.
+
+Use `machines/media-node/services/media/config/gluetun.env.example` as the
+non-secret template. Gluetun remains provider-neutral; change the env file for
+different VPN providers instead of changing the qBittorrent module.
+
+## Runtime-generated secrets
+
+`machines/media-node/secrets.nix` creates stable host-local secrets on first
+boot under:
 
 ```text
 /var/lib/home-ops/secrets
@@ -34,20 +46,150 @@ The private key should remain outside the Nix store at:
 
 These files are host-local and should never be committed.
 
+Generated files include:
+
+```text
+sonarr-api-key
+radarr-api-key
+prowlarr-api-key
+lidarr-api-key
+qbittorrent-webui-username
+qbittorrent-webui-password
+arr-api-keys.env
+buildarr-secret.yml
+qbittorrent-env
+```
+
+`home-ops-arr-configs.service` seeds those API keys into the Arr app
+`config.xml` files before Sonarr/Radarr/Prowlarr/Lidarr start.
+
+When qBittorrent is enabled, `home-ops-qbittorrent-config.service` seeds the
+qBittorrent WebUI username/password into:
+
+```text
+/var/lib/qbittorrent/qBittorrent/qBittorrent.conf
+```
+
+It uses qBittorrent's PBKDF2-SHA512 WebUI password format and runs before the
+`docker-qbittorrent.service` container starts.
+
+## Configarr sync
+
+Configarr handles Sonarr/Radarr quality-profile and TRaSH-Guides custom-format
+sync.
+
+It runs as a scheduled one-shot job:
+
+```bash
+systemctl status configarr-sync.timer
+systemctl start configarr-sync.service
+journalctl -u configarr-sync.service
+```
+
+The job runs Docker directly from systemd. It loads Sonarr/Radarr API keys from:
+
+```text
+/var/lib/home-ops/secrets/arr-api-keys.env
+```
+
+The committed config file lives at:
+
+```text
+machines/media-node/services/media/config/configarr/config.yml
+```
+
+Configarr keeps its writable template cache under:
+
+```text
+/var/lib/home-ops/configarr/repos
+```
+
+## Buildarr sync
+
+Buildarr handles public Prowlarr indexers, the Prowlarr links to Sonarr/Radarr,
+and the Sonarr/Radarr qBittorrent download-client entries.
+
+It runs as a scheduled one-shot job:
+
+```bash
+systemctl status buildarr-sync.timer
+systemctl start buildarr-sync.service
+journalctl -u buildarr-sync.service
+```
+
+The committed non-secret config file lives at:
+
+```text
+machines/media-node/services/media/config/buildarr/buildarr.yml
+```
+
+The job runs Docker directly from systemd. The committed config includes
+`secrets.yml`, and systemd mounts this generated secret file there:
+
+```text
+/var/lib/home-ops/secrets/buildarr-secret.yml
+```
+
+That generated include supplies the Sonarr/Radarr API keys and the qBittorrent
+WebUI credentials. The committed Buildarr file keeps only non-secret qBittorrent
+details such as host, port, and categories.
+
+## qBit Manage
+
+qBit Manage is present but disabled by default. It can be enabled after
+qBittorrent is enabled and the Gluetun env file is present.
+
+It reads qBittorrent credentials from:
+
+```text
+/var/lib/home-ops/secrets/qbittorrent-env
+```
+
+It contains:
+
+```text
+QBIT_USER=...
+QBIT_PASS=...
+```
+
+`home-ops-qbittorrent-config.service` configures qBittorrent to use those same
+credentials before the qBittorrent container starts.
+
+Then enable:
+
+```nix
+homeOps.media.qbitManage.enable = true;
+```
+
+It runs as a scheduled one-shot job:
+
+```bash
+systemctl status qbit-manage-sync.timer
+systemctl start qbit-manage-sync.service
+journalctl -u qbit-manage-sync.service
+```
+
+The committed non-secret config lives at:
+
+```text
+machines/media-node/services/media/config/qbit-manage/config.yml
+```
+
 ## VPN safety checks
 
 After enabling qBittorrent:
 
 ```bash
-systemctl status qbittorrent-vpn-netns
-systemctl status qbittorrent
-ip netns exec qbittorrent ip route
-ip netns exec qbittorrent nft list ruleset
+systemctl status docker-gluetun
+systemctl status home-ops-qbittorrent-config
+systemctl status docker-qbittorrent
+docker exec gluetun ip route
+docker exec gluetun iptables -S
 ```
 
 Expected:
 
-- default route points at `qbittorrent-wg`;
-- nftables policy is default drop;
-- LAN access is not present inside the namespace;
-- qBittorrent stops if `qbittorrent-vpn-netns.service` stops.
+- qBittorrent uses `--network=container:gluetun`;
+- the Web UI is only bound on `127.0.0.1`;
+- Gluetun owns the VPN firewall/kill switch;
+- qBittorrent has no independent host networking path.

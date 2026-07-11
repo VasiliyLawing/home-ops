@@ -1,0 +1,58 @@
+commands:
+  dry_run: true
+  recheck: false
+  cat_update: true
+  tag_update: true
+  rem_unregistered: false
+  tag_tracker_error: true
+  rem_orphaned: false
+  tag_nohardlinks: false
+  share_limits: false
+  skip_qb_version_check: false
+  skip_cleanup: true
+
+qbt:
+  host: "127.0.0.1:8080"
+  user: !ENV QBIT_USER
+  pass: !ENV QBIT_PASS
+
+settings:
+  tracker_error_tag: issue
+  nohardlinks_tag: noHL
+  stalled_tag: stalledDL
+  share_limits_tag: ~share_limit
+  cat_filter_completed: true
+  share_limits_filter_completed: true
+  tag_nohardlinks_filter_completed: true
+  cat_update_all: true
+  disable_qbt_default_share_limits: false
+
+directory:
+  root_dir: "/data/torrents"
+  recycle_bin: "/data/torrents/.RecycleBin"
+  orphaned_dir: "/data/torrents/orphaned_data"
+
+cat:
+  movies: "/data/torrents/complete/movies"
+  tv: "/data/torrents/complete/tv"
+  music: "/data/torrents/complete/music"
+  books: "/data/torrents/complete/books"
+  incomplete: "/data/torrents/incomplete"
+  Uncategorized: "/data/torrents/*"
+
+tracker:
+  other:
+    tag: other
+
+recyclebin:
+  enabled: false
+
+orphaned:
+  empty_after_x_days: 60
+  min_file_age_minutes: 60
+  max_orphaned_files_to_delete: 50
+  exclude_patterns:
+    - "**/.DS_Store"
+    - "**/Thumbs.db"
+    - "**/@eaDir"
+    - "**/*.!qB"

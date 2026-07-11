@@ -5,6 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     clan-core.url = "git+https://git.clan.lol/clan/clan-core";
     disko.url = "github:nix-community/disko";
+    nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     sops-nix.url = "github:Mic92/sops-nix";
   };
 
@@ -14,6 +15,7 @@
       nixpkgs,
       clan-core,
       disko,
+      nixos-wsl,
       sops-nix,
       ...
     }:
@@ -39,6 +41,10 @@
           nixpkgs.hostPlatform = system;
           imports = [ ./machines/media-node/configuration.nix ];
         };
+        machines.workstation-wsl = {
+          nixpkgs.hostPlatform = system;
+          imports = [ ./machines/workstation-wsl/configuration.nix ];
+        };
       };
 
       nixosConfigurations.media-node = nixpkgs.lib.nixosSystem {
@@ -55,6 +61,22 @@
             };
           }
           ./machines/media-node/configuration.nix
+        ];
+      };
+
+      nixosConfigurations.workstation-wsl = nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = { inherit inputs; };
+        modules = [
+          clan-core.nixosModules.clanCore
+          nixos-wsl.nixosModules.default
+          {
+            clan.core.settings = {
+              directory = self;
+              machine.name = "workstation-wsl";
+            };
+          }
+          ./machines/workstation-wsl/configuration.nix
         ];
       };
     };

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 let
   adminSshKeys = [
@@ -6,16 +6,44 @@ let
   ];
 in
 {
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "unrar" ];
+
+  boot = {
+    kernelPackages = pkgs.linuxPackages_latest;
+    kernelParams = [ "amd_pstate=active" ];
+    initrd.availableKernelModules = [
+      "nvme"
+      "sd_mod"
+      "usb_storage"
+      "usbhid"
+      "xhci_pci"
+    ];
+    loader = {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
+    };
+  };
+
+  hardware = {
+    cpu.amd.updateMicrocode = true;
+    graphics = {
+      enable = true;
+      enable32Bit = true;
+    };
+  };
+
   networking = {
     networkmanager.enable = true;
     firewall = {
       enable = true;
-      allowedTCPPorts = [ 22 ];
+      allowedTCPPorts = [
+        22
+        80
+        443
+      ];
       trustedInterfaces = [ "tailscale0" ];
     };
   };
-
-  time.timeZone = "America/Chicago";
 
   services = {
     openssh = {
@@ -29,15 +57,13 @@ in
   };
 
   users = {
-    mutableUsers = true;
     groups.media.gid = 1001;
     users.homeops = {
-      isNormalUser = true;
-      uid = 1000;
       extraGroups = [
         "media"
         "networkmanager"
-        "wheel"
+        "render"
+        "video"
       ];
       openssh.authorizedKeys.keys = adminSshKeys;
     };
@@ -45,31 +71,9 @@ in
   };
 
   environment.systemPackages = [
-    pkgs.btop
-    pkgs.curl
-    pkgs.git
-    pkgs.just
+    pkgs.libva-utils
     pkgs.sops
-    pkgs.vim
   ];
-
-  nix = {
-    settings = {
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-      trusted-users = [
-        "root"
-        "homeops"
-      ];
-    };
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 14d";
-    };
-  };
 
   systemd.tmpfiles.rules = [ "d /srv/home-ops/backups 0775 homeops media -" ];
 }

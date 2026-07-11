@@ -8,7 +8,7 @@ in
     enable = lib.mkEnableOption "shared media directories and core services";
     dataRoot = lib.mkOption {
       type = lib.types.str;
-      default = "/data";
+      default = "/mnt/nas/data";
       description = "NAS-backed media and download mount point.";
     };
   };
@@ -25,10 +25,13 @@ in
       "d /var/lib/home-ops/aurral 0775 homeops media -"
       "d /var/lib/home-ops/neutarr 0775 homeops media -"
       "d /var/lib/home-ops/shelfmark 0775 homeops media -"
-      "d ${cfg.dataRoot}/downloads 0775 homeops media -"
-      "d ${cfg.dataRoot}/downloads/aurral 0775 homeops media -"
-      "d ${cfg.dataRoot}/downloads/complete 0775 homeops media -"
-      "d ${cfg.dataRoot}/downloads/incomplete 0775 homeops media -"
+      "d ${cfg.dataRoot}/torrents 0775 homeops media -"
+      "d ${cfg.dataRoot}/torrents/complete 0775 homeops media -"
+      "d ${cfg.dataRoot}/torrents/complete/movies 0775 homeops media -"
+      "d ${cfg.dataRoot}/torrents/complete/tv 0775 homeops media -"
+      "d ${cfg.dataRoot}/torrents/complete/music 0775 homeops media -"
+      "d ${cfg.dataRoot}/torrents/complete/books 0775 homeops media -"
+      "d ${cfg.dataRoot}/torrents/incomplete 0775 homeops media -"
       "d ${cfg.dataRoot}/media 0775 homeops media -"
       "d ${cfg.dataRoot}/media/movies 0775 homeops media -"
       "d ${cfg.dataRoot}/media/tv 0775 homeops media -"
@@ -39,8 +42,8 @@ in
       "d ${cfg.dataRoot}/media/audiobooks 0775 homeops media -"
     ];
 
-    virtualisation.oci-containers.backend = "podman";
-    virtualisation.podman.enable = true;
+    virtualisation.oci-containers.backend = "docker";
+    virtualisation.docker.enable = true;
 
     services.jellyfin = {
       enable = true;

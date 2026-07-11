@@ -1,0 +1,122 @@
+---
+includes:
+  - secrets.yml
+
+buildarr:
+  watch_config: false
+  update_days:
+    - "monday"
+    - "tuesday"
+    - "wednesday"
+    - "thursday"
+    - "friday"
+    - "saturday"
+    - "sunday"
+  update_times:
+    - "03:15"
+
+sonarr:
+  instances:
+    Sonarr:
+      hostname: "127.0.0.1"
+      port: 8989
+      protocol: "http"
+      settings:
+        download_clients:
+          enable_completed_download_handling: true
+          redownload_failed: true
+          delete_unmanaged: false
+          definitions:
+            "qBittorrent":
+              type: "qbittorrent"
+              host: "127.0.0.1"
+              port: 8080
+              use_ssl: false
+              category: "tv"
+              recent_priority: "last"
+              older_priority: "last"
+              initial_state: "start"
+
+radarr:
+  instances:
+    Radarr:
+      hostname: "127.0.0.1"
+      port: 7878
+      protocol: "http"
+      settings:
+        download_clients:
+          delete_unmanaged: false
+          definitions:
+            "qBittorrent":
+              type: "qbittorrent"
+              hostname: "127.0.0.1"
+              port: 8080
+              use_ssl: false
+              category: "movies"
+              recent_priority: "last"
+              older_priority: "last"
+              initial_state: "start"
+
+prowlarr:
+  hostname: "127.0.0.1"
+  port: 9696
+  protocol: "http"
+  settings:
+    apps:
+      sync_profiles:
+        delete_unmanaged: false
+        definitions:
+          "Standard":
+            enable_automatic_search: true
+            enable_interactive_search: true
+            enable_rss: true
+            minimum_seeders: 1
+      applications:
+        delete_unmanaged: false
+        definitions:
+          "Sonarr":
+            type: "sonarr"
+            instance_name: "Sonarr"
+            prowlarr_url: "http://127.0.0.1:9696"
+            base_url: "http://127.0.0.1:8989"
+            sync_level: "add-and-remove-only"
+            tags:
+              - "tv"
+          "Radarr":
+            type: "radarr"
+            instance_name: "Radarr"
+            prowlarr_url: "http://127.0.0.1:9696"
+            base_url: "http://127.0.0.1:7878"
+            sync_level: "add-and-remove-only"
+            tags:
+              - "movies"
+    indexers:
+      indexers:
+        delete_unmanaged: false
+        definitions:
+          "1337x":
+            type: "1337x"
+            enable: true
+            sync_profile: "Standard"
+            redirect: false
+            priority: 10
+            tags:
+              - "movies"
+              - "tv"
+            fields:
+              "sort": "created"
+              "type": "desc"
+          "Nyaa.si":
+            type: "nyaasi"
+            enable: true
+            sync_profile: "Standard"
+            redirect: false
+            priority: 20
+            tags:
+              - "tv"
+            fields:
+              "sort": "created"
+              "type": "desc"
+              "cat-id": "All categories"
+              "filter-id": "No filter"
+              "prefer_magnet_links": true

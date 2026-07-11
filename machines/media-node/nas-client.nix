@@ -18,7 +18,7 @@ in
     };
     mountPoint = lib.mkOption {
       type = lib.types.str;
-      default = "/data";
+      default = "/mnt/nas/data";
       description = "Local mount point for media stack data.";
     };
   };
