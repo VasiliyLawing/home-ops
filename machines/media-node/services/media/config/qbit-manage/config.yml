@@ -37,6 +37,7 @@ cat:
   tv: "/data/torrents/complete/tv"
   music: "/data/torrents/complete/music"
   books: "/data/torrents/complete/books"
+  audiobooks: "/data/torrents/complete/audiobooks"
   incomplete: "/data/torrents/incomplete"
   Uncategorized: "/data/torrents/*"
 

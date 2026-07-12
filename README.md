@@ -15,7 +15,7 @@ machines/media-node
 |-- NixOS + Clan
 |-- Jellyfin with host GPU access
 |-- movies / TV services
-|-- books / audiobooks services
+|-- books / audiobooks services, including Shelfmark search/download wiring
 |-- music / podcast services
 |-- SABnzbd
 |-- qBittorrent isolated through Gluetun
@@ -66,8 +66,9 @@ Static app config files live under `services/.../config/` only when an app has
 an actual config artifact worth owning in Git. Buildarr owns public indexers,
 Prowlarr app links, and Sonarr/Radarr qBittorrent download-client wiring.
 Configarr owns Sonarr/Radarr quality profiles and TRaSH-Guides sync
-declaratively. qBit Manage is present but disabled by default until qBittorrent
-is enabled on the machine.
+declaratively. Shelfmark is wired to Prowlarr and qBittorrent through generated
+host-local secrets. qBit Manage is present but disabled by default until
+qBittorrent is enabled on the machine.
 
 ## Before deployment
 

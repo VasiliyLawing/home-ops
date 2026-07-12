@@ -85,17 +85,26 @@ configuration is split so tools do not fight each other:
   and Sonarr/Radarr qBittorrent download-client definitions.
 - qBit Manage owns qBittorrent categories, tags, and cleanup once enabled.
 
-Sonarr and Radarr use qBittorrent categories that match qBit Manage:
+Sonarr, Radarr, and Shelfmark use qBittorrent categories that match qBit
+Manage:
 
 ```text
 Sonarr -> tv
 Radarr -> movies
+Shelfmark books -> books
+Shelfmark audiobooks -> audiobooks
 ```
 
 Other media apps are intentionally not wired to qBittorrent unless they submit
-downloads. Shelfmark, Jellyfin, Audiobookshelf, Calibre-Web, Navidrome, and
-Seerr are library or request/consumer apps in this design; they do not need
-qBittorrent download-client credentials.
+downloads. Jellyfin, Audiobookshelf, Calibre-Web, Navidrome, and Seerr are
+library or request/consumer apps in this design; they do not need qBittorrent
+download-client credentials.
+
+Shelfmark is the exception in the books module. It is a search/request/download
+app, so it gets Prowlarr and qBittorrent credentials from the Nix-generated
+`shelfmark-env` file. Shelfmark runs with host networking and binds its UI to
+`127.0.0.1` so it can reach the host-local Prowlarr and qBittorrent APIs
+without exposing qBittorrent beyond localhost.
 
 Configarr runs as a scheduled one-shot container from `configarr-sync.timer`.
 Systemd runs Docker directly and loads Sonarr/Radarr API keys from the
@@ -175,10 +184,19 @@ The host-side NAS layout is:
 |-- torrents/
 |   |-- incomplete/
 |   `-- complete/
+|       |-- movies/
+|       |-- tv/
+|       |-- music/
+|       |-- books/
+|       `-- audiobooks/
 `-- media/
     |-- movies/
     |-- tv/
-    `-- music/
+    |-- music/
+    |-- books/
+    |   `-- imports/
+    `-- audiobooks/
+        `-- imports/
 ```
 
 SABnzbd is not VPN-isolated by default. It should use TLS to the Usenet provider.

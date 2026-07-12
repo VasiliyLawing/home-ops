@@ -92,11 +92,19 @@ QBIT_USER=$qbittorrent_user
 QBIT_PASS=$qbittorrent_password
 EOF
 
+cat > "$HOME_OPS_SECRET_DIRECTORY/shelfmark-env" <<EOF
+PROWLARR_API_KEY=$prowlarr_api_key
+QBITTORRENT_USERNAME=$qbittorrent_user
+QBITTORRENT_PASSWORD=$qbittorrent_password
+EOF
+
 chmod 0600 \
   "$HOME_OPS_SECRET_DIRECTORY/arr-api-keys.env" \
   "$HOME_OPS_SECRET_DIRECTORY/buildarr-secret.yml" \
-  "$HOME_OPS_SECRET_DIRECTORY/qbittorrent-env"
+  "$HOME_OPS_SECRET_DIRECTORY/qbittorrent-env" \
+  "$HOME_OPS_SECRET_DIRECTORY/shelfmark-env"
 chown root:root \
   "$HOME_OPS_SECRET_DIRECTORY/arr-api-keys.env" \
   "$HOME_OPS_SECRET_DIRECTORY/buildarr-secret.yml" \
-  "$HOME_OPS_SECRET_DIRECTORY/qbittorrent-env"
+  "$HOME_OPS_SECRET_DIRECTORY/qbittorrent-env" \
+  "$HOME_OPS_SECRET_DIRECTORY/shelfmark-env"

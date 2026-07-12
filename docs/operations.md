@@ -58,6 +58,7 @@ qbittorrent-webui-password
 arr-api-keys.env
 buildarr-secret.yml
 qbittorrent-env
+shelfmark-env
 ```
 
 `home-ops-arr-configs.service` seeds those API keys into the Arr app
@@ -72,6 +73,10 @@ qBittorrent WebUI username/password into:
 
 It uses qBittorrent's PBKDF2-SHA512 WebUI password format and runs before the
 `docker-qbittorrent.service` container starts.
+
+`shelfmark-env` supplies Shelfmark with the generated Prowlarr API key and the
+same qBittorrent WebUI username/password. Non-secret Shelfmark settings live in
+`machines/media-node/services/media/books.nix`.
 
 ## Configarr sync
 
@@ -174,6 +179,29 @@ The committed non-secret config lives at:
 ```text
 machines/media-node/services/media/config/qbit-manage/config.yml
 ```
+
+qBit Manage categories include `books` and `audiobooks` so Shelfmark-submitted
+torrents land in the same `/data/torrents/complete/...` layout seen by
+qBittorrent.
+
+## Shelfmark
+
+Shelfmark is wired as the books/audiobooks search and download UI. It uses:
+
+- Prowlarr for source/indexer search;
+- qBittorrent for torrent downloads;
+- `books` and `audiobooks` qBittorrent categories;
+- `/books` and `/audiobooks` ingest folders inside the container.
+
+It runs with Docker host networking so it can reach the host-local Prowlarr and
+qBittorrent APIs at `127.0.0.1`. Its own UI is bound to localhost:
+
+```text
+http://127.0.0.1:8099
+```
+
+If you later enable Shelfmark direct web/IRC sources, treat Shelfmark itself as
+an external downloader and decide whether to put it behind its own VPN path.
 
 ## VPN safety checks
 

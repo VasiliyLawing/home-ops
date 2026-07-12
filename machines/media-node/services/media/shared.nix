@@ -31,6 +31,7 @@ in
       "d ${cfg.dataRoot}/torrents/complete/tv 0775 homeops media -"
       "d ${cfg.dataRoot}/torrents/complete/music 0775 homeops media -"
       "d ${cfg.dataRoot}/torrents/complete/books 0775 homeops media -"
+      "d ${cfg.dataRoot}/torrents/complete/audiobooks 0775 homeops media -"
       "d ${cfg.dataRoot}/torrents/incomplete 0775 homeops media -"
       "d ${cfg.dataRoot}/media 0775 homeops media -"
       "d ${cfg.dataRoot}/media/movies 0775 homeops media -"
@@ -40,6 +41,7 @@ in
       "d ${cfg.dataRoot}/media/books 0775 homeops media -"
       "d ${cfg.dataRoot}/media/books/imports 0775 homeops media -"
       "d ${cfg.dataRoot}/media/audiobooks 0775 homeops media -"
+      "d ${cfg.dataRoot}/media/audiobooks/imports 0775 homeops media -"
     ];
 
     virtualisation.oci-containers.backend = "docker";

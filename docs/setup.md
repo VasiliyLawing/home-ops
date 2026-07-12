@@ -115,6 +115,10 @@ Then enable:
 homeOps.media.qbitManage.enable = true;
 ```
 
+Shelfmark is already wired to use the same generated Prowlarr/qBittorrent
+credentials. Once qBittorrent is enabled, Shelfmark can submit book torrents
+with the `books` category and audiobook torrents with the `audiobooks` category.
+
 ## 6. Run Buildarr and Configarr once
 
 Buildarr owns public Prowlarr indexers, Prowlarr app links to Sonarr/Radarr,
