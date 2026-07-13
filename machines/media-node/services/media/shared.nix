@@ -23,6 +23,7 @@ in
 
     systemd.tmpfiles.rules = [
       "d /var/lib/home-ops/aurral 0775 homeops media -"
+      "d /var/lib/home-ops/calibre-web-automated 0775 homeops media -"
       "d /var/lib/home-ops/neutarr 0775 homeops media -"
       "d /var/lib/home-ops/shelfmark 0775 homeops media -"
       "d ${cfg.dataRoot}/torrents 0775 homeops media -"
@@ -37,9 +38,11 @@ in
       "d ${cfg.dataRoot}/media/movies 0775 homeops media -"
       "d ${cfg.dataRoot}/media/tv 0775 homeops media -"
       "d ${cfg.dataRoot}/media/music 0775 homeops media -"
+      "d ${cfg.dataRoot}/media/music/aurral 0775 homeops media -"
       "d ${cfg.dataRoot}/media/podcasts 0775 homeops media -"
       "d ${cfg.dataRoot}/media/books 0775 homeops media -"
       "d ${cfg.dataRoot}/media/books/imports 0775 homeops media -"
+      "d ${cfg.dataRoot}/media/books/library 0775 homeops media -"
       "d ${cfg.dataRoot}/media/audiobooks 0775 homeops media -"
       "d ${cfg.dataRoot}/media/audiobooks/imports 0775 homeops media -"
     ];

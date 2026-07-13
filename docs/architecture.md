@@ -96,15 +96,20 @@ Shelfmark audiobooks -> audiobooks
 ```
 
 Other media apps are intentionally not wired to qBittorrent unless they submit
-downloads. Jellyfin, Audiobookshelf, Calibre-Web, Navidrome, and Seerr are
-library or request/consumer apps in this design; they do not need qBittorrent
-download-client credentials.
+downloads. Jellyfin, Audiobookshelf, Calibre-Web-Automated, Navidrome, and
+Seerr are library or request/consumer apps in this design; they do not need
+qBittorrent download-client credentials.
 
 Shelfmark is the exception in the books module. It is a search/request/download
 app, so it gets Prowlarr and qBittorrent credentials from the Nix-generated
 `shelfmark-env` file. Shelfmark runs with host networking and binds its UI to
-`127.0.0.1` so it can reach the host-local Prowlarr and qBittorrent APIs
-without exposing qBittorrent beyond localhost.
+`127.0.0.1` so it can reach the host-local Prowlarr, qBittorrent, and
+Calibre-Web-Automated APIs without exposing qBittorrent beyond localhost.
+
+NeutArr and Aurral are helper applications with first-run onboarding flows.
+They are kept in containers because neither has a native NixOS module today,
+but they use verified upstream images and local-only port bindings. For host
+service access, they receive Docker's `host.docker.internal` gateway alias.
 
 Configarr runs as a scheduled one-shot container from `configarr-sync.timer`.
 Systemd runs Docker directly and loads Sonarr/Radarr API keys from the

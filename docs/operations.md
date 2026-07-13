@@ -103,6 +103,57 @@ It uses qBittorrent's PBKDF2-SHA512 WebUI password format and runs before the
 same qBittorrent WebUI username/password. Non-secret Shelfmark settings live in
 `machines/media-node/services/media/books.nix`.
 
+The default books stack uses Calibre-Web-Automated rather than native
+Calibre-Web. This is intentional: native Calibre-Web requires an existing
+Calibre `metadata.db`, while Calibre-Web-Automated can initialize a fresh
+library and has explicit `NETWORK_SHARE_MODE=true` handling for NFS/SMB-backed
+storage.
+
+Default book paths:
+
+```text
+/mnt/nas/data/media/books/imports   -> CWA ingest folder
+/mnt/nas/data/media/books/library   -> Calibre library
+/var/lib/home-ops/calibre-web-automated -> CWA config/app data
+```
+
+Native Calibre-Web is still available as an advanced opt-in once a valid
+Calibre library already exists:
+
+```nix
+homeOps.media.books.calibreWebAutomated.enable = false;
+homeOps.media.books.calibreWeb.enable = true;
+```
+
+NeutArr uses the upstream Docker Hub image:
+
+```text
+iampuid0/neutarr:latest
+```
+
+It is exposed on localhost port `9705`, stores config in
+`/var/lib/home-ops/neutarr`, and should be configured in its first-run wizard to
+reach host-native Arr services through:
+
+```text
+http://host.docker.internal:8989  # Sonarr
+http://host.docker.internal:7878  # Radarr
+http://host.docker.internal:8686  # Lidarr
+```
+
+Aurral uses the upstream GHCR image pinned to the stable 1.x line:
+
+```text
+ghcr.io/lklynet/aurral:1.76.0
+```
+
+It is exposed on localhost port `8098`, persists app data in
+`/var/lib/home-ops/aurral`, and writes generated music flows under:
+
+```text
+/mnt/nas/data/media/music/aurral
+```
+
 ## Configarr sync
 
 Configarr handles Sonarr/Radarr quality-profile and TRaSH-Guides custom-format

@@ -10,6 +10,14 @@ in
     aurral.enable = lib.mkOption {
       type = lib.types.bool;
       default = true;
+      description = ''
+        Enable Aurral, a music discovery and request app for Lidarr.
+      '';
+    };
+    aurral.image = lib.mkOption {
+      type = lib.types.str;
+      default = "ghcr.io/lklynet/aurral:1.76.0";
+      description = "Aurral container image.";
     };
   };
 
@@ -38,16 +46,24 @@ in
     };
 
     virtualisation.oci-containers.containers.aurral = lib.mkIf cfg.aurral.enable {
-      image = "ghcr.io/aurral-app/aurral:latest";
+      image = cfg.aurral.image;
       autoStart = true;
-      ports = [ "127.0.0.1:8098:3000" ];
+      ports = [ "127.0.0.1:8098:3001" ];
+      environment = {
+        PUID = "1000";
+        PGID = "1001";
+        TZ = config.time.timeZone;
+        DOWNLOAD_FOLDER = "/app/downloads";
+      };
       volumes = [
-        "/var/lib/home-ops/aurral:/config"
-        "${shared.dataRoot}/torrents/complete:/downloads"
-        "${shared.dataRoot}/media/music:/music"
-        "${shared.dataRoot}/media/podcasts:/podcasts"
+        "/var/lib/home-ops/aurral:/app/backend/data"
+        "${shared.dataRoot}/media/music/aurral:/app/downloads"
+        "${shared.dataRoot}/media/music:/data:ro"
       ];
-      extraOptions = [ "--pull=always" ];
+      extraOptions = [
+        "--pull=always"
+        "--add-host=host.docker.internal:host-gateway"
+      ];
     };
   };
 }

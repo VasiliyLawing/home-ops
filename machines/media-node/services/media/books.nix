@@ -9,10 +9,41 @@ let
   cfg = config.homeOps.media.books;
   shared = config.homeOps.media.shared;
   shelfmark = cfg.shelfmark;
+  calibreWeb = cfg.calibreWeb;
+  calibreWebAutomated = cfg.calibreWebAutomated;
 in
 {
   options.homeOps.media.books = {
     enable = lib.mkEnableOption "books and audiobooks services";
+    calibreWebAutomated = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = ''
+          Enable Calibre-Web-Automated as the default book library manager. This
+          is preferred for a fresh NAS because it can initialize an empty Calibre
+          library and has explicit network-share handling.
+        '';
+      };
+      image = lib.mkOption {
+        type = lib.types.str;
+        default = "crocodilestick/calibre-web-automated:latest";
+        description = "Calibre-Web-Automated container image.";
+      };
+      webuiPort = lib.mkOption {
+        type = lib.types.port;
+        default = 8083;
+        description = "Localhost-bound Calibre-Web-Automated web UI port.";
+      };
+    };
+    calibreWeb.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Enable Calibre-Web once the books media directory contains a valid
+        Calibre library metadata.db.
+      '';
+    };
     shelfmark = {
       enable = lib.mkOption {
         type = lib.types.bool;
@@ -46,6 +77,10 @@ in
         assertion = !shelfmark.enable || config.homeOps.media.moviesTv.enable;
         message = "Shelfmark Prowlarr wiring requires homeOps.media.moviesTv.enable.";
       }
+      {
+        assertion = !(calibreWeb.enable && calibreWebAutomated.enable);
+        message = "Use either native Calibre-Web or Calibre-Web-Automated, not both.";
+      }
     ];
 
     services.audiobookshelf = {
@@ -54,7 +89,7 @@ in
       port = 13378;
     };
 
-    services.calibre-web = {
+    services.calibre-web = lib.mkIf calibreWeb.enable {
       enable = true;
       listen.ip = "127.0.0.1";
       listen.port = 8083;
@@ -69,7 +104,12 @@ in
 
     systemd.services = {
       audiobookshelf.unitConfig.RequiresMountsFor = [ shared.dataRoot ];
-      calibre-web.unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+      calibre-web = lib.mkIf calibreWeb.enable {
+        unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+      };
+      docker-calibre-web-automated = lib.mkIf calibreWebAutomated.enable {
+        unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+      };
       docker-shelfmark = lib.mkIf shelfmark.enable {
         unitConfig.RequiresMountsFor = [ shared.dataRoot ];
         after = [
@@ -78,15 +118,40 @@ in
         ]
         ++ lib.optionals config.homeOps.media.downloads.qbittorrent.enable [
           "docker-qbittorrent.service"
+        ]
+        ++ lib.optionals calibreWebAutomated.enable [
+          "docker-calibre-web-automated.service"
         ];
         wants = [
           "prowlarr.service"
         ]
         ++ lib.optionals config.homeOps.media.downloads.qbittorrent.enable [
           "docker-qbittorrent.service"
+        ]
+        ++ lib.optionals calibreWebAutomated.enable [
+          "docker-calibre-web-automated.service"
         ];
         requires = [ "home-ops-runtime-secrets.service" ];
       };
+    };
+
+    virtualisation.oci-containers.containers.calibre-web-automated = lib.mkIf calibreWebAutomated.enable {
+      image = calibreWebAutomated.image;
+      autoStart = true;
+      ports = [ "127.0.0.1:${toString calibreWebAutomated.webuiPort}:8083" ];
+      environment = {
+        PUID = "1000";
+        PGID = "1001";
+        TZ = config.time.timeZone;
+        NETWORK_SHARE_MODE = "true";
+        CWA_PORT_OVERRIDE = "8083";
+      };
+      volumes = [
+        "/var/lib/home-ops/calibre-web-automated:/config"
+        "${shared.dataRoot}/media/books/imports:/cwa-book-ingest"
+        "${shared.dataRoot}/media/books/library:/calibre-library"
+      ];
+      extraOptions = [ "--pull=always" ];
     };
 
     virtualisation.oci-containers.containers.shelfmark = lib.mkIf shelfmark.enable {
@@ -103,7 +168,6 @@ in
         FLASK_PORT = toString shelfmark.webuiPort;
         SEARCH_MODE = "universal";
 
-        CALIBRE_WEB_URL = "http://127.0.0.1:8083";
         AUDIOBOOK_LIBRARY_URL = "http://127.0.0.1:13378";
         INGEST_DIR = "/books";
         DESTINATION_AUDIOBOOK = "/audiobooks";
@@ -116,6 +180,11 @@ in
         QBITTORRENT_URL = "http://127.0.0.1:8080";
         QBITTORRENT_CATEGORY = "books";
         QBITTORRENT_CATEGORY_AUDIOBOOK = "audiobooks";
+      }
+      // lib.optionalAttrs (calibreWeb.enable || calibreWebAutomated.enable) {
+        CALIBRE_WEB_URL = "http://127.0.0.1:${toString (
+          if calibreWebAutomated.enable then calibreWebAutomated.webuiPort else 8083
+        )}";
       };
       volumes = [
         "/var/lib/home-ops/shelfmark:/config"

@@ -119,6 +119,33 @@ Shelfmark is already wired to use the same generated Prowlarr/qBittorrent
 credentials. Once qBittorrent is enabled, Shelfmark can submit book torrents
 with the `books` category and audiobook torrents with the `audiobooks` category.
 
+The default book library service is Calibre-Web-Automated on localhost port
+`8083`. It uses:
+
+```text
+/mnt/nas/data/media/books/imports
+/mnt/nas/data/media/books/library
+/var/lib/home-ops/calibre-web-automated
+```
+
+For a fresh install, open Calibre-Web-Automated and change the default admin
+password after the first successful deploy.
+
+NeutArr is available on localhost port `9705`. During its first-run wizard, use
+the host gateway URLs for Arr apps:
+
+```text
+http://host.docker.internal:8989
+http://host.docker.internal:7878
+http://host.docker.internal:8686
+```
+
+Aurral is available on localhost port `8098`. During onboarding, point Lidarr to:
+
+```text
+http://host.docker.internal:8686
+```
+
 ## 6. Run Buildarr and Configarr once
 
 Buildarr owns public Prowlarr indexers, Prowlarr app links to Sonarr/Radarr,

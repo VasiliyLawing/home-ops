@@ -14,6 +14,15 @@ in
     neutarr.enable = lib.mkOption {
       type = lib.types.bool;
       default = true;
+      description = ''
+        Enable NeutArr, an automated missing-media hunter and quality-upgrader
+        for the Arr apps.
+      '';
+    };
+    neutarr.image = lib.mkOption {
+      type = lib.types.str;
+      default = "iampuid0/neutarr:latest";
+      description = "NeutArr container image.";
     };
   };
 
@@ -59,10 +68,19 @@ in
     };
 
     virtualisation.oci-containers.containers.neutarr = lib.mkIf cfg.neutarr.enable {
-      image = "ghcr.io/gh-code-forge/neutarr:latest";
+      image = cfg.neutarr.image;
       autoStart = true;
+      ports = [ "127.0.0.1:9705:9705" ];
+      environment = {
+        PUID = "1000";
+        PGID = "1001";
+        TZ = config.time.timeZone;
+      };
       volumes = [ "/var/lib/home-ops/neutarr:/config" ];
-      extraOptions = [ "--pull=always" ];
+      extraOptions = [
+        "--pull=always"
+        "--add-host=host.docker.internal:host-gateway"
+      ];
     };
   };
 }
