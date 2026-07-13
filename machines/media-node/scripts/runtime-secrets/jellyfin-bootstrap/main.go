@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -39,13 +40,20 @@ func readSecret(path string) (string, error) {
 	return strings.TrimSpace(string(content)), nil
 }
 
-func request(method string, endpoint string, apiKey string) ([]byte, error) {
-	req, err := http.NewRequest(method, endpoint, nil)
+func request(method string, endpoint string, apiKey string, body []byte) ([]byte, error) {
+	var reader io.Reader
+	if body != nil {
+		reader = bytes.NewReader(body)
+	}
+	req, err := http.NewRequest(method, endpoint, reader)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("X-Emby-Token", apiKey)
 	req.Header.Set("Accept", "application/json")
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 
 	client := &http.Client{Timeout: 20 * time.Second}
 	resp, err := client.Do(req)
@@ -54,18 +62,18 @@ func request(method string, endpoint string, apiKey string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("%s %s returned %d: %s", method, endpoint, resp.StatusCode, strings.TrimSpace(string(body)))
+		return nil, fmt.Errorf("%s %s returned %d: %s", method, endpoint, resp.StatusCode, strings.TrimSpace(string(respBody)))
 	}
-	return body, nil
+	return respBody, nil
 }
 
 func getLibraries(baseURL string, apiKey string) ([]virtualFolder, error) {
-	body, err := request("GET", strings.TrimRight(baseURL, "/")+"/Library/VirtualFolders", apiKey)
+	body, err := request("GET", strings.TrimRight(baseURL, "/")+"/Library/VirtualFolders", apiKey, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -92,8 +100,55 @@ func createLibrary(baseURL string, apiKey string, library desiredLibrary) error 
 	params.Set("paths", library.Path)
 	params.Set("refreshLibrary", "false")
 	endpoint := strings.TrimRight(baseURL, "/") + "/Library/VirtualFolders?" + params.Encode()
-	_, err := request("POST", endpoint, apiKey)
+	_, err := request("POST", endpoint, apiKey, nil)
 	return err
+}
+
+// Desired-state VAAPI transcoding settings for the AMD 780M (VCN 4):
+// hardware decode for every codec it supports, HEVC/AV1 hardware encode,
+// HDR->SDR tone mapping (Jellyfin picks the Vulkan/libplacebo path on AMD
+// without a ROCm OpenCL runtime), and throttling so concurrent remote
+// streams don't transcode whole files ahead of playback.
+func desiredEncodingSettings() map[string]any {
+	return map[string]any{
+		"HardwareAccelerationType":       "vaapi",
+		"VaapiDevice":                    "/dev/dri/renderD128",
+		"HardwareDecodingCodecs":         []string{"h264", "hevc", "mpeg2video", "vc1", "vp8", "vp9", "av1"},
+		"EnableDecodingColorDepth10Hevc": true,
+		"EnableDecodingColorDepth10Vp9":  true,
+		"EnableHardwareEncoding":         true,
+		"AllowHevcEncoding":              true,
+		"AllowAv1Encoding":               true,
+		"EnableTonemapping":              true,
+		"EnableThrottling":               true,
+		"EnableSegmentDeletion":          true,
+	}
+}
+
+func configureEncoding(baseURL string, apiKey string) error {
+	endpoint := strings.TrimRight(baseURL, "/") + "/System/Configuration/encoding"
+	body, err := request("GET", endpoint, apiKey, nil)
+	if err != nil {
+		return err
+	}
+	config := map[string]any{}
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &config); err != nil {
+			return err
+		}
+	}
+	for key, value := range desiredEncodingSettings() {
+		config[key] = value
+	}
+	payload, err := json.Marshal(config)
+	if err != nil {
+		return err
+	}
+	if _, err := request("POST", endpoint, apiKey, payload); err != nil {
+		return err
+	}
+	fmt.Println("Jellyfin: applied VAAPI hardware transcoding settings")
+	return nil
 }
 
 func ensureLibrary(baseURL string, apiKey string, library desiredLibrary) error {
@@ -150,7 +205,10 @@ func run() error {
 		{Name: "Movies", CollectionType: "movies", Path: "/mnt/nas/data/media/movies"},
 		{Name: "TV", CollectionType: "tvshows", Path: "/mnt/nas/data/media/tv"},
 	}
-	return ensureWithRetry(baseURL, apiKey, libraries)
+	if err := ensureWithRetry(baseURL, apiKey, libraries); err != nil {
+		return err
+	}
+	return configureEncoding(baseURL, apiKey)
 }
 
 func main() {

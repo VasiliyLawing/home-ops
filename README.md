@@ -94,8 +94,9 @@ an actual config artifact worth owning in Git. Home Ops owns Prowlarr app links,
 Prowlarr indexer proxies, and Sonarr/Radarr qBittorrent download-client
 bootstrap directly through the Arr APIs. Actual Prowlarr indexers are added
 manually in the UI. Home Ops also bootstraps Seerr's Sonarr/Radarr settings,
-creates Jellyfin Movies/TV libraries, and completes Jellyfin wiring when a real
-Jellyfin API key is placed on the host. Jellyfin plugin repositories and the
+creates Jellyfin Movies/TV libraries, seeds Jellyfin's VAAPI hardware
+transcoding (780M decode/encode, HDR tone mapping), and completes Jellyfin
+wiring when a real Jellyfin API key is placed on the host. Jellyfin plugin repositories and the
 desired plugin set are installed through an on-demand bootstrap service. Bazarr's
 Sonarr/Radarr connections are bootstrapped from the same generated Arr API keys. Configarr owns Sonarr/Radarr quality
 profiles and TRaSH-Guides sync declaratively. Unpackerr handles archive

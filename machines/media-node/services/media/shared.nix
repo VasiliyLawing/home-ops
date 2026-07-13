@@ -57,6 +57,12 @@ in
       group = "media";
     };
 
+    # GPU access for VAAPI transcoding and Vulkan tone mapping on the 780M.
+    users.users.jellyfin.extraGroups = [
+      "render"
+      "video"
+    ];
+
     services.seerr = {
       enable = true;
       openFirewall = false;
