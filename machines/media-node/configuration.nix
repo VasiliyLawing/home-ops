@@ -8,6 +8,7 @@
     ./services/media/shared.nix
     ./services/media/downloads.nix
     ./services/media/movies-tv.nix
+    ./services/media/arr-download-clients.nix
     ./services/media/buildarr.nix
     ./services/media/configarr.nix
     ./services/media/qbit-manage.nix
@@ -43,6 +44,7 @@
       };
 
       moviesTv.enable = true;
+      arrDownloadClients.enable = true;
       buildarr.enable = true;
       configarr.enable = true;
       qbitManage.enable = true;
@@ -50,7 +52,9 @@
       music.enable = true;
     };
 
-    ingress.enable = true;
+    # Tailscale-first access for now. Enable ingress only after real hostnames
+    # point at this machine and certificate issuance is expected to work.
+    ingress.enable = false;
   };
 
   system.stateVersion = "26.05";

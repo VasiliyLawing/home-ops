@@ -1,7 +1,7 @@
 # Configarr owns Sonarr/Radarr quality definitions, quality profiles, and
 # TRaSH-Guides custom-format sync.
 #
-# Buildarr owns app wiring and public indexers.
+# Buildarr owns Prowlarr app links and public indexers.
 # qBit Manage owns qBittorrent categories/tags/cleanup once enabled.
 
 telemetry: false

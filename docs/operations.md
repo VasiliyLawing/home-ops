@@ -112,6 +112,15 @@ WebUI port:               8081
 Listening port:           6881
 ```
 
+`home-ops-arr-download-clients.service` then creates or updates the Sonarr and
+Radarr `qBittorrent` download clients from the live Arr API schemas. It uses:
+
+```text
+Sonarr category: tv
+Radarr category: movies
+qBittorrent API: 127.0.0.1:8081
+```
+
 `shelfmark-env` supplies Shelfmark with the generated Prowlarr API key and the
 same qBittorrent WebUI username/password. Non-secret Shelfmark settings live in
 `machines/media-node/services/media/books.nix`.
@@ -215,6 +224,10 @@ Buildarr plugins lag newer Sonarr/Radarr API fields and can fail while reading
 remote state unrelated to the setting being managed. Configarr owns quality
 profiles/custom formats, and direct Sonarr/Radarr qBittorrent download-client
 wiring should be handled by the Home Ops bootstrap layer instead of Buildarr.
+
+The Arr config seeder also normalizes each app's dormant SSL port to a nonzero
+value while keeping SSL disabled. This avoids a Buildarr/Prowlarr parser issue
+where Prowlarr's normal `SslPort=0` is rejected even when SSL is off.
 
 It runs as a scheduled one-shot job:
 

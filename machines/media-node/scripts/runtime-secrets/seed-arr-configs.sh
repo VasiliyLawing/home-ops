@@ -26,6 +26,7 @@ seed_config() {
   fi
 
   api_key="$(cat "$api_key_file" | xml_escape)"
+  ssl_port=$((port + 1))
   install -d -m 0750 -o "$owner" -g "$group" "$(dirname "$config_file")"
 
   if [ ! -e "$config_file" ]; then
@@ -33,7 +34,7 @@ seed_config() {
 <Config>
   <BindAddress>*</BindAddress>
   <Port>$port</Port>
-  <SslPort>0</SslPort>
+  <SslPort>$ssl_port</SslPort>
   <EnableSsl>False</EnableSsl>
   <LaunchBrowser>False</LaunchBrowser>
   <ApiKey>$api_key</ApiKey>
@@ -52,6 +53,18 @@ EOF
     sed -i "s#<ApiKey>.*</ApiKey>#<ApiKey>$api_key</ApiKey>#" "$config_file"
   else
     sed -i "0,/<Config>/s#<Config>#<Config>\\n  <ApiKey>$api_key</ApiKey>#" "$config_file"
+  fi
+
+  if grep -q '<SslPort>.*</SslPort>' "$config_file"; then
+    sed -i "s#<SslPort>.*</SslPort>#<SslPort>$ssl_port</SslPort>#" "$config_file"
+  else
+    sed -i "0,/<Config>/s#<Config>#<Config>\\n  <SslPort>$ssl_port</SslPort>#" "$config_file"
+  fi
+
+  if grep -q '<EnableSsl>.*</EnableSsl>' "$config_file"; then
+    sed -i "s#<EnableSsl>.*</EnableSsl>#<EnableSsl>False</EnableSsl>#" "$config_file"
+  else
+    sed -i "0,/<Config>/s#<Config>#<Config>\\n  <EnableSsl>False</EnableSsl>#" "$config_file"
   fi
 
   chmod 0640 "$config_file"

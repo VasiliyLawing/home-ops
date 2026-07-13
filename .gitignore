@@ -1,4 +1,6 @@
 .direnv/
+.gocache/
+.gomodcache/
 .idea/
 result
 result-*

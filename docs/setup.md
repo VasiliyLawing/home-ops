@@ -25,10 +25,12 @@ machines/media-node/services/ingress.nix
 
 Replace:
 
-- install disk device;
 - SSH public key;
 - NAS IP/export;
-- public or private domain names.
+- public or private domain names if enabling ingress.
+
+The install disk is already set for the current media-node NVMe. Change it only
+if replacing the machine or disk.
 
 Leave qBittorrent disabled until its Gluetun env file is on the host.
 
@@ -113,6 +115,10 @@ qBit Manage is enabled after qBittorrent is enabled, because both now use the
 same Nix-generated WebUI credentials. It creates/updates qBittorrent categories
 but leaves destructive cleanup disabled.
 
+The Home Ops Arr download-client bootstrap creates/updates Sonarr and Radarr
+qBittorrent download-client entries using the same generated qBittorrent WebUI
+credentials.
+
 Shelfmark is already wired to use the same generated Prowlarr/qBittorrent
 credentials. Once qBittorrent is enabled, Shelfmark can submit book torrents
 with the `books` category and audiobook torrents with the `audiobooks` category.
@@ -144,10 +150,16 @@ Aurral is available on localhost port `8098`. During onboarding, point Lidarr to
 http://host.docker.internal:8686
 ```
 
-## 6. Run Buildarr and Configarr once
+## 6. Run app sync jobs once
 
-Buildarr owns public Prowlarr indexers, Prowlarr app links to Sonarr/Radarr,
-and Sonarr/Radarr qBittorrent download-client wiring.
+Home Ops owns Sonarr/Radarr qBittorrent download-client wiring:
+
+```bash
+sudo systemctl start home-ops-arr-download-clients.service
+sudo journalctl -u home-ops-arr-download-clients.service
+```
+
+Buildarr owns public Prowlarr indexers and Prowlarr app links to Sonarr/Radarr.
 After Sonarr, Radarr, and Prowlarr have started at least once, run:
 
 ```bash
@@ -163,4 +175,5 @@ sudo systemctl start configarr-sync.service
 sudo journalctl -u configarr-sync.service
 ```
 
-They also run daily through `buildarr-sync.timer` and `configarr-sync.timer`.
+Buildarr and Configarr also run daily through `buildarr-sync.timer` and
+`configarr-sync.timer`.

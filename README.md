@@ -45,6 +45,7 @@ machines/
 |           |-- config/
 |           |-- shared.nix
 |           |-- downloads.nix
+|           |-- arr-download-clients.nix
 |           |-- buildarr.nix
 |           |-- configarr.nix
 |           |-- qbit-manage.nix
@@ -64,20 +65,19 @@ Nix files declare the system. The only machine-owned scripts are runtime
 secret/bootstrap helpers where code is genuinely clearer than Nix strings.
 Static app config files live under `services/.../config/` only when an app has
 an actual config artifact worth owning in Git. Buildarr owns public indexers,
-Prowlarr app links, and Sonarr/Radarr qBittorrent download-client wiring.
-Configarr owns Sonarr/Radarr quality profiles and TRaSH-Guides sync
-declaratively. Shelfmark is wired to Prowlarr and qBittorrent through generated
-host-local secrets. qBit Manage owns qBittorrent categories and safe hygiene
-rules once qBittorrent is enabled on the machine.
+and Prowlarr app links. Home Ops owns Sonarr/Radarr qBittorrent download-client
+bootstrap directly through the Arr APIs. Configarr owns Sonarr/Radarr quality
+profiles and TRaSH-Guides sync declaratively. Shelfmark is wired to Prowlarr and
+qBittorrent through generated host-local secrets. qBit Manage owns qBittorrent
+categories and safe hygiene rules once qBittorrent is enabled on the machine.
 
 ## Before deployment
 
 Replace the public placeholders with real private values:
 
-1. install disk device in `machines/media-node/disk.nix`;
-2. SSH public key in `machines/media-node/host.nix`;
-3. NAS host/export in `machines/media-node/configuration.nix`;
-4. domain names in `machines/media-node/services/ingress.nix`;
-5. Gluetun env file at `/var/lib/home-ops/secrets/gluetun-env` before enabling qBittorrent.
+1. SSH public key in `machines/media-node/host.nix`;
+2. NAS host/export in `machines/media-node/configuration.nix`;
+3. real ingress hostnames before enabling `homeOps.ingress`;
+4. Gluetun env file at `/var/lib/home-ops/secrets/gluetun-env` before enabling qBittorrent.
 
 The Pi monitoring layer is intentionally not present yet.
