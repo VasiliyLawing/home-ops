@@ -202,6 +202,17 @@ func writeSettings(path string, settings map[string]interface{}) error {
 	return os.Rename(tmp, path)
 }
 
+func arrDisplayName(kind string) (string, error) {
+	switch kind {
+	case "sonarr":
+		return "Sonarr", nil
+	case "radarr":
+		return "Radarr", nil
+	default:
+		return "", fmt.Errorf("unsupported Arr service kind: %s", kind)
+	}
+}
+
 func configureArr(settings map[string]interface{}, kind string, apiKey string, baseURL string, rootPath string, preferredProfile string) error {
 	if err := ensureRootFolder(baseURL, apiKey, rootPath); err != nil {
 		return err
@@ -210,10 +221,14 @@ func configureArr(settings map[string]interface{}, kind string, apiKey string, b
 	if err != nil {
 		return err
 	}
+	displayName, err := arrDisplayName(kind)
+	if err != nil {
+		return err
+	}
 
 	entry := map[string]interface{}{
 		"id":                0,
-		"name":              strings.Title(kind),
+		"name":              displayName,
 		"hostname":          "127.0.0.1",
 		"port":              7878,
 		"apiKey":            apiKey,

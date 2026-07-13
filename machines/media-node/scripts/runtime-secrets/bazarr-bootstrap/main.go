@@ -5,9 +5,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
+
+type yamlSetting struct {
+	section string
+	key     string
+	value   interface{}
+}
 
 func requiredEnv(name string) (string, error) {
 	value := strings.TrimSpace(os.Getenv(name))
@@ -44,7 +49,11 @@ func yamlScalar(value interface{}) string {
 }
 
 func topLevelSection(line string, section string) bool {
-	return regexp.MustCompile(`^` + regexp.QuoteMeta(section) + `\s*:\s*(#.*)?$`).MatchString(line)
+	if strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t") {
+		return false
+	}
+	withoutComment, _, _ := strings.Cut(strings.TrimSpace(line), "#")
+	return strings.TrimSpace(withoutComment) == section+":"
 }
 
 func isNextTopLevelSection(line string) bool {
@@ -53,6 +62,24 @@ func isNextTopLevelSection(line string) bool {
 		return false
 	}
 	return !strings.HasPrefix(line, " ") && strings.Contains(trimmed, ":")
+}
+
+func sectionKey(line string) string {
+	if !strings.HasPrefix(line, " ") && !strings.HasPrefix(line, "\t") {
+		return ""
+	}
+	key, _, found := strings.Cut(strings.TrimSpace(line), ":")
+	if !found {
+		return ""
+	}
+	return strings.TrimSpace(key)
+}
+
+func insertLine(lines []string, index int, line string) []string {
+	lines = append(lines, "")
+	copy(lines[index+1:], lines[index:])
+	lines[index] = line
+	return lines
 }
 
 func upsert(lines []string, section string, key string, value interface{}) []string {
@@ -73,7 +100,6 @@ func upsert(lines []string, section string, key string, value interface{}) []str
 		return lines
 	}
 
-	keyPattern := regexp.MustCompile(`^\s+` + regexp.QuoteMeta(key) + `\s*:`)
 	insertAt := len(lines)
 	for index := sectionStart + 1; index < len(lines); index++ {
 		line := lines[index]
@@ -81,16 +107,13 @@ func upsert(lines []string, section string, key string, value interface{}) []str
 			insertAt = index
 			break
 		}
-		if keyPattern.MatchString(line) {
+		if sectionKey(line) == key {
 			lines[index] = fmt.Sprintf("  %s: %s", key, yamlScalar(value))
 			return lines
 		}
 	}
 
-	lines = append(lines, "")
-	copy(lines[insertAt+1:], lines[insertAt:])
-	lines[insertAt] = fmt.Sprintf("  %s: %s", key, yamlScalar(value))
-	return lines
+	return insertLine(lines, insertAt, fmt.Sprintf("  %s: %s", key, yamlScalar(value)))
 }
 
 func readLines(path string) ([]string, error) {
@@ -110,12 +133,20 @@ func readLines(path string) ([]string, error) {
 }
 
 func writeLines(path string, lines []string) error {
+	var mode os.FileMode = 0640
+	if info, err := os.Stat(path); err == nil {
+		mode = info.Mode().Perm()
+	}
+
 	if err := os.MkdirAll(filepath.Dir(path), 0750); err != nil {
 		return err
 	}
 	content := strings.Join(lines, "\n") + "\n"
 	tmp := path + ".home-ops.tmp"
 	if err := os.WriteFile(tmp, []byte(content), 0640); err != nil {
+		return err
+	}
+	if err := os.Chmod(tmp, mode); err != nil {
 		return err
 	}
 	return os.Rename(tmp, path)
@@ -149,11 +180,7 @@ func run() error {
 		return err
 	}
 
-	for _, setting := range []struct {
-		section string
-		key     string
-		value   interface{}
-	}{
+	for _, setting := range []yamlSetting{
 		{"general", "use_sonarr", true},
 		{"general", "use_radarr", true},
 		{"general", "default_und_audio_lang", "en"},

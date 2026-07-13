@@ -16,7 +16,7 @@ import (
 )
 
 func requiredEnv(name string) (string, error) {
-	value := os.Getenv(name)
+	value := strings.TrimSpace(os.Getenv(name))
 	if value == "" {
 		return "", fmt.Errorf("missing required environment variable: %s", name)
 	}
@@ -149,6 +149,46 @@ func lookupOwner(ownerName string, groupName string) (int, int, error) {
 	return uid, gid, nil
 }
 
+func readConfigLines(path string) ([]string, error) {
+	content, err := os.ReadFile(path)
+	if os.IsNotExist(err) {
+		return []string{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	text := strings.ReplaceAll(string(content), "\r\n", "\n")
+	text = strings.TrimRight(text, "\n")
+	if text == "" {
+		return []string{}, nil
+	}
+
+	return strings.Split(text, "\n"), nil
+}
+
+func writeConfigFile(path string, lines []string) error {
+	var mode os.FileMode = 0o640
+	if info, err := os.Stat(path); err == nil {
+		mode = info.Mode().Perm()
+	}
+
+	if err := os.MkdirAll(filepath.Dir(path), 0o775); err != nil {
+		return err
+	}
+
+	tmp := path + ".home-ops.tmp"
+	content := []byte(strings.Join(lines, "\n") + "\n")
+	if err := os.WriteFile(tmp, content, 0o640); err != nil {
+		return err
+	}
+	if err := os.Chmod(tmp, mode); err != nil {
+		return err
+	}
+
+	return os.Rename(tmp, path)
+}
+
 func run() error {
 	configFile, err := requiredEnv("HOME_OPS_QBIT_CONFIG_FILE")
 	if err != nil {
@@ -205,10 +245,8 @@ func run() error {
 		return err
 	}
 
-	var lines []string
-	if content, err := os.ReadFile(configFile); err == nil {
-		lines = strings.Split(strings.TrimRight(string(content), "\n"), "\n")
-	} else if !os.IsNotExist(err) {
+	lines, err := readConfigLines(configFile)
+	if err != nil {
 		return err
 	}
 
@@ -238,11 +276,7 @@ func run() error {
 	}
 
 	configDir := filepath.Dir(configFile)
-	if err := os.MkdirAll(configDir, 0o775); err != nil {
-		return err
-	}
-
-	if err := os.WriteFile(configFile, []byte(strings.Join(lines, "\n")+"\n"), 0o640); err != nil {
+	if err := writeConfigFile(configFile, lines); err != nil {
 		return err
 	}
 
