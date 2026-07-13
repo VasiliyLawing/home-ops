@@ -207,8 +207,14 @@ finished.
 
 ## Buildarr sync
 
-Buildarr handles public Prowlarr indexers, the Prowlarr links to Sonarr/Radarr,
-and the Sonarr/Radarr qBittorrent download-client entries.
+Buildarr handles public Prowlarr indexers and the Prowlarr links to
+Sonarr/Radarr.
+
+Buildarr intentionally does not manage Sonarr/Radarr directly. The current
+Buildarr plugins lag newer Sonarr/Radarr API fields and can fail while reading
+remote state unrelated to the setting being managed. Configarr owns quality
+profiles/custom formats, and direct Sonarr/Radarr qBittorrent download-client
+wiring should be handled by the Home Ops bootstrap layer instead of Buildarr.
 
 It runs as a scheduled one-shot job:
 
@@ -232,9 +238,7 @@ writable runtime config directory before the container starts:
 /var/lib/home-ops/secrets/buildarr-secret.yml
 ```
 
-That generated include supplies the Sonarr/Radarr API keys and the qBittorrent
-WebUI credentials. The committed Buildarr file keeps only non-secret qBittorrent
-details such as host, port, and categories.
+That generated include supplies the Prowlarr API key and app-link credentials.
 
 ## qBit Manage
 
@@ -248,7 +252,12 @@ Destructive cleanup remains disabled in the committed config:
 rem_unregistered: false
 rem_orphaned: false
 skip_cleanup: true
+skip_qb_version_check: true
 ```
+
+`skip_qb_version_check` is enabled because qBit Manage can lag qBittorrent by a
+patch release. The qBittorrent Web API is still reached and authenticated during
+each run.
 
 It reads qBittorrent credentials from:
 

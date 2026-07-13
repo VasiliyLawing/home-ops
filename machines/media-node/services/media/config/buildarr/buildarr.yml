@@ -15,48 +15,6 @@ buildarr:
   update_times:
     - "03:15"
 
-sonarr:
-  instances:
-    Sonarr:
-      hostname: "127.0.0.1"
-      port: 8989
-      protocol: "http"
-      settings:
-        download_clients:
-          enable_completed_download_handling: true
-          redownload_failed: true
-          delete_unmanaged: false
-          definitions:
-            "qBittorrent":
-              type: "qbittorrent"
-              host: "127.0.0.1"
-              port: 8081
-              use_ssl: false
-              category: "tv"
-              recent_priority: "last"
-              older_priority: "last"
-              initial_state: "start"
-
-radarr:
-  instances:
-    Radarr:
-      hostname: "127.0.0.1"
-      port: 7878
-      protocol: "http"
-      settings:
-        download_clients:
-          delete_unmanaged: false
-          definitions:
-            "qBittorrent":
-              type: "qbittorrent"
-              hostname: "127.0.0.1"
-              port: 8081
-              use_ssl: false
-              category: "movies"
-              recent_priority: "last"
-              older_priority: "last"
-              initial_state: "start"
-
 prowlarr:
   hostname: "127.0.0.1"
   port: 9696
