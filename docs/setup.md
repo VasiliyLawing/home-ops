@@ -176,5 +176,13 @@ sudo systemctl start configarr-sync.service
 sudo journalctl -u configarr-sync.service
 ```
 
+Seerr's Sonarr/Radarr settings are Nix-owned. Jellyfin wiring is added once a
+real Jellyfin API key exists at `/var/lib/home-ops/secrets/jellyfin-api-key`:
+
+```bash
+sudo systemctl start home-ops-seerr-bootstrap.service
+sudo journalctl -u home-ops-seerr-bootstrap.service
+```
+
 The Prowlarr bootstrap and Configarr also run daily through
 `home-ops-prowlarr-bootstrap.timer` and `configarr-sync.timer`.

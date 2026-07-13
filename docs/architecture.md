@@ -58,6 +58,7 @@ The media stack is still split by domain:
 - `services/media/configarr.nix`: Configarr profile/custom-format/TRaSH sync for Sonarr and Radarr;
 - `services/media/qbit-manage.nix`: qBit Manage category/tag/cleanup skeleton;
 - `services/media/unpackerr.nix`: archive extraction for completed downloads;
+- `services/media/seerr-bootstrap.nix`: Seerr Jellyfin/Sonarr/Radarr settings bootstrap;
 - `services/media/books.nix`: Audiobookshelf, Calibre-Web, Shelfmark;
 - `services/media/music.nix`: Lidarr, Navidrome, Aurral.
 
@@ -86,6 +87,8 @@ configuration is split so tools do not fight each other:
   TRaSH-Guides custom-format sync.
 - `home-ops-prowlarr-bootstrap.service` owns Prowlarr app links to
   Sonarr/Radarr and shared indexer proxies such as FlareSolverr.
+- `home-ops-seerr-bootstrap.service` owns Seerr's Sonarr/Radarr settings and
+  wires Jellyfin once a real Jellyfin API key exists on the host.
 - `home-ops-arr-download-clients.service` owns Sonarr/Radarr qBittorrent
   download-client definitions using each app's own API schema.
 - qBit Manage owns qBittorrent categories, tags, and cleanup once enabled.

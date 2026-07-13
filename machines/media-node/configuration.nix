@@ -13,6 +13,7 @@
     ./services/media/configarr.nix
     ./services/media/qbit-manage.nix
     ./services/media/unpackerr.nix
+    ./services/media/seerr-bootstrap.nix
     ./services/media/books.nix
     ./services/media/music.nix
     ./services/ingress.nix
@@ -50,6 +51,7 @@
       configarr.enable = true;
       qbitManage.enable = true;
       unpackerr.enable = true;
+      seerrBootstrap.enable = true;
       books.enable = true;
       music.enable = true;
     };

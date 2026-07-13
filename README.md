@@ -68,7 +68,9 @@ Static app config files live under `services/.../config/` only when an app has
 an actual config artifact worth owning in Git. Home Ops owns Prowlarr app links,
 Prowlarr indexer proxies, and Sonarr/Radarr qBittorrent download-client
 bootstrap directly through the Arr APIs. Actual Prowlarr indexers are added
-manually in the UI. Configarr owns Sonarr/Radarr quality
+manually in the UI. Home Ops also bootstraps Seerr's Sonarr/Radarr settings,
+and completes Jellyfin wiring when a real Jellyfin API key is placed on the
+host. Configarr owns Sonarr/Radarr quality
 profiles and TRaSH-Guides sync declaratively. Unpackerr handles archive
 extraction after downloads. Shelfmark is wired to Prowlarr and qBittorrent
 through generated host-local secrets. qBit Manage owns qBittorrent categories

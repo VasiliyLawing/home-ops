@@ -273,6 +273,29 @@ systemctl status docker-unpackerr
 journalctl -u docker-unpackerr -n 160 --no-pager
 ```
 
+## Seerr bootstrap
+
+`home-ops-seerr-bootstrap.service` owns Seerr's Sonarr/Radarr settings and can
+also wire Jellyfin.
+
+Sonarr/Radarr use the Nix-generated API keys. Jellyfin requires a real API key
+created after Jellyfin has an admin user. Place that key on the host at:
+
+```text
+/var/lib/home-ops/secrets/jellyfin-api-key
+```
+
+Then run:
+
+```bash
+systemctl start home-ops-seerr-bootstrap.service
+journalctl -u home-ops-seerr-bootstrap.service -n 120 --no-pager
+```
+
+If the Jellyfin key is missing, the bootstrap still writes Sonarr/Radarr
+settings and logs that Jellyfin was skipped. After writing settings, the service
+restarts Seerr so it reloads `settings.json`.
+
 ## qBit Manage
 
 qBit Manage is enabled once qBittorrent is enabled and the Gluetun env file is
