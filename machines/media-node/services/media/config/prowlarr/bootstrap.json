@@ -1,0 +1,47 @@
+{
+  "baseUrl": "http://127.0.0.1:9696",
+  "prowlarrUrl": "http://127.0.0.1:9696",
+  "applications": [
+    {
+      "name": "Sonarr",
+      "implementation": "Sonarr",
+      "baseUrl": "http://127.0.0.1:8989",
+      "apiKeyFileEnv": "HOME_OPS_SONARR_API_KEY_FILE",
+      "syncLevel": "addOnly"
+    },
+    {
+      "name": "Radarr",
+      "implementation": "Radarr",
+      "baseUrl": "http://127.0.0.1:7878",
+      "apiKeyFileEnv": "HOME_OPS_RADARR_API_KEY_FILE",
+      "syncLevel": "addOnly"
+    }
+  ],
+  "indexers": [
+    {
+      "name": "1337x",
+      "match": "1337x",
+      "enable": true,
+      "redirect": false,
+      "priority": 10,
+      "appProfileId": 1,
+      "fields": {
+        "sort": "created",
+        "type": "desc"
+      }
+    },
+    {
+      "name": "Nyaa.si",
+      "match": "Nyaa.si",
+      "enable": true,
+      "redirect": false,
+      "priority": 20,
+      "appProfileId": 1,
+      "fields": {
+        "sort": "created",
+        "type": "desc",
+        "prefer_magnet_links": true
+      }
+    }
+  ]
+}

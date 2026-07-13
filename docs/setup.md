@@ -159,12 +159,12 @@ sudo systemctl start home-ops-arr-download-clients.service
 sudo journalctl -u home-ops-arr-download-clients.service
 ```
 
-Buildarr owns public Prowlarr indexers and Prowlarr app links to Sonarr/Radarr.
+Home Ops owns public Prowlarr indexers and Prowlarr app links to Sonarr/Radarr.
 After Sonarr, Radarr, and Prowlarr have started at least once, run:
 
 ```bash
-sudo systemctl start buildarr-sync.service
-sudo journalctl -u buildarr-sync.service
+sudo systemctl start home-ops-prowlarr-bootstrap.service
+sudo journalctl -u home-ops-prowlarr-bootstrap.service
 ```
 
 Configarr owns Sonarr/Radarr quality profiles and TRaSH-Guides custom-format
@@ -175,5 +175,5 @@ sudo systemctl start configarr-sync.service
 sudo journalctl -u configarr-sync.service
 ```
 
-Buildarr and Configarr also run daily through `buildarr-sync.timer` and
-`configarr-sync.timer`.
+The Prowlarr bootstrap and Configarr also run daily through
+`home-ops-prowlarr-bootstrap.timer` and `configarr-sync.timer`.

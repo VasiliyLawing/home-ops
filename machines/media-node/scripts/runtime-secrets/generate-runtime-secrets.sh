@@ -59,18 +59,9 @@ PROWLARR_API_KEY=$prowlarr_api_key
 LIDARR_API_KEY=$lidarr_api_key
 EOF
 
-cat > "$HOME_OPS_SECRET_DIRECTORY/buildarr-secret.yml" <<EOF
----
-prowlarr:
-  api_key: "$prowlarr_api_key"
-  settings:
-    apps:
-      applications:
-        definitions:
-          "Sonarr":
-            api_key: "$sonarr_api_key"
-          "Radarr":
-            api_key: "$radarr_api_key"
+cat > "$HOME_OPS_SECRET_DIRECTORY/unpackerr-env" <<EOF
+UN_SONARR_0_API_KEY=$sonarr_api_key
+UN_RADARR_0_API_KEY=$radarr_api_key
 EOF
 
 cat > "$HOME_OPS_SECRET_DIRECTORY/qbittorrent-env" <<EOF
@@ -86,11 +77,11 @@ EOF
 
 chmod 0600 \
   "$HOME_OPS_SECRET_DIRECTORY/arr-api-keys.env" \
-  "$HOME_OPS_SECRET_DIRECTORY/buildarr-secret.yml" \
+  "$HOME_OPS_SECRET_DIRECTORY/unpackerr-env" \
   "$HOME_OPS_SECRET_DIRECTORY/qbittorrent-env" \
   "$HOME_OPS_SECRET_DIRECTORY/shelfmark-env"
 chown root:root \
   "$HOME_OPS_SECRET_DIRECTORY/arr-api-keys.env" \
-  "$HOME_OPS_SECRET_DIRECTORY/buildarr-secret.yml" \
+  "$HOME_OPS_SECRET_DIRECTORY/unpackerr-env" \
   "$HOME_OPS_SECRET_DIRECTORY/qbittorrent-env" \
   "$HOME_OPS_SECRET_DIRECTORY/shelfmark-env"

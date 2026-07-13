@@ -9,9 +9,10 @@
     ./services/media/downloads.nix
     ./services/media/movies-tv.nix
     ./services/media/arr-download-clients.nix
-    ./services/media/buildarr.nix
+    ./services/media/prowlarr-bootstrap.nix
     ./services/media/configarr.nix
     ./services/media/qbit-manage.nix
+    ./services/media/unpackerr.nix
     ./services/media/books.nix
     ./services/media/music.nix
     ./services/ingress.nix
@@ -45,9 +46,10 @@
 
       moviesTv.enable = true;
       arrDownloadClients.enable = true;
-      buildarr.enable = true;
+      prowlarrBootstrap.enable = true;
       configarr.enable = true;
       qbitManage.enable = true;
+      unpackerr.enable = true;
       books.enable = true;
       music.enable = true;
     };

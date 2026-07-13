@@ -46,9 +46,10 @@ machines/
 |           |-- shared.nix
 |           |-- downloads.nix
 |           |-- arr-download-clients.nix
-|           |-- buildarr.nix
+|           |-- prowlarr-bootstrap.nix
 |           |-- configarr.nix
 |           |-- qbit-manage.nix
+|           |-- unpackerr.nix
 |           |-- movies-tv.nix
 |           |-- books.nix
 |           `-- music.nix
@@ -64,12 +65,13 @@ machines/
 Nix files declare the system. The only machine-owned scripts are runtime
 secret/bootstrap helpers where code is genuinely clearer than Nix strings.
 Static app config files live under `services/.../config/` only when an app has
-an actual config artifact worth owning in Git. Buildarr owns public indexers,
-and Prowlarr app links. Home Ops owns Sonarr/Radarr qBittorrent download-client
+an actual config artifact worth owning in Git. Home Ops owns Prowlarr public
+indexers, Prowlarr app links, and Sonarr/Radarr qBittorrent download-client
 bootstrap directly through the Arr APIs. Configarr owns Sonarr/Radarr quality
-profiles and TRaSH-Guides sync declaratively. Shelfmark is wired to Prowlarr and
-qBittorrent through generated host-local secrets. qBit Manage owns qBittorrent
-categories and safe hygiene rules once qBittorrent is enabled on the machine.
+profiles and TRaSH-Guides sync declaratively. Unpackerr handles archive
+extraction after downloads. Shelfmark is wired to Prowlarr and qBittorrent
+through generated host-local secrets. qBit Manage owns qBittorrent categories
+and safe hygiene rules once qBittorrent is enabled on the machine.
 
 ## Before deployment
 

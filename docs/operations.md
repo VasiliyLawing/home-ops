@@ -81,7 +81,7 @@ lidarr-api-key
 qbittorrent-webui-username
 qbittorrent-webui-password
 arr-api-keys.env
-buildarr-secret.yml
+unpackerr-env
 qbittorrent-env
 shelfmark-env
 ```
@@ -214,46 +214,59 @@ When verifying a manual run, search the log for `ERROR` and confirm the
 execution summary shows Radarr success, not just that systemd marked the job as
 finished.
 
-## Buildarr sync
+## Prowlarr bootstrap
 
-Buildarr handles public Prowlarr indexers and the Prowlarr links to
-Sonarr/Radarr.
+`home-ops-prowlarr-bootstrap.service` handles public Prowlarr indexers and the
+Prowlarr links to Sonarr/Radarr.
 
-Buildarr intentionally does not manage Sonarr/Radarr directly. The current
-Buildarr plugins lag newer Sonarr/Radarr API fields and can fail while reading
-remote state unrelated to the setting being managed. Configarr owns quality
-profiles/custom formats, and direct Sonarr/Radarr qBittorrent download-client
-wiring should be handled by the Home Ops bootstrap layer instead of Buildarr.
-
-The Arr config seeder also normalizes each app's dormant SSL port to a nonzero
-value while keeping SSL disabled. This avoids a Buildarr/Prowlarr parser issue
-where Prowlarr's normal `SslPort=0` is rejected even when SSL is off.
+This intentionally replaces Buildarr. Buildarr's Prowlarr plugin failed while
+reading current Prowlarr remote state before it could apply our desired indexer
+and app-link config. The Home Ops bootstrap talks directly to Prowlarr's live
+schemas instead.
 
 It runs as a scheduled one-shot job:
 
 ```bash
-systemctl status buildarr-sync.timer
-systemctl start buildarr-sync.service
-journalctl -u buildarr-sync.service
+systemctl status home-ops-prowlarr-bootstrap.timer
+systemctl start home-ops-prowlarr-bootstrap.service
+journalctl -u home-ops-prowlarr-bootstrap.service -n 160 --no-pager
 ```
 
 The committed non-secret config file lives at:
 
 ```text
-machines/media-node/services/media/config/buildarr/buildarr.yml
+machines/media-node/services/media/config/prowlarr/bootstrap.json
 ```
 
-The job runs Docker directly from systemd. The committed config includes
-`secrets.yml`, and systemd copies this generated secret file into Buildarr's
-writable runtime config directory before the container starts:
+API keys are read directly from the host-local generated secret files under
+`/var/lib/home-ops/secrets`.
+
+## Unpackerr
+
+Unpackerr extracts archives from completed Sonarr/Radarr downloads so the Arr
+apps can import them cleanly.
+
+It runs as a container using:
 
 ```text
-/var/lib/home-ops/secrets/buildarr-secret.yml
+/mnt/nas/data -> /data
 ```
 
-That generated include supplies the Prowlarr API key plus Sonarr/Radarr API keys
-for Prowlarr app-link sync. It does not define Sonarr/Radarr Buildarr plugin
-instances.
+That path must stay identical to the `/data` view used by qBittorrent, Sonarr,
+and Radarr.
+
+It reads API keys from:
+
+```text
+/var/lib/home-ops/secrets/unpackerr-env
+```
+
+Check it with:
+
+```bash
+systemctl status docker-unpackerr
+journalctl -u docker-unpackerr -n 160 --no-pager
+```
 
 ## qBit Manage
 
