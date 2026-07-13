@@ -32,6 +32,23 @@ in
       enable = true;
       openFirewall = false;
     };
+    users = {
+      groups.prowlarr = { };
+      users.prowlarr = {
+        description = "Prowlarr service user";
+        isSystemUser = true;
+        group = "prowlarr";
+      };
+    };
+    # Prowlarr's generated config.xml is seeded before the service starts, so it
+    # needs a stable owner. The upstream service uses DynamicUser; force a static
+    # system user here so the config file can remain least-privilege owned by
+    # prowlarr:prowlarr instead of falling back to root-owned readable config.
+    systemd.services.prowlarr.serviceConfig = {
+      DynamicUser = lib.mkForce false;
+      User = "prowlarr";
+      Group = "prowlarr";
+    };
     services.bazarr = {
       enable = true;
       openFirewall = false;
