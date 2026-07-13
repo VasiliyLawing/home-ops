@@ -33,7 +33,10 @@ in
   };
 
   networking = {
-    networkmanager.enable = true;
+    networkmanager = {
+      enable = true;
+      unmanaged = [ "interface-name:enp3s0" ];
+    };
     firewall = {
       enable = true;
       allowedTCPPorts = [
@@ -75,5 +78,20 @@ in
     pkgs.sops
   ];
 
-  systemd.tmpfiles.rules = [ "d /srv/home-ops/backups 0775 homeops media -" ];
+  systemd = {
+    network = {
+      enable = true;
+      networks."10-nas-direct" = {
+        matchConfig.Name = "enp3s0";
+        address = [ "10.10.10.1/24" ];
+        networkConfig = {
+          DHCP = "no";
+          IPv6AcceptRA = false;
+          LinkLocalAddressing = "no";
+        };
+      };
+    };
+
+    tmpfiles.rules = [ "d /srv/home-ops/backups 0775 homeops media -" ];
+  };
 }

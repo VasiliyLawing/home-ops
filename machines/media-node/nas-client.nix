@@ -37,7 +37,7 @@ in
       device = "${cfg.host}:${cfg.export}";
       fsType = "nfs";
       options = [
-        "nfsvers=4.1"
+        "nfsvers=3"
         "x-systemd.automount"
         "noauto"
         "nofail"
