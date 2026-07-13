@@ -87,7 +87,7 @@ in
         Type = "oneshot";
         ExecStart = "${bootstrapSeerr}/bin/home-ops-bootstrap-seerr";
         ExecStartPost = [
-          "${pkgs.runtimeShell} -c '${pkgs.coreutils}/bin/chown seerr:seerr ${cfg.settingsFile} || true'"
+          "${pkgs.coreutils}/bin/chown seerr:seerr ${cfg.settingsFile}"
           "${pkgs.systemd}/bin/systemctl try-restart seerr.service"
         ];
         RemainAfterExit = true;

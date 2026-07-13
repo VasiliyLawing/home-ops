@@ -61,6 +61,36 @@ in
       openFirewall = false;
     };
 
+    users = {
+      groups.seerr = { };
+      users.seerr = {
+        description = "Seerr service user";
+        isSystemUser = true;
+        group = "seerr";
+      };
+    };
+
     systemd.services.jellyfin.unitConfig.RequiresMountsFor = [ cfg.dataRoot ];
+    systemd.services.seerr.serviceConfig = {
+      DynamicUser = lib.mkForce false;
+      User = "seerr";
+      Group = "seerr";
+      StateDirectory = lib.mkForce "seerr";
+    };
+
+    system.activationScripts.homeOpsSeerrStateDir = ''
+      if [ -L /var/lib/seerr ]; then
+        target="$(readlink -f /var/lib/seerr || true)"
+        rm -f /var/lib/seerr
+        if [ -n "$target" ] && [ -d "$target" ]; then
+          mv "$target" /var/lib/seerr
+        else
+          install -d -m 0750 -o seerr -g seerr /var/lib/seerr
+        fi
+      else
+        install -d -m 0750 -o seerr -g seerr /var/lib/seerr
+      fi
+      chown -R seerr:seerr /var/lib/seerr
+    '';
   };
 }
