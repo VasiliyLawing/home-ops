@@ -165,7 +165,7 @@ qBittorrent container
 Gluetun receives provider-specific settings from:
 
 ```text
-/run/secrets/gluetun-env
+/var/lib/home-ops/secrets/gluetun-env
 ```
 
 For Proton, that env file can contain the familiar Gluetun variables:
@@ -174,7 +174,9 @@ For Proton, that env file can contain the familiar Gluetun variables:
 VPN_SERVICE_PROVIDER=protonvpn
 VPN_TYPE=wireguard
 WIREGUARD_PRIVATE_KEY=...
-SERVER_COUNTRIES=...
+SERVER_COUNTRIES=Netherlands
+PORT_FORWARD_ONLY=on
+VPN_PORT_FORWARDING=on
 ```
 
 qBittorrent does not get its own network namespace. It runs with

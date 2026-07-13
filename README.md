@@ -78,6 +78,6 @@ Replace the public placeholders with real private values:
 2. SSH public key in `machines/media-node/host.nix`;
 3. NAS host/export in `machines/media-node/configuration.nix`;
 4. domain names in `machines/media-node/services/ingress.nix`;
-5. Gluetun env file at `/run/secrets/gluetun-env` before enabling qBittorrent.
+5. Gluetun env file at `/var/lib/home-ops/secrets/gluetun-env` before enabling qBittorrent.
 
 The Pi monitoring layer is intentionally not present yet.

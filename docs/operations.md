@@ -19,7 +19,7 @@ If enabling qBittorrent, create a Gluetun env file for your VPN provider and
 place it on the host at:
 
 ```text
-/run/secrets/gluetun-env
+/var/lib/home-ops/secrets/gluetun-env
 ```
 
 This path is declared here:

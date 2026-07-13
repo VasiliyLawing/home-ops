@@ -37,9 +37,9 @@
 
       downloads = {
         sabnzbd.enable = true;
-        # Enable after placing the Gluetun provider env file at /run/secrets/gluetun-env.
+        gluetun.environmentFile = "/var/lib/home-ops/secrets/gluetun-env";
         qbittorrent = {
-          enable = false;
+          enable = true;
         };
       };
 

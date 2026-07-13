@@ -34,7 +34,7 @@ in
       };
       environmentFile = lib.mkOption {
         type = lib.types.str;
-        default = "/run/secrets/gluetun-env";
+        default = "${config.homeOps.secrets.directory}/gluetun-env";
         description = "Host-local env file containing VPN provider settings and secrets.";
       };
       configDir = lib.mkOption {
