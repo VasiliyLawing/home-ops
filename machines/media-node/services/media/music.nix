@@ -16,7 +16,7 @@ in
     };
     aurral.image = lib.mkOption {
       type = lib.types.str;
-      default = "ghcr.io/lklynet/aurral:v1.76.51";
+      default = "ghcr.io/lklynet/aurral:1.76.0";
       description = "Pinned Aurral container image.";
     };
   };
