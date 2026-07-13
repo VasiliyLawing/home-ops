@@ -57,5 +57,7 @@ in
       enable = true;
       openFirewall = false;
     };
+
+    systemd.services.jellyfin.unitConfig.RequiresMountsFor = [ cfg.dataRoot ];
   };
 }

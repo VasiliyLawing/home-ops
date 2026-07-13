@@ -67,21 +67,26 @@ in
 
     environment.systemPackages = lib.mkIf shelfmark.enable [ pkgs.shelfmark ];
 
-    systemd.services.docker-shelfmark = lib.mkIf shelfmark.enable {
-      after = [
-        "home-ops-runtime-secrets.service"
-        "prowlarr.service"
-      ]
-      ++ lib.optionals config.homeOps.media.downloads.qbittorrent.enable [
-        "docker-qbittorrent.service"
-      ];
-      wants = [
-        "prowlarr.service"
-      ]
-      ++ lib.optionals config.homeOps.media.downloads.qbittorrent.enable [
-        "docker-qbittorrent.service"
-      ];
-      requires = [ "home-ops-runtime-secrets.service" ];
+    systemd.services = {
+      audiobookshelf.unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+      calibre-web.unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+      docker-shelfmark = lib.mkIf shelfmark.enable {
+        unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+        after = [
+          "home-ops-runtime-secrets.service"
+          "prowlarr.service"
+        ]
+        ++ lib.optionals config.homeOps.media.downloads.qbittorrent.enable [
+          "docker-qbittorrent.service"
+        ];
+        wants = [
+          "prowlarr.service"
+        ]
+        ++ lib.optionals config.homeOps.media.downloads.qbittorrent.enable [
+          "docker-qbittorrent.service"
+        ];
+        requires = [ "home-ops-runtime-secrets.service" ];
+      };
     };
 
     virtualisation.oci-containers.containers.shelfmark = lib.mkIf shelfmark.enable {

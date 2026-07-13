@@ -29,6 +29,14 @@ in
       };
     };
 
+    systemd.services = {
+      lidarr.unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+      navidrome.unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+      docker-aurral = lib.mkIf cfg.aurral.enable {
+        unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+      };
+    };
+
     virtualisation.oci-containers.containers.aurral = lib.mkIf cfg.aurral.enable {
       image = "ghcr.io/aurral-app/aurral:latest";
       autoStart = true;

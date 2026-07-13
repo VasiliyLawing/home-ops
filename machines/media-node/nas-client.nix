@@ -38,6 +38,9 @@ in
       fsType = "nfs";
       options = [
         "nfsvers=3"
+        "proto=tcp"
+        "mountproto=tcp"
+        "nolock"
         "x-systemd.automount"
         "noauto"
         "nofail"

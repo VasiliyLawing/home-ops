@@ -35,6 +35,31 @@ Use `machines/media-node/services/media/config/gluetun.env.example` as the
 non-secret template. Gluetun remains provider-neutral; change the env file for
 different VPN providers instead of changing the qBittorrent module.
 
+## NAS NFS mount
+
+The Synology export is mounted over the direct NAS link:
+
+```text
+media-node enp3s0: 10.10.10.1
+Synology NAS:       10.10.10.2
+Export:             /volume1/media-stack
+Mount:              /mnt/nas/data
+```
+
+Synology DSM exposed the share reliably with NFSv3 over TCP during initial
+setup. The NixOS mount therefore uses:
+
+```text
+nfsvers=3,proto=tcp,mountproto=tcp,nolock
+```
+
+If the automount looks present but the directory appears empty or returns
+`No such device`, test the raw mount with:
+
+```bash
+mount -vvv -t nfs -o nfsvers=3,proto=tcp,mountproto=tcp,nolock 10.10.10.2:/volume1/media-stack /mnt/nas/data
+```
+
 ## Runtime-generated secrets
 
 `machines/media-node/secrets.nix` creates stable host-local secrets on first

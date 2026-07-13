@@ -125,9 +125,14 @@ in
     systemd.services.docker-qbittorrent =
       lib.mkIf (cfg.qbittorrent.enable && cfg.qbittorrent.bootstrapConfig)
         {
+          unitConfig.RequiresMountsFor = [ shared.dataRoot ];
           after = [ "home-ops-qbittorrent-config.service" ];
           requires = [ "home-ops-qbittorrent-config.service" ];
         };
+
+    systemd.services.sabnzbd = lib.mkIf cfg.sabnzbd.enable {
+      unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+    };
 
     virtualisation.oci-containers.containers = {
       gluetun = lib.mkIf gluetunEnabled {
