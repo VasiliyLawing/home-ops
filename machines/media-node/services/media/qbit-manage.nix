@@ -48,6 +48,7 @@ in
 
     systemd.services.qbit-manage-sync = {
       description = "Sync qBit Manage categories, tags, and cleanup rules";
+      unitConfig.RequiresMountsFor = [ shared.dataRoot ];
       after = [
         "docker.service"
         "home-ops-runtime-secrets.service"
@@ -57,6 +58,12 @@ in
       wants = [
         "docker.service"
         "home-ops-runtime-secrets.service"
+        "docker-gluetun.service"
+        "docker-qbittorrent.service"
+      ];
+      requires = [
+        "home-ops-runtime-secrets.service"
+        "docker-qbittorrent.service"
       ];
       serviceConfig = {
         Type = "oneshot";

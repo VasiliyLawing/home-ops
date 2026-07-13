@@ -67,8 +67,8 @@ an actual config artifact worth owning in Git. Buildarr owns public indexers,
 Prowlarr app links, and Sonarr/Radarr qBittorrent download-client wiring.
 Configarr owns Sonarr/Radarr quality profiles and TRaSH-Guides sync
 declaratively. Shelfmark is wired to Prowlarr and qBittorrent through generated
-host-local secrets. qBit Manage is present but disabled by default until
-qBittorrent is enabled on the machine.
+host-local secrets. qBit Manage owns qBittorrent categories and safe hygiene
+rules once qBittorrent is enabled on the machine.
 
 ## Before deployment
 

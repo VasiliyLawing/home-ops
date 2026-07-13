@@ -109,14 +109,9 @@ docker exec gluetun iptables -S
 
 The Gluetun env file contains private material, so do not commit it to Git.
 
-qBit Manage can be enabled after qBittorrent is enabled, because both now use
-the same Nix-generated WebUI credentials.
-
-Then enable:
-
-```nix
-homeOps.media.qbitManage.enable = true;
-```
+qBit Manage is enabled after qBittorrent is enabled, because both now use the
+same Nix-generated WebUI credentials. It creates/updates qBittorrent categories
+but leaves destructive cleanup disabled.
 
 Shelfmark is already wired to use the same generated Prowlarr/qBittorrent
 credentials. Once qBittorrent is enabled, Shelfmark can submit book torrents

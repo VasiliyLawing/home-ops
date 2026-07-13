@@ -26,8 +26,7 @@
 
     nas = {
       enable = true;
-      # Filler until the NAS receives its final static address.
-      host = "192.168.1.250";
+      host = "10.10.10.2";
       export = "/volume1/media-stack";
       mountPoint = "/mnt/nas/data";
     };
@@ -46,7 +45,7 @@
       moviesTv.enable = true;
       buildarr.enable = true;
       configarr.enable = true;
-      qbitManage.enable = false;
+      qbitManage.enable = true;
       books.enable = true;
       music.enable = true;
     };

@@ -5,7 +5,7 @@
 Before real deployment, replace:
 
 ```nix
-homeOps.nas.host = "192.168.1.250";
+homeOps.nas.host = "10.10.10.2";
 homeOps.nas.export = "/volume1/media-stack";
 ```
 
@@ -230,8 +230,17 @@ details such as host, port, and categories.
 
 ## qBit Manage
 
-qBit Manage is present but disabled by default. It can be enabled after
-qBittorrent is enabled and the Gluetun env file is present.
+qBit Manage is enabled once qBittorrent is enabled and the Gluetun env file is
+present. It owns the safe qBittorrent hygiene layer: categories, tracker-error
+tags, and the shared `/data/torrents` category paths.
+
+Destructive cleanup remains disabled in the committed config:
+
+```text
+rem_unregistered: false
+rem_orphaned: false
+skip_cleanup: true
+```
 
 It reads qBittorrent credentials from:
 
@@ -248,12 +257,6 @@ QBIT_PASS=...
 
 `home-ops-qbittorrent-config.service` configures qBittorrent to use those same
 credentials before the qBittorrent container starts.
-
-Then enable:
-
-```nix
-homeOps.media.qbitManage.enable = true;
-```
 
 It runs as a scheduled one-shot job:
 

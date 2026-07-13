@@ -119,7 +119,7 @@ Buildarr runs as a scheduled one-shot container from `buildarr-sync.timer`. Its
 committed config includes `secrets.yml`; systemd mounts the Nix-generated
 `buildarr-secret.yml` at that path when the container runs.
 
-qBit Manage is imported but disabled by default. When enabled, it expects
+qBit Manage is enabled with qBittorrent. It expects
 `/var/lib/home-ops/secrets/qbittorrent-env` with:
 
 ```text
@@ -133,7 +133,8 @@ intentionally separate because modern qBittorrent images generate a temporary
 first-run password unless explicitly seeded.
 
 It uses the same `/data/torrents` view that qBittorrent uses, so category and
-cleanup logic sees paths exactly as qBittorrent sees them.
+hygiene logic sees paths exactly as qBittorrent sees them. Destructive cleanup
+is intentionally disabled until explicitly reviewed.
 
 The Arr API keys are Nix-owned runtime secrets. `home-ops-runtime-secrets`
 generates them on first boot, and `home-ops-arr-configs` writes them into

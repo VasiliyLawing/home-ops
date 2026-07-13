@@ -1,5 +1,5 @@
 commands:
-  dry_run: true
+  dry_run: false
   recheck: false
   cat_update: true
   tag_update: true
