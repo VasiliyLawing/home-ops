@@ -62,6 +62,16 @@ in
         type = lib.types.port;
         default = 6881;
       };
+      savePath = lib.mkOption {
+        type = lib.types.str;
+        default = "/data/torrents/complete";
+        description = "Default completed-download path inside qBittorrent.";
+      };
+      incompletePath = lib.mkOption {
+        type = lib.types.str;
+        default = "/data/torrents/incomplete";
+        description = "Incomplete-download path inside qBittorrent.";
+      };
       configDir = lib.mkOption {
         type = lib.types.str;
         default = "/var/lib/qbittorrent";
@@ -117,6 +127,9 @@ in
             HOME_OPS_QBIT_OWNER = "homeops";
             HOME_OPS_QBIT_GROUP = "media";
             HOME_OPS_QBIT_WEBUI_PORT = toString cfg.qbittorrent.webuiPort;
+            HOME_OPS_QBIT_TORRENTING_PORT = toString cfg.qbittorrent.torrentingPort;
+            HOME_OPS_QBIT_SAVE_PATH = cfg.qbittorrent.savePath;
+            HOME_OPS_QBIT_TEMP_PATH = cfg.qbittorrent.incompletePath;
           };
           serviceConfig = {
             Type = "oneshot";

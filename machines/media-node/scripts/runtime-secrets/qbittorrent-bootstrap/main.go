@@ -180,6 +180,21 @@ func run() error {
 		return err
 	}
 
+	savePath, err := requiredEnv("HOME_OPS_QBIT_SAVE_PATH")
+	if err != nil {
+		return err
+	}
+
+	tempPath, err := requiredEnv("HOME_OPS_QBIT_TEMP_PATH")
+	if err != nil {
+		return err
+	}
+
+	torrentingPort, err := requiredEnv("HOME_OPS_QBIT_TORRENTING_PORT")
+	if err != nil {
+		return err
+	}
+
 	username, err := readSecret(usernameFile)
 	if err != nil {
 		return err
@@ -210,6 +225,12 @@ func run() error {
 		{`WebUI\Password_PBKDF2`, `"@ByteArray(` + passwordHash + `)"`},
 		{`WebUI\LocalHostAuth`, "true"},
 		{`WebUI\Port`, webUIPort},
+		{`Downloads\SavePath`, savePath},
+		{`Downloads\TempPath`, tempPath},
+		{`Downloads\TempPathEnabled`, "true"},
+		{`Connection\PortRangeMin`, torrentingPort},
+		{`Connection\UPnP`, "false"},
+		{`Connection\RandomPort`, "false"},
 	}
 
 	for _, item := range values {

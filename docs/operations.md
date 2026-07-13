@@ -99,6 +99,19 @@ qBittorrent WebUI username/password into:
 It uses qBittorrent's PBKDF2-SHA512 WebUI password format and runs before the
 `docker-qbittorrent.service` container starts.
 
+The same bootstrap also owns the baseline qBittorrent behavior that should not
+be click-configured after every reinstall:
+
+```text
+Default save path:        /data/torrents/complete
+Incomplete path:          /data/torrents/incomplete
+Incomplete path enabled:  true
+UPnP/NAT-PMP:             disabled
+Random listen port:       disabled
+WebUI port:               8081
+Listening port:           6881
+```
+
 `shelfmark-env` supplies Shelfmark with the generated Prowlarr API key and the
 same qBittorrent WebUI username/password. Non-secret Shelfmark settings live in
 `machines/media-node/services/media/books.nix`.

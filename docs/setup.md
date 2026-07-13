@@ -83,7 +83,8 @@ homeOps.media.downloads.qbittorrent.enable = true;
 ```
 
 When qBittorrent is enabled, Nix automatically seeds its WebUI credentials
-before the container starts. The generated source credentials live at:
+and baseline download settings before the container starts. The generated
+source credentials live at:
 
 ```text
 /var/lib/home-ops/secrets/qbittorrent-env
