@@ -34,7 +34,6 @@ prowlarr:
         definitions:
           "Sonarr":
             type: "sonarr"
-            instance_name: "Sonarr"
             prowlarr_url: "http://127.0.0.1:9696"
             base_url: "http://127.0.0.1:8989"
             sync_level: "add-and-remove-only"
@@ -42,7 +41,6 @@ prowlarr:
               - "tv"
           "Radarr":
             type: "radarr"
-            instance_name: "Radarr"
             prowlarr_url: "http://127.0.0.1:9696"
             base_url: "http://127.0.0.1:7878"
             sync_level: "add-and-remove-only"

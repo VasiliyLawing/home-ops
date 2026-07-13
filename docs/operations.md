@@ -238,7 +238,9 @@ writable runtime config directory before the container starts:
 /var/lib/home-ops/secrets/buildarr-secret.yml
 ```
 
-That generated include supplies the Prowlarr API key and app-link credentials.
+That generated include supplies the Prowlarr API key plus Sonarr/Radarr API keys
+for Prowlarr app-link sync. It does not define Sonarr/Radarr Buildarr plugin
+instances.
 
 ## qBit Manage
 

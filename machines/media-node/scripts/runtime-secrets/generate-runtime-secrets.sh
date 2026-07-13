@@ -63,6 +63,14 @@ cat > "$HOME_OPS_SECRET_DIRECTORY/buildarr-secret.yml" <<EOF
 ---
 prowlarr:
   api_key: "$prowlarr_api_key"
+  settings:
+    apps:
+      applications:
+        definitions:
+          "Sonarr":
+            api_key: "$sonarr_api_key"
+          "Radarr":
+            api_key: "$radarr_api_key"
 EOF
 
 cat > "$HOME_OPS_SECRET_DIRECTORY/qbittorrent-env" <<EOF
