@@ -89,8 +89,10 @@ shelfmark-env
 `home-ops-arr-configs.service` seeds those API keys into the Arr app
 `config.xml` files before Sonarr/Radarr/Prowlarr/Lidarr start.
 
-When qBittorrent is enabled, `home-ops-qbittorrent-config.service` seeds the
-qBittorrent WebUI username/password into:
+When qBittorrent is enabled, Home Ops owns qBittorrent in two phases.
+
+`home-ops-qbittorrent-config.service` seeds the qBittorrent WebUI
+username/password into:
 
 ```text
 /var/lib/qbittorrent/qBittorrent/qBittorrent.conf
@@ -99,8 +101,9 @@ qBittorrent WebUI username/password into:
 It uses qBittorrent's PBKDF2-SHA512 WebUI password format and runs before the
 `docker-qbittorrent.service` container starts.
 
-The same bootstrap also owns the baseline qBittorrent behavior that should not
-be click-configured after every reinstall:
+`home-ops-qbittorrent-api-config.service` then waits for the live qBittorrent
+Web API and enforces the baseline behavior that should not be click-configured
+after every reinstall:
 
 ```text
 Default save path:        /data/torrents/complete
@@ -110,7 +113,14 @@ UPnP/NAT-PMP:             disabled
 Random listen port:       disabled
 WebUI port:               8081
 Listening port:           6881
+Categories:               movies, tv, music, books, audiobooks
+Category paths:            /data/torrents/complete/<category>
 ```
+
+The host also exposes `/data` as a Nix-owned compatibility path to the NAS data
+root. This keeps native Sonarr/Radarr and containerized qBittorrent using the
+same paths, so Arr health checks do not see qBittorrent-only paths such as
+`/config/Downloads`.
 
 `home-ops-arr-download-clients.service` then creates or updates the Sonarr and
 Radarr `qBittorrent` download clients from the live Arr API schemas. It uses:
@@ -344,6 +354,39 @@ Run it after Jellyfin's first admin user and API key exist:
 systemctl start home-ops-jellyfin-bootstrap.service
 journalctl -u home-ops-jellyfin-bootstrap.service -n 80 --no-pager
 ```
+
+## Jellyfin plugins
+
+`home-ops-jellyfin-plugins.service` owns the desired Jellyfin plugin repository
+list and installs the selected plugin packages on demand.
+
+Repositories:
+
+```text
+Intro Skipper     -> https://intro-skipper.org/manifest.json
+IAmParadox27      -> https://www.iamparadox.dev/jellyfin/plugins/manifest.json
+Jellyfin Enhanced -> https://raw.githubusercontent.com/n00bcodr/jellyfin-plugins/main/10.11/manifest.json
+```
+
+Desired plugins:
+
+```text
+File Transformation
+Intro Skipper
+Media Bar
+Jellyfin Enhanced
+```
+
+Run it after the Jellyfin admin/API-key setup is complete:
+
+```bash
+systemctl start home-ops-jellyfin-plugins.service
+journalctl -u home-ops-jellyfin-plugins.service -n 160 --no-pager
+systemctl restart jellyfin.service
+```
+
+After the restart, hard-refresh Jellyfin Web. Intro Skipper may also need its
+scheduled task run from the Jellyfin dashboard before skip markers appear.
 
 ## Bazarr bootstrap
 

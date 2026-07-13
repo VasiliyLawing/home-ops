@@ -85,8 +85,12 @@ homeOps.media.downloads.qbittorrent.enable = true;
 ```
 
 When qBittorrent is enabled, Nix automatically seeds its WebUI credentials
-and baseline download settings before the container starts. The generated
-source credentials live at:
+before the container starts, then configures the live qBittorrent Web API after
+the container is reachable. This keeps the WebUI download paths and category
+paths pinned to `/data/torrents/...` instead of qBittorrent's first-run
+`/config/Downloads` default.
+
+The generated source credentials live at:
 
 ```text
 /var/lib/home-ops/secrets/qbittorrent-env
@@ -105,6 +109,7 @@ Verify:
 systemctl status docker-gluetun
 systemctl status home-ops-qbittorrent-config
 systemctl status docker-qbittorrent
+systemctl status home-ops-qbittorrent-api-config
 docker exec gluetun ip route
 docker exec gluetun iptables -S
 ```
@@ -112,8 +117,9 @@ docker exec gluetun iptables -S
 The Gluetun env file contains private material, so do not commit it to Git.
 
 qBit Manage is enabled after qBittorrent is enabled, because both now use the
-same Nix-generated WebUI credentials. It creates/updates qBittorrent categories
-but leaves destructive cleanup disabled.
+same Nix-generated WebUI credentials. The core qBittorrent bootstrap owns the
+category paths; qBit Manage adds the safe hygiene layer and leaves destructive
+cleanup disabled.
 
 The Home Ops Arr download-client bootstrap creates/updates Sonarr and Radarr
 qBittorrent download-client entries using the same generated qBittorrent WebUI
@@ -195,6 +201,14 @@ sudo systemctl start home-ops-jellyfin-bootstrap.service
 sudo journalctl -u home-ops-jellyfin-bootstrap.service
 sudo systemctl start home-ops-seerr-bootstrap.service
 sudo journalctl -u home-ops-seerr-bootstrap.service
+```
+
+Install the desired Jellyfin plugins:
+
+```bash
+sudo systemctl start home-ops-jellyfin-plugins.service
+sudo journalctl -u home-ops-jellyfin-plugins.service -n 160 --no-pager
+sudo systemctl restart jellyfin.service
 ```
 
 After each deploy, run the on-demand smoke test:

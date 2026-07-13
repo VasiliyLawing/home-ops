@@ -79,6 +79,8 @@ in
         HOME_OPS_DATA_ROOT = config.homeOps.media.shared.dataRoot;
         HOME_OPS_SECRET_DIRECTORY = config.homeOps.secrets.directory;
         HOME_OPS_SEERR_SETTINGS_FILE = config.homeOps.media.seerrBootstrap.settingsFile;
+        HOME_OPS_QBIT_SAVE_PATH = config.homeOps.media.downloads.qbittorrent.savePath;
+        HOME_OPS_QBIT_TEMP_PATH = config.homeOps.media.downloads.qbittorrent.incompletePath;
       };
       serviceConfig = {
         Type = "oneshot";

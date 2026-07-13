@@ -7,6 +7,7 @@
     ./nas-client.nix
     ./services/media/shared.nix
     ./services/media/jellyfin-bootstrap.nix
+    ./services/media/jellyfin-plugins.nix
     ./services/media/downloads.nix
     ./services/media/movies-tv.nix
     ./services/media/bazarr-bootstrap.nix
@@ -40,6 +41,7 @@
     media = {
       shared.enable = true;
       jellyfinBootstrap.enable = true;
+      jellyfinPlugins.enable = true;
 
       downloads = {
         sabnzbd.enable = true;

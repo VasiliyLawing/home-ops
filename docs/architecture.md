@@ -151,9 +151,16 @@ credentials before the qBittorrent container starts. That bootstrap is
 intentionally separate because modern qBittorrent images generate a temporary
 first-run password unless explicitly seeded.
 
-It uses the same `/data/torrents` view that qBittorrent uses, so category and
-hygiene logic sees paths exactly as qBittorrent sees them. Destructive cleanup
-is intentionally disabled until explicitly reviewed.
+`home-ops-qbittorrent-api-config.service` runs after qBittorrent starts and
+pins the live Web API settings to `/data/torrents/complete`,
+`/data/torrents/incomplete`, fixed listening ports, and the expected media
+categories. The host exposes `/data` as a compatibility path to the NAS data
+root, so native Sonarr/Radarr and containerized qBittorrent use the same path
+language.
+
+qBit Manage uses the same `/data/torrents` view, so category and hygiene logic
+sees paths exactly as qBittorrent sees them. Destructive cleanup is
+intentionally disabled until explicitly reviewed.
 
 The Arr API keys are Nix-owned runtime secrets. `home-ops-runtime-secrets`
 generates them on first boot, and `home-ops-arr-configs` writes them into

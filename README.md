@@ -44,6 +44,7 @@ machines/
 |       `-- media/
 |           |-- config/
 |           |-- shared.nix
+|           |-- jellyfin-plugins.nix
 |           |-- downloads.nix
 |           |-- arr-download-clients.nix
 |           |-- prowlarr-bootstrap.nix
@@ -71,12 +72,14 @@ Prowlarr indexer proxies, and Sonarr/Radarr qBittorrent download-client
 bootstrap directly through the Arr APIs. Actual Prowlarr indexers are added
 manually in the UI. Home Ops also bootstraps Seerr's Sonarr/Radarr settings,
 creates Jellyfin Movies/TV libraries, and completes Jellyfin wiring when a real
-Jellyfin API key is placed on the host. Bazarr's Sonarr/Radarr connections are
-bootstrapped from the same generated Arr API keys. Configarr owns Sonarr/Radarr quality
+Jellyfin API key is placed on the host. Jellyfin plugin repositories and the
+desired plugin set are installed through an on-demand bootstrap service. Bazarr's
+Sonarr/Radarr connections are bootstrapped from the same generated Arr API keys. Configarr owns Sonarr/Radarr quality
 profiles and TRaSH-Guides sync declaratively. Unpackerr handles archive
 extraction after downloads. Shelfmark is wired to Prowlarr and qBittorrent
-through generated host-local secrets. qBit Manage owns qBittorrent categories
-and safe hygiene rules once qBittorrent is enabled on the machine.
+through generated host-local secrets. qBittorrent's live API settings are pinned
+to `/data/torrents/...` after startup, and qBit Manage adds the safe hygiene
+rules once qBittorrent is enabled on the machine.
 `home-ops-smoke-test.service` is the on-demand post-deploy check for the whole
 media stack.
 

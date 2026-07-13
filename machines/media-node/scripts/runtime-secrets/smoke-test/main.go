@@ -49,6 +49,14 @@ type jellyfinMediaFolder struct {
 	CollectionType string `json:"CollectionType"`
 }
 
+type qbittorrentPreferences struct {
+	SavePath        string `json:"save_path"`
+	TempPathEnabled bool   `json:"temp_path_enabled"`
+	TempPath        string `json:"temp_path"`
+	RandomPort      bool   `json:"random_port"`
+	UPnP            bool   `json:"upnp"`
+}
+
 func envDefault(name string, fallback string) string {
 	value := strings.TrimSpace(os.Getenv(name))
 	if value == "" {
@@ -256,15 +264,12 @@ func qbittorrentCookie(ctx smokeContext) (string, error) {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return "", fmt.Errorf("qBittorrent login returned %d: %s", resp.StatusCode, strings.TrimSpace(string(responseBody)))
 	}
-	if strings.TrimSpace(string(responseBody)) != "Ok." {
-		return "", fmt.Errorf("qBittorrent login failed: %s", strings.TrimSpace(string(responseBody)))
-	}
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == "SID" && cookie.Value != "" {
-			return cookie.String(), nil
+			return "SID=" + cookie.Value, nil
 		}
 	}
-	return "", fmt.Errorf("qBittorrent login did not return a SID cookie")
+	return "", fmt.Errorf("qBittorrent login did not return a SID cookie: %s", strings.TrimSpace(string(responseBody)))
 }
 
 func checkQbittorrentAPI(ctx smokeContext) error {
@@ -298,6 +303,47 @@ func checkQbittorrentAPI(ctx smokeContext) error {
 		}
 		if strings.TrimSpace(string(body)) == "" {
 			return fmt.Errorf("qBittorrent returned an empty version")
+		}
+
+		prefsReq, err := http.NewRequest("GET", "http://127.0.0.1:8081/api/v2/app/preferences", nil)
+		if err != nil {
+			return err
+		}
+		prefsReq.Header.Set("Accept", "application/json")
+		prefsReq.Header.Set("Cookie", cookie)
+		prefsReq.Header.Set("Referer", "http://127.0.0.1:8081/")
+
+		prefsResp, err := client.Do(prefsReq)
+		if err != nil {
+			return err
+		}
+		defer prefsResp.Body.Close()
+
+		prefsBody, err := io.ReadAll(prefsResp.Body)
+		if err != nil {
+			return err
+		}
+		if prefsResp.StatusCode < 200 || prefsResp.StatusCode >= 300 {
+			return fmt.Errorf("GET qBittorrent app/preferences returned %d: %s", prefsResp.StatusCode, strings.TrimSpace(string(prefsBody)))
+		}
+
+		var prefs qbittorrentPreferences
+		if err := json.Unmarshal(prefsBody, &prefs); err != nil {
+			return err
+		}
+		expectedSavePath := envDefault("HOME_OPS_QBIT_SAVE_PATH", "/data/torrents/complete")
+		expectedTempPath := envDefault("HOME_OPS_QBIT_TEMP_PATH", "/data/torrents/incomplete")
+		if prefs.SavePath != expectedSavePath {
+			return fmt.Errorf("qBittorrent save_path is %q, want %q", prefs.SavePath, expectedSavePath)
+		}
+		if !prefs.TempPathEnabled || prefs.TempPath != expectedTempPath {
+			return fmt.Errorf("qBittorrent temp path is enabled=%v path=%q, want enabled=true path=%q", prefs.TempPathEnabled, prefs.TempPath, expectedTempPath)
+		}
+		if prefs.RandomPort {
+			return fmt.Errorf("qBittorrent random port is enabled")
+		}
+		if prefs.UPnP {
+			return fmt.Errorf("qBittorrent UPnP/NAT-PMP is enabled")
 		}
 		return nil
 	})

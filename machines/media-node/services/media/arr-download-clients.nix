@@ -59,6 +59,7 @@ in
       ]
       ++ lib.optionals downloads.qbittorrent.bootstrapConfig [
         "home-ops-qbittorrent-config.service"
+        "home-ops-qbittorrent-api-config.service"
       ];
       wants = [
         "sonarr.service"
@@ -67,8 +68,12 @@ in
       ]
       ++ lib.optionals downloads.qbittorrent.bootstrapConfig [
         "home-ops-qbittorrent-config.service"
+        "home-ops-qbittorrent-api-config.service"
       ];
-      requires = [ "home-ops-runtime-secrets.service" ];
+      requires = [ "home-ops-runtime-secrets.service" ]
+      ++ lib.optionals downloads.qbittorrent.bootstrapConfig [
+        "home-ops-qbittorrent-api-config.service"
+      ];
       environment = {
         HOME_OPS_QBIT_USERNAME_FILE = "${config.homeOps.secrets.directory}/qbittorrent-webui-username";
         HOME_OPS_QBIT_PASSWORD_FILE = "${config.homeOps.secrets.directory}/qbittorrent-webui-password";

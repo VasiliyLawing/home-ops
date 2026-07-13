@@ -26,6 +26,7 @@ in
       "d /var/lib/home-ops/calibre-web-automated 0775 homeops media -"
       "d /var/lib/home-ops/neutarr 0775 homeops media -"
       "d /var/lib/home-ops/shelfmark 0775 homeops media -"
+      "L+ /data - - - - ${cfg.dataRoot}"
       "d ${cfg.dataRoot}/torrents 0775 homeops media -"
       "d ${cfg.dataRoot}/torrents/complete 0775 homeops media -"
       "d ${cfg.dataRoot}/torrents/complete/movies 0775 homeops media -"
