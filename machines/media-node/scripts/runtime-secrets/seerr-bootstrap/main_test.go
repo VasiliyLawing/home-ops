@@ -24,3 +24,26 @@ func TestArrDisplayNameRejectsUnknownKind(t *testing.T) {
 		t.Fatal("arrDisplayName(\"lidarr\") returned nil error, want non-nil")
 	}
 }
+
+func TestJellyfinLibraryType(t *testing.T) {
+	tests := map[string]string{
+		"movies":  "movie",
+		"tvshows": "show",
+	}
+
+	for collectionType, want := range tests {
+		got, ok := jellyfinLibraryType(collectionType)
+		if !ok {
+			t.Fatalf("jellyfinLibraryType(%q) returned ok=false", collectionType)
+		}
+		if got != want {
+			t.Fatalf("jellyfinLibraryType(%q) = %q, want %q", collectionType, got, want)
+		}
+	}
+}
+
+func TestJellyfinLibraryTypeRejectsUnsupportedFolders(t *testing.T) {
+	if _, ok := jellyfinLibraryType("music"); ok {
+		t.Fatal("jellyfinLibraryType(\"music\") returned ok=true, want false")
+	}
+}

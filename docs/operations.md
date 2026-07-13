@@ -292,6 +292,11 @@ systemctl start home-ops-seerr-bootstrap.service
 journalctl -u home-ops-seerr-bootstrap.service -n 120 --no-pager
 ```
 
+When the Jellyfin key exists, the bootstrap also pulls Jellyfin's Movies/TV
+media folders, enables them in Seerr, and sets the LAN Jellyfin external URL to
+`http://media-node:8096`. That makes Seerr's "Configure Media Server" setup step
+pre-filled and complete after the bootstrap runs.
+
 If the Jellyfin key is missing, the bootstrap still writes Sonarr/Radarr
 settings and logs that Jellyfin was skipped. After writing settings, the service
 restarts Seerr so it reloads `settings.json`.

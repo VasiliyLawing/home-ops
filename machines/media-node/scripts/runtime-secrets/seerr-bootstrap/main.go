@@ -26,6 +26,17 @@ type jellyfinSystemInfo struct {
 	ServerName string `json:"ServerName"`
 }
 
+type jellyfinMediaFoldersResponse struct {
+	Items []jellyfinMediaFolder `json:"Items"`
+}
+
+type jellyfinMediaFolder struct {
+	ID             string `json:"Id"`
+	Name           string `json:"Name"`
+	Type           string `json:"Type"`
+	CollectionType string `json:"CollectionType"`
+}
+
 func requiredEnv(name string) (string, error) {
 	value := strings.TrimSpace(os.Getenv(name))
 	if value == "" {
@@ -264,8 +275,52 @@ func configureArr(settings map[string]interface{}, kind string, apiKey string, b
 	return nil
 }
 
+func jellyfinLibraryType(collectionType string) (string, bool) {
+	switch collectionType {
+	case "movies":
+		return "movie", true
+	case "tvshows":
+		return "show", true
+	default:
+		return "", false
+	}
+}
+
+func getJellyfinLibraries(baseURL string, apiKey string) ([]interface{}, error) {
+	response, err := decodeGet[jellyfinMediaFoldersResponse](normalizeBaseURL(baseURL)+"/Library/MediaFolders", apiKey)
+	if err != nil {
+		return nil, err
+	}
+
+	libraries := []interface{}{}
+	for _, folder := range response.Items {
+		if folder.Type != "CollectionFolder" {
+			continue
+		}
+		libraryType, ok := jellyfinLibraryType(folder.CollectionType)
+		if !ok {
+			continue
+		}
+		libraries = append(libraries, map[string]interface{}{
+			"id":      folder.ID,
+			"name":    folder.Name,
+			"enabled": true,
+			"type":    libraryType,
+		})
+	}
+
+	if len(libraries) == 0 {
+		return nil, fmt.Errorf("Jellyfin returned no Movies/TV media folders")
+	}
+	return libraries, nil
+}
+
 func configureJellyfin(settings map[string]interface{}, apiKey string, baseURL string) error {
 	info, err := decodeGet[jellyfinSystemInfo](normalizeBaseURL(baseURL)+"/System/Info", apiKey)
+	if err != nil {
+		return err
+	}
+	libraries, err := getJellyfinLibraries(baseURL, apiKey)
 	if err != nil {
 		return err
 	}
@@ -275,13 +330,11 @@ func configureJellyfin(settings map[string]interface{}, apiKey string, baseURL s
 	jellyfin["port"] = 8096
 	jellyfin["useSsl"] = false
 	jellyfin["urlBase"] = ""
-	jellyfin["externalHostname"] = ""
+	jellyfin["externalHostname"] = "http://media-node:8096"
 	jellyfin["jellyfinForgotPasswordUrl"] = ""
 	jellyfin["serverId"] = info.ID
 	jellyfin["apiKey"] = apiKey
-	if _, ok := jellyfin["libraries"]; !ok {
-		jellyfin["libraries"] = []interface{}{}
-	}
+	jellyfin["libraries"] = libraries
 	settings["jellyfin"] = jellyfin
 
 	main := asMap(settings["main"])
