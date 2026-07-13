@@ -17,6 +17,11 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    networking.firewall.allowedTCPPorts = [
+      80
+      443
+    ];
+
     services.caddy = {
       enable = true;
       virtualHosts = {

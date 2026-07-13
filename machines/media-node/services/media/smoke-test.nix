@@ -13,17 +13,6 @@ let
     src = ../../scripts/runtime-secrets/smoke-test;
     vendorHash = null;
     env.CGO_ENABLED = "0";
-    postInstall = ''
-      if [ -x "$out/bin/smoke-test" ]; then
-        mv "$out/bin/smoke-test" "$out/bin/home-ops-smoke-test"
-      elif [ -x "$out/bin/home-ops-smoke-test" ]; then
-        true
-      else
-        echo "Could not find smoke-test binary. Available binaries:" >&2
-        ls -la "$out/bin" >&2
-        exit 1
-      fi
-    '';
   };
 in
 {

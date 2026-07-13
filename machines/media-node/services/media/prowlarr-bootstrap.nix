@@ -7,24 +7,12 @@
 
 let
   cfg = config.homeOps.media.prowlarrBootstrap;
-  bootstrapConfig = pkgs.writeText "home-ops-prowlarr-bootstrap.json" (builtins.readFile cfg.configFile);
   bootstrapProwlarr = pkgs.buildGoModule {
     pname = "home-ops-bootstrap-prowlarr";
     version = "0.1.0";
     src = ../../scripts/runtime-secrets/prowlarr-bootstrap;
     vendorHash = null;
     env.CGO_ENABLED = "0";
-    postInstall = ''
-      if [ -x "$out/bin/prowlarr-bootstrap" ]; then
-        mv "$out/bin/prowlarr-bootstrap" "$out/bin/home-ops-bootstrap-prowlarr"
-      elif [ -x "$out/bin/home-ops-prowlarr-bootstrap" ]; then
-        mv "$out/bin/home-ops-prowlarr-bootstrap" "$out/bin/home-ops-bootstrap-prowlarr"
-      else
-        echo "Could not find Prowlarr bootstrap binary. Available binaries:" >&2
-        ls -la "$out/bin" >&2
-        exit 1
-      fi
-    '';
   };
 in
 {
@@ -79,7 +67,7 @@ in
         "home-ops-arr-configs.service"
       ];
       environment = {
-        HOME_OPS_PROWLARR_BOOTSTRAP_CONFIG = "${bootstrapConfig}";
+        HOME_OPS_PROWLARR_BOOTSTRAP_CONFIG = "${cfg.configFile}";
         HOME_OPS_PROWLARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/prowlarr-api-key";
         HOME_OPS_SONARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/sonarr-api-key";
         HOME_OPS_RADARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/radarr-api-key";

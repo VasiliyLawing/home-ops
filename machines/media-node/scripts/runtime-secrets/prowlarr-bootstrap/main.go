@@ -175,6 +175,7 @@ func schemaMatches(schema providerResource, match string) bool {
 func findSchema(schemas []providerResource, match string) (*providerResource, error) {
 	for _, schema := range schemas {
 		if schemaMatches(schema, match) {
+			schema.Fields = append([]field(nil), schema.Fields...)
 			return &schema, nil
 		}
 	}

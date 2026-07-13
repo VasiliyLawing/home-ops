@@ -1,3 +1,3 @@
-module home-ops-seerr-bootstrap
+module home-ops-bootstrap-seerr
 
 go 1.24

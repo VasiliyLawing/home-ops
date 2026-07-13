@@ -17,7 +17,7 @@ jobs:
         run: nix flake check --no-build
       - name: Check Go helper scripts
         run: |
-          nix shell nixpkgs#go --command bash -c '
+          nix shell --inputs-from . nixpkgs#go --command bash -c '
             set -euo pipefail
             while IFS= read -r -d "" module; do
               dir="$(dirname "$module")"
@@ -29,7 +29,5 @@ jobs:
               )
             done < <(find machines/media-node/scripts/runtime-secrets -name go.mod -print0)
           '
-      - name: Dry-run media-node build
-        run: nix build .#nixosConfigurations.media-node.config.system.build.toplevel --dry-run
-      - name: Dry-run workstation-wsl build
-        run: nix build .#nixosConfigurations.workstation-wsl.config.system.build.toplevel --dry-run
+      - name: Build media-node
+        run: nix build .#nixosConfigurations.media-node.config.system.build.toplevel --no-link

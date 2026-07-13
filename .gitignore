@@ -6,12 +6,13 @@
 .idea/
 result
 result-*
-.env
-.env.*
-!.env.example
+*.env
+*.env.*
+!*.env.example
 *.qcow2
 *.img
 *.iso
 secrets/
 *.agekey
 *.sops.yaml
+/.mcp.json

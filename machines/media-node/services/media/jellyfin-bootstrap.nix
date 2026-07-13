@@ -13,17 +13,6 @@ let
     src = ../../scripts/runtime-secrets/jellyfin-bootstrap;
     vendorHash = null;
     env.CGO_ENABLED = "0";
-    postInstall = ''
-      if [ -x "$out/bin/jellyfin-bootstrap" ]; then
-        mv "$out/bin/jellyfin-bootstrap" "$out/bin/home-ops-bootstrap-jellyfin"
-      elif [ -x "$out/bin/home-ops-jellyfin-bootstrap" ]; then
-        mv "$out/bin/home-ops-jellyfin-bootstrap" "$out/bin/home-ops-bootstrap-jellyfin"
-      else
-        echo "Could not find Jellyfin bootstrap binary. Available binaries:" >&2
-        ls -la "$out/bin" >&2
-        exit 1
-      fi
-    '';
   };
 in
 {

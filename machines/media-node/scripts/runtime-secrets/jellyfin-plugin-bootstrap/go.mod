@@ -1,3 +1,3 @@
-module home-ops-jellyfin-plugin-bootstrap
+module home-ops-bootstrap-jellyfin-plugins
 
 go 1.24

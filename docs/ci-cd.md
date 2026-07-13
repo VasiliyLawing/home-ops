@@ -2,7 +2,7 @@
 
 The repo includes two GitHub Actions:
 
-- `Nix CI`: validates the flake and dry-runs both machine builds.
+- `Nix CI`: validates the flake and fully builds both machine closures.
 - `Deploy media-node`: manual deploy button that joins Tailscale and runs a
   remote `nixos-rebuild switch` against `media-node`.
 

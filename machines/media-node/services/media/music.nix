@@ -60,10 +60,7 @@ in
         "${shared.dataRoot}/media/music/aurral:/app/downloads"
         "${shared.dataRoot}/media/music:/data:ro"
       ];
-      extraOptions = [
-        "--pull=always"
-        "--add-host=host.docker.internal:host-gateway"
-      ];
+      extraOptions = [ "--add-host=host.docker.internal:host-gateway" ];
     };
   };
 }

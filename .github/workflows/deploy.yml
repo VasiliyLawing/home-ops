@@ -15,6 +15,12 @@ jobs:
     runs-on: ubuntu-24.04
     environment: homelab
     steps:
+      - name: Refuse non-main refs
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "Deploys only run from main (got ${{ github.ref }})" >&2
+          exit 1
+
       - uses: actions/checkout@v5
       - uses: cachix/install-nix-action@v31
         with:
@@ -42,4 +48,4 @@ jobs:
           EOF
 
       - name: Deploy media-node
-        run: nix run nixpkgs#nixos-rebuild -- switch --flake .#media-node --target-host media-node
+        run: nix run --inputs-from . nixpkgs#nixos-rebuild -- switch --flake .#media-node --target-host media-node

@@ -13,11 +13,8 @@ The rule is simple:
 machines/media-node
 `-- homelab media/transcoding machine
 
-machines/workstation-wsl
-`-- local Windows WSL development shell
-
 shared
-`-- small baseline used by both machines
+`-- small machine-agnostic baseline
 ```
 
 The NAS remains an appliance. It exports media storage over NFS. `media-node`
@@ -32,8 +29,8 @@ runs the application layer.
 - core CLI packages;
 - Nix flakes/trusted-users/GC policy.
 
-It does not enable SSH, Tailscale, media groups, NAS mounts, or workstation
-tooling. Those are machine-owned concerns.
+It does not enable SSH, Tailscale, media groups, or NAS mounts. Those are
+machine-owned concerns.
 
 ## media-node
 
@@ -151,29 +148,49 @@ credentials before the qBittorrent container starts. That bootstrap is
 intentionally separate because modern qBittorrent images generate a temporary
 first-run password unless explicitly seeded.
 
-`home-ops-qbittorrent-api-config.service` runs after qBittorrent starts and
-pins the live Web API settings to `/data/torrents/complete`,
-`/data/torrents/incomplete`, fixed listening ports, and the expected media
-categories. The host exposes `/data` as a compatibility path to the NAS data
-root, so native Sonarr/Radarr and containerized qBittorrent use the same path
-language.
+There is intentionally no post-start `home-ops-qbittorrent-api-config.service`.
+qBittorrent's live Web API is cookie-authenticated and strict about
+same-origin/host checks, which made post-start preference mutation too brittle
+for the deployment path. Baseline qBittorrent settings are seeded before
+startup, qBit Manage handles category/tag hygiene after startup, and the smoke
+test verifies the live state did not drift.
+
+The trade-off is reliability over silent correction: Home Ops avoids failing a
+deployment on qBittorrent's WebUI auth/origin behavior, while still detecting
+drift with the smoke test. If drift appears, the fix is to update the declared
+owner and restart or rerun it, not to patch qBittorrent imperatively during
+deploy.
+
+Future changes follow that boundary: change startup-safe defaults such as WebUI
+credentials, default save path, incomplete path, WebUI port, listening port,
+UPnP, or random-port behavior in `services/media/downloads.nix`, then restart
+qBittorrent so the pre-start bootstrap can rewrite
+`/var/lib/qbittorrent/qBittorrent/qBittorrent.conf`. Change category/tag layout
+in `services/media/config/qbit-manage/config.yml`, then run
+`qbit-manage-sync.service`. If the smoke test reports drift after deployment,
+fix the declarative source and restart/rerun the owning service rather than
+adding a new deploy-time Web API mutator.
+
+The replacement model splits qBittorrent ownership by responsibility:
+
+| Responsibility | Owner | When it runs |
+| --- | --- | --- |
+| WebUI credentials, default save path, incomplete path, WebUI port, listening port, UPnP, random-port behavior | `home-ops-qbittorrent-config.service` | before `docker-qbittorrent.service` starts |
+| qBittorrent categories, tags, tracker-error tags, hygiene rules | `qbit-manage-sync.service` | after qBittorrent is running, plus timer |
+| Sonarr/Radarr qBittorrent download-client entries | `home-ops-arr-download-clients.service` | after Sonarr/Radarr/qBittorrent are running |
+| Runtime verification of live qBittorrent state | `home-ops-smoke-test.service` | on demand after deploy |
+
+The host exposes `/data` as a compatibility path to the NAS data root, so native
+Sonarr/Radarr and containerized qBittorrent use the same path language.
 
 qBit Manage uses the same `/data/torrents` view, so category and hygiene logic
-sees paths exactly as qBittorrent sees them. Destructive cleanup is
-intentionally disabled until explicitly reviewed.
+sees paths exactly as qBittorrent sees them. It owns category/tag sync after
+qBittorrent is running. Destructive cleanup is intentionally disabled until
+explicitly reviewed.
 
 The Arr API keys are Nix-owned runtime secrets. `home-ops-runtime-secrets`
 generates them on first boot, and `home-ops-arr-configs` writes them into
 Sonarr/Radarr/Prowlarr/Lidarr config files before those services start.
-
-## workstation-wsl
-
-`machines/workstation-wsl/` owns the local dev shell:
-
-- `host.nix`: NixOS-WSL settings, zsh, CLI tooling;
-- `services/neovim.nix`: Neovim and language-server tooling.
-
-It intentionally does not enable Tailscale or an SSH server.
 
 ## qBittorrent VPN isolation
 
@@ -211,6 +228,29 @@ qBittorrent does not get its own network namespace. It runs with
 internet path. Its config stays on the local SSD, and the NAS data mount is
 mapped into the container as `/data`.
 
+The path invariant below is what lets native services and containers cooperate
+without remote path mappings. qBittorrent sees the NAS as `/data` from inside
+its container; Sonarr/Radarr see the same path through the host-side `/data`
+symlink managed by Nix tmpfiles. The real storage remains on the Synology mount.
+
+```text
+qBittorrent container: /data/torrents/...
+Sonarr/Radarr host:    /data/torrents/... via /data -> /mnt/nas/data
+NAS real path:         /mnt/nas/data/torrents/...
+```
+
+`home-ops-qbittorrent-config.service` seeds qBittorrent's baseline save path,
+incomplete path, WebUI port, listening port, and UPnP/random-port settings before
+the container starts. `qbit-manage-sync.service` owns the category/tag layer
+after qBittorrent is running. `home-ops-smoke-test.service` verifies the live
+qBittorrent API state, including that the default save path has not fallen back
+to `/config/Downloads`.
+
+No other Home Ops service consumes the removed
+`home-ops-qbittorrent-api-config.service`. `home-ops-arr-download-clients` only
+needs qBittorrent to be running with stable credentials; it does not require a
+post-start qBittorrent preference mutation step.
+
 The host-side NAS layout is:
 
 ```text
@@ -234,3 +274,14 @@ The host-side NAS layout is:
 ```
 
 SABnzbd is not VPN-isolated by default. It should use TLS to the Usenet provider.
+
+## Trust model
+
+The firewall trusts `tailscale0` outright, and the *arr apps are seeded with
+`AuthenticationMethod=External` and no reverse proxy in front of them. That is
+a deliberate trade: every device on the tailnet gets unauthenticated admin
+access to Sonarr/Radarr/Prowlarr/Lidarr/Bazarr (which includes remote code
+execution via custom-script settings). This is acceptable only while the
+tailnet contains exclusively this household's trusted devices. If the tailnet
+ever grows (shared nodes, exit nodes for guests), switch the seeded
+`AuthenticationMethod` to `Forms` or put an authenticating proxy in front.

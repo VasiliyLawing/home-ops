@@ -473,7 +473,8 @@ func checkSeerrSettings(ctx smokeContext) error {
 	}
 
 	jellyfin := asMap(settings["jellyfin"])
-	if strings.TrimSpace(fmt.Sprint(jellyfin["apiKey"])) == "" {
+	apiKey, _ := jellyfin["apiKey"].(string)
+	if strings.TrimSpace(apiKey) == "" {
 		return fmt.Errorf("Seerr Jellyfin API key is empty")
 	}
 	hasEnabledLibrary := false

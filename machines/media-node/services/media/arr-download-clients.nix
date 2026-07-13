@@ -14,17 +14,6 @@ let
     src = ../../scripts/runtime-secrets/arr-download-client-bootstrap;
     vendorHash = null;
     env.CGO_ENABLED = "0";
-    postInstall = ''
-      if [ -x "$out/bin/arr-download-client-bootstrap" ]; then
-        mv "$out/bin/arr-download-client-bootstrap" "$out/bin/home-ops-bootstrap-arr-download-clients"
-      elif [ -x "$out/bin/home-ops-arr-download-client-bootstrap" ]; then
-        mv "$out/bin/home-ops-arr-download-client-bootstrap" "$out/bin/home-ops-bootstrap-arr-download-clients"
-      else
-        echo "Could not find Arr download-client bootstrap binary. Available binaries:" >&2
-        ls -la "$out/bin" >&2
-        exit 1
-      fi
-    '';
   };
 in
 {
@@ -59,7 +48,6 @@ in
       ]
       ++ lib.optionals downloads.qbittorrent.bootstrapConfig [
         "home-ops-qbittorrent-config.service"
-        "home-ops-qbittorrent-api-config.service"
       ];
       wants = [
         "sonarr.service"
@@ -68,13 +56,12 @@ in
       ]
       ++ lib.optionals downloads.qbittorrent.bootstrapConfig [
         "home-ops-qbittorrent-config.service"
-        "home-ops-qbittorrent-api-config.service"
       ];
-      requires = [ "home-ops-runtime-secrets.service" ]
-      ++ lib.optionals downloads.qbittorrent.bootstrapConfig [
-        "home-ops-qbittorrent-api-config.service"
-      ];
+      requires = [ "home-ops-runtime-secrets.service" ];
       environment = {
+        # These credentials are for the Sonarr/Radarr qBittorrent download-client
+        # entries. They are not tied to the removed post-start qBittorrent API
+        # preference mutator.
         HOME_OPS_QBIT_USERNAME_FILE = "${config.homeOps.secrets.directory}/qbittorrent-webui-username";
         HOME_OPS_QBIT_PASSWORD_FILE = "${config.homeOps.secrets.directory}/qbittorrent-webui-password";
         HOME_OPS_SONARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/sonarr-api-key";

@@ -28,7 +28,8 @@ write_secret() {
   fi
 }
 
-for name in $HOME_OPS_SECRET_FILES; do
+read -ra secret_files <<< "$HOME_OPS_SECRET_FILES"
+for name in "${secret_files[@]}"; do
   case "$name" in
     *api-key)
       write_secret "$name" hex32
@@ -45,12 +46,20 @@ for name in $HOME_OPS_SECRET_FILES; do
   esac
 done
 
-sonarr_api_key="$(cat "$HOME_OPS_SECRET_DIRECTORY/sonarr-api-key")"
-radarr_api_key="$(cat "$HOME_OPS_SECRET_DIRECTORY/radarr-api-key")"
-prowlarr_api_key="$(cat "$HOME_OPS_SECRET_DIRECTORY/prowlarr-api-key")"
-lidarr_api_key="$(cat "$HOME_OPS_SECRET_DIRECTORY/lidarr-api-key")"
-qbittorrent_user="$(cat "$HOME_OPS_SECRET_DIRECTORY/qbittorrent-webui-username")"
-qbittorrent_password="$(cat "$HOME_OPS_SECRET_DIRECTORY/qbittorrent-webui-password")"
+# Consumers reference these env files unconditionally, so always write them;
+# secrets absent from homeOps.secrets.files simply yield empty values.
+read_secret() {
+  if [ -r "$HOME_OPS_SECRET_DIRECTORY/$1" ]; then
+    cat "$HOME_OPS_SECRET_DIRECTORY/$1"
+  fi
+}
+
+sonarr_api_key="$(read_secret sonarr-api-key)"
+radarr_api_key="$(read_secret radarr-api-key)"
+prowlarr_api_key="$(read_secret prowlarr-api-key)"
+lidarr_api_key="$(read_secret lidarr-api-key)"
+qbittorrent_user="$(read_secret qbittorrent-webui-username)"
+qbittorrent_password="$(read_secret qbittorrent-webui-password)"
 
 cat > "$HOME_OPS_SECRET_DIRECTORY/arr-api-keys.env" <<EOF
 SONARR_API_KEY=$sonarr_api_key

@@ -77,10 +77,7 @@ in
         TZ = config.time.timeZone;
       };
       volumes = [ "/var/lib/home-ops/neutarr:/config" ];
-      extraOptions = [
-        "--pull=always"
-        "--add-host=host.docker.internal:host-gateway"
-      ];
+      extraOptions = [ "--add-host=host.docker.internal:host-gateway" ];
     };
   };
 }

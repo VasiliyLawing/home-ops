@@ -275,6 +275,21 @@ func configureArr(settings map[string]interface{}, kind string, apiKey string, b
 	return nil
 }
 
+func configureArrWithRetry(settings map[string]interface{}, kind string, apiKey string, baseURL string, rootPath string, preferredProfile string) error {
+	var lastErr error
+	for attempt := 1; attempt <= 30; attempt++ {
+		err := configureArr(settings, kind, apiKey, baseURL, rootPath, preferredProfile)
+		if err == nil {
+			return nil
+		}
+		lastErr = err
+		fmt.Fprintf(os.Stderr, "%s: waiting for API readiness (%d/30): %v\n", kind, attempt, err)
+		time.Sleep(2 * time.Second)
+	}
+
+	return lastErr
+}
+
 func jellyfinLibraryType(collectionType string) (string, bool) {
 	switch collectionType {
 	case "movies":
@@ -415,10 +430,10 @@ func run() error {
 		return err
 	}
 
-	if err := configureArr(settings, "sonarr", sonarrKey, "http://127.0.0.1:8989", "/mnt/nas/data/media/tv", "WEB-1080p"); err != nil {
+	if err := configureArrWithRetry(settings, "sonarr", sonarrKey, "http://127.0.0.1:8989", "/mnt/nas/data/media/tv", "WEB-1080p"); err != nil {
 		return fmt.Errorf("configure Sonarr: %w", err)
 	}
-	if err := configureArr(settings, "radarr", radarrKey, "http://127.0.0.1:7878", "/mnt/nas/data/media/movies", "HD Bluray + WEB"); err != nil {
+	if err := configureArrWithRetry(settings, "radarr", radarrKey, "http://127.0.0.1:7878", "/mnt/nas/data/media/movies", "HD Bluray + WEB"); err != nil {
 		return fmt.Errorf("configure Radarr: %w", err)
 	}
 

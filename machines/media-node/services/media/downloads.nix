@@ -15,27 +15,6 @@ let
     src = ../../scripts/runtime-secrets/qbittorrent-bootstrap;
     vendorHash = null;
     env.CGO_ENABLED = "0";
-    postInstall = ''
-      mv "$out/bin/qbittorrent-bootstrap" "$out/bin/home-ops-bootstrap-qbittorrent-config"
-    '';
-  };
-  bootstrapQbittorrentAPI = pkgs.buildGoModule {
-    pname = "home-ops-bootstrap-qbittorrent-api";
-    version = "0.1.0";
-    src = ../../scripts/runtime-secrets/qbittorrent-api-bootstrap;
-    vendorHash = null;
-    env.CGO_ENABLED = "0";
-    postInstall = ''
-      if [ -x "$out/bin/qbittorrent-api-bootstrap" ]; then
-        mv "$out/bin/qbittorrent-api-bootstrap" "$out/bin/home-ops-bootstrap-qbittorrent-api"
-      elif [ -x "$out/bin/home-ops-qbittorrent-api-bootstrap" ]; then
-        mv "$out/bin/home-ops-qbittorrent-api-bootstrap" "$out/bin/home-ops-bootstrap-qbittorrent-api"
-      else
-        echo "Could not find qBittorrent API bootstrap binary. Available binaries:" >&2
-        ls -la "$out/bin" >&2
-        exit 1
-      fi
-    '';
   };
 in
 {
@@ -156,42 +135,11 @@ in
           };
         };
 
-    systemd.services.docker-qbittorrent =
-      lib.mkIf (cfg.qbittorrent.enable && cfg.qbittorrent.bootstrapConfig)
-        {
-          unitConfig.RequiresMountsFor = [ shared.dataRoot ];
-          after = [ "home-ops-qbittorrent-config.service" ];
-          requires = [ "home-ops-qbittorrent-config.service" ];
-        };
-
-    systemd.services.home-ops-qbittorrent-api-config =
-      lib.mkIf (cfg.qbittorrent.enable && cfg.qbittorrent.bootstrapConfig)
-        {
-          description = "Configure live qBittorrent Web API paths and categories";
-          wantedBy = [ "multi-user.target" ];
-          after = [
-            "home-ops-runtime-secrets.service"
-            "docker-qbittorrent.service"
-          ];
-          wants = [ "docker-qbittorrent.service" ];
-          requires = [
-            "home-ops-runtime-secrets.service"
-            "docker-qbittorrent.service"
-          ];
-          environment = {
-            HOME_OPS_QBIT_BASE_URL = "http://localhost:${toString cfg.qbittorrent.webuiPort}";
-            HOME_OPS_QBIT_USERNAME_FILE = "${config.homeOps.secrets.directory}/qbittorrent-webui-username";
-            HOME_OPS_QBIT_PASSWORD_FILE = "${config.homeOps.secrets.directory}/qbittorrent-webui-password";
-            HOME_OPS_QBIT_SAVE_PATH = cfg.qbittorrent.savePath;
-            HOME_OPS_QBIT_TEMP_PATH = cfg.qbittorrent.incompletePath;
-            HOME_OPS_QBIT_TORRENTING_PORT = toString cfg.qbittorrent.torrentingPort;
-          };
-          serviceConfig = {
-            Type = "oneshot";
-            ExecStart = "${bootstrapQbittorrentAPI}/bin/home-ops-bootstrap-qbittorrent-api";
-            RemainAfterExit = true;
-          };
-        };
+    systemd.services.docker-qbittorrent = lib.mkIf cfg.qbittorrent.enable {
+      unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+      after = lib.mkIf cfg.qbittorrent.bootstrapConfig [ "home-ops-qbittorrent-config.service" ];
+      requires = lib.mkIf cfg.qbittorrent.bootstrapConfig [ "home-ops-qbittorrent-config.service" ];
+    };
 
     systemd.services.sabnzbd = lib.mkIf cfg.sabnzbd.enable {
       unitConfig.RequiresMountsFor = [ shared.dataRoot ];

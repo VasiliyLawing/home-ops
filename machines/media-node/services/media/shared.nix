@@ -79,7 +79,9 @@ in
       StateDirectory = lib.mkForce "seerr";
     };
 
-    system.activationScripts.homeOpsSeerrStateDir = ''
+    system.activationScripts.homeOpsSeerrStateDir = {
+      deps = [ "users" ];
+      text = ''
       if [ -L /var/lib/seerr ]; then
         target="$(readlink -f /var/lib/seerr || true)"
         rm -f /var/lib/seerr
@@ -92,6 +94,7 @@ in
         install -d -m 0750 -o seerr -g seerr /var/lib/seerr
       fi
       chown -R seerr:seerr /var/lib/seerr
-    '';
+      '';
+    };
   };
 }

@@ -30,10 +30,11 @@ type downloadClient struct {
 }
 
 type appConfig struct {
-	Name     string
-	BaseURL  string
-	APIKey   string
-	Category string
+	Name          string
+	BaseURL       string
+	APIKey        string
+	Category      string
+	CategoryField string
 }
 
 func requiredEnv(name string) (string, error) {
@@ -182,7 +183,7 @@ func configureApp(app appConfig, qbitUser string, qbitPassword string, qbitHost 
 	client.Fields = setFieldIfPresent(client.Fields, "urlBase", "")
 	client.Fields = setFieldIfPresent(client.Fields, "username", qbitUser)
 	client.Fields = setFieldIfPresent(client.Fields, "password", qbitPassword)
-	client.Fields = setFieldIfPresent(client.Fields, "category", app.Category)
+	client.Fields = setFieldIfPresent(client.Fields, app.CategoryField, app.Category)
 
 	existing, err := existingClient(app, client.Name)
 	if err != nil {
@@ -269,16 +270,18 @@ func run() error {
 
 	apps := []appConfig{
 		{
-			Name:     "Sonarr",
-			BaseURL:  "http://127.0.0.1:8989",
-			APIKey:   sonarrKey,
-			Category: "tv",
+			Name:          "Sonarr",
+			BaseURL:       "http://127.0.0.1:8989",
+			APIKey:        sonarrKey,
+			Category:      "tv",
+			CategoryField: "tvCategory",
 		},
 		{
-			Name:     "Radarr",
-			BaseURL:  "http://127.0.0.1:7878",
-			APIKey:   radarrKey,
-			Category: "movies",
+			Name:          "Radarr",
+			BaseURL:       "http://127.0.0.1:7878",
+			APIKey:        radarrKey,
+			Category:      "movies",
+			CategoryField: "movieCategory",
 		},
 	}
 

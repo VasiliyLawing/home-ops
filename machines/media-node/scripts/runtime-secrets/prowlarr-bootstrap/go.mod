@@ -1,3 +1,3 @@
-module home-ops-prowlarr-bootstrap
+module home-ops-bootstrap-prowlarr
 
 go 1.24

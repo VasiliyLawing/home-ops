@@ -100,8 +100,6 @@ in
       };
     };
 
-    environment.systemPackages = lib.mkIf shelfmark.enable [ pkgs.shelfmark ];
-
     systemd.services = {
       audiobookshelf.unitConfig.RequiresMountsFor = [ shared.dataRoot ];
       calibre-web = lib.mkIf calibreWeb.enable {
@@ -151,7 +149,6 @@ in
         "${shared.dataRoot}/media/books/imports:/cwa-book-ingest"
         "${shared.dataRoot}/media/books/library:/calibre-library"
       ];
-      extraOptions = [ "--pull=always" ];
     };
 
     virtualisation.oci-containers.containers.shelfmark = lib.mkIf shelfmark.enable {
@@ -192,10 +189,7 @@ in
         "${shared.dataRoot}/media/audiobooks/imports:/audiobooks"
         "${shared.dataRoot}:/data"
       ];
-      extraOptions = [
-        "--pull=always"
-        "--network=host"
-      ];
+      extraOptions = [ "--network=host" ];
     };
   };
 }

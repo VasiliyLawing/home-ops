@@ -25,9 +25,6 @@
 
   networking.hostName = "media-node";
 
-  # Prefer the Tailscale/MagicDNS name once the host has joined the tailnet.
-  clan.core.networking.targetHost = "root@media-node";
-
   homeOps = {
     secrets.enable = true;
 
@@ -45,10 +42,7 @@
 
       downloads = {
         sabnzbd.enable = true;
-        gluetun.environmentFile = "/var/lib/home-ops/secrets/gluetun-env";
-        qbittorrent = {
-          enable = true;
-        };
+        qbittorrent.enable = true;
       };
 
       moviesTv.enable = true;

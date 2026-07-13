@@ -2,7 +2,6 @@
 
 This is the first-pass install checklist for bringing up `media-node`.
 
-For the Windows dev shell, see `docs/workstation-wsl.md`.
 
 ## 1. Prepare the NAS
 
@@ -37,7 +36,7 @@ Leave qBittorrent disabled until its Gluetun env file is on the host.
 ## 3. Install NixOS
 
 Boot the target machine from a NixOS installer ISO, clone this repo, then use
-Clan/Disko to install once the disk path is confirmed.
+Disko and `nixos-install` once the disk path is confirmed.
 
 ## 4. Join Tailscale
 
@@ -84,11 +83,20 @@ Then enable:
 homeOps.media.downloads.qbittorrent.enable = true;
 ```
 
-When qBittorrent is enabled, Nix automatically seeds its WebUI credentials
-before the container starts, then configures the live qBittorrent Web API after
-the container is reachable. This keeps the WebUI download paths and category
-paths pinned to `/data/torrents/...` instead of qBittorrent's first-run
-`/config/Downloads` default.
+When qBittorrent is enabled, Nix automatically seeds its WebUI credentials and
+baseline download settings before the container starts. qBit Manage then owns
+category/tag hygiene on a timer, and the smoke test verifies qBittorrent has not
+drifted back to the first-run `/config/Downloads` default.
+
+This is intentional: Home Ops does not mutate qBittorrent live Web API settings
+during deploy, because that path is sensitive to qBittorrent's cookie and
+same-origin checks. Deploy should not fail because qBittorrent rejects a
+post-start preference write.
+
+The trade-off is explicit: deploys become more reliable, but live drift is
+detected rather than silently corrected during `nixos-rebuild switch`. Run the
+smoke test after deploys and after qBittorrent changes; if it fails, fix the
+declared Nix/qBit Manage source and rerun the owning service.
 
 The generated source credentials live at:
 
@@ -109,7 +117,9 @@ Verify:
 systemctl status docker-gluetun
 systemctl status home-ops-qbittorrent-config
 systemctl status docker-qbittorrent
-systemctl status home-ops-qbittorrent-api-config
+systemctl start qbit-manage-sync.service
+systemctl start home-ops-smoke-test.service
+journalctl -u home-ops-smoke-test.service -n 200 --no-pager
 docker exec gluetun ip route
 docker exec gluetun iptables -S
 ```
@@ -117,9 +127,12 @@ docker exec gluetun iptables -S
 The Gluetun env file contains private material, so do not commit it to Git.
 
 qBit Manage is enabled after qBittorrent is enabled, because both now use the
-same Nix-generated WebUI credentials. The core qBittorrent bootstrap owns the
-category paths; qBit Manage adds the safe hygiene layer and leaves destructive
-cleanup disabled.
+same Nix-generated WebUI credentials. It owns category/tag hygiene and leaves
+destructive cleanup disabled.
+
+If you change qBittorrent paths or ports later, change the Nix options, redeploy,
+restart qBittorrent, and rerun the smoke test. If you change categories, update
+the qBit Manage config and rerun `qbit-manage-sync.service`.
 
 The Home Ops Arr download-client bootstrap creates/updates Sonarr and Radarr
 qBittorrent download-client entries using the same generated qBittorrent WebUI

@@ -1,6 +1,6 @@
 # Home Ops
 
-Clan-managed NixOS monorepo for homelab and workstation machines.
+NixOS monorepo for homelab machines.
 
 Each machine owns its own project folder under `machines/`. Shared config only
 lives in `shared/` when more than one machine actually needs it.
@@ -12,7 +12,7 @@ Synology NAS
 `-- DSM storage appliance, NFS media export
 
 machines/media-node
-|-- NixOS + Clan
+|-- NixOS
 |-- Jellyfin with host GPU access
 |-- movies / TV services
 |-- books / audiobooks services, including Shelfmark search/download wiring
@@ -20,11 +20,6 @@ machines/media-node
 |-- SABnzbd
 |-- qBittorrent isolated through Gluetun
 `-- Tailscale + SSH deployment path
-
-machines/workstation-wsl
-|-- NixOS-WSL + Clan
-|-- Neovim/dev tooling
-`-- no Tailscale or server services
 ```
 
 ## Layout
@@ -44,22 +39,20 @@ machines/
 |       `-- media/
 |           |-- config/
 |           |-- shared.nix
+|           |-- jellyfin-bootstrap.nix
 |           |-- jellyfin-plugins.nix
 |           |-- downloads.nix
 |           |-- arr-download-clients.nix
+|           |-- bazarr-bootstrap.nix
 |           |-- prowlarr-bootstrap.nix
 |           |-- configarr.nix
 |           |-- qbit-manage.nix
 |           |-- unpackerr.nix
+|           |-- seerr-bootstrap.nix
 |           |-- smoke-test.nix
 |           |-- movies-tv.nix
 |           |-- books.nix
 |           `-- music.nix
-|-- workstation-wsl/
-|   |-- configuration.nix
-|   |-- host.nix
-|   `-- services/
-|       `-- neovim.nix
 `-- shared/
     `-- default.nix
 ```
@@ -77,9 +70,10 @@ desired plugin set are installed through an on-demand bootstrap service. Bazarr'
 Sonarr/Radarr connections are bootstrapped from the same generated Arr API keys. Configarr owns Sonarr/Radarr quality
 profiles and TRaSH-Guides sync declaratively. Unpackerr handles archive
 extraction after downloads. Shelfmark is wired to Prowlarr and qBittorrent
-through generated host-local secrets. qBittorrent's live API settings are pinned
-to `/data/torrents/...` after startup, and qBit Manage adds the safe hygiene
-rules once qBittorrent is enabled on the machine.
+through generated host-local secrets. qBittorrent's baseline paths and ports are
+seeded before startup, qBit Manage owns category/tag hygiene after startup, and
+the smoke test verifies the live Web API state instead of mutating it during
+deploy.
 `home-ops-smoke-test.service` is the on-demand post-deploy check for the whole
 media stack.
 

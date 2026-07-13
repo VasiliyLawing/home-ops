@@ -13,17 +13,6 @@ let
     src = ../../scripts/runtime-secrets/seerr-bootstrap;
     vendorHash = null;
     env.CGO_ENABLED = "0";
-    postInstall = ''
-      if [ -x "$out/bin/seerr-bootstrap" ]; then
-        mv "$out/bin/seerr-bootstrap" "$out/bin/home-ops-bootstrap-seerr"
-      elif [ -x "$out/bin/home-ops-seerr-bootstrap" ]; then
-        mv "$out/bin/home-ops-seerr-bootstrap" "$out/bin/home-ops-bootstrap-seerr"
-      else
-        echo "Could not find Seerr bootstrap binary. Available binaries:" >&2
-        ls -la "$out/bin" >&2
-        exit 1
-      fi
-    '';
   };
 in
 {

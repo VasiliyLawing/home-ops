@@ -13,17 +13,6 @@ let
     src = ../../scripts/runtime-secrets/bazarr-bootstrap;
     vendorHash = null;
     env.CGO_ENABLED = "0";
-    postInstall = ''
-      if [ -x "$out/bin/bazarr-bootstrap" ]; then
-        mv "$out/bin/bazarr-bootstrap" "$out/bin/home-ops-bootstrap-bazarr"
-      elif [ -x "$out/bin/home-ops-bazarr-bootstrap" ]; then
-        mv "$out/bin/home-ops-bazarr-bootstrap" "$out/bin/home-ops-bootstrap-bazarr"
-      else
-        echo "Could not find Bazarr bootstrap binary. Available binaries:" >&2
-        ls -la "$out/bin" >&2
-        exit 1
-      fi
-    '';
   };
 in
 {
@@ -48,37 +37,12 @@ in
       }
     ];
 
-    users = {
-      groups.bazarr = { };
-      users.bazarr = {
-        description = "Bazarr service user";
-        isSystemUser = true;
-        group = "bazarr";
-      };
-    };
-
-    system.activationScripts.homeOpsBazarrStateDir = ''
-      if [ -L /var/lib/bazarr ]; then
-        target="$(readlink -f /var/lib/bazarr || true)"
-        rm -f /var/lib/bazarr
-        if [ -n "$target" ] && [ -d "$target" ]; then
-          mv "$target" /var/lib/bazarr
-        else
-          install -d -m 0750 -o bazarr -g bazarr /var/lib/bazarr
-        fi
-      else
-        install -d -m 0750 -o bazarr -g bazarr /var/lib/bazarr
-      fi
-      install -d -m 0750 -o bazarr -g bazarr /var/lib/bazarr/config
-      chown -R bazarr:bazarr /var/lib/bazarr
-    '';
-
-    systemd.services.bazarr.serviceConfig = {
-      DynamicUser = lib.mkForce false;
-      User = "bazarr";
-      Group = "bazarr";
-      StateDirectory = lib.mkForce "bazarr";
-    };
+    # The upstream bazarr module already creates the static bazarr user/group
+    # and runs without DynamicUser; only the config dir needs to exist early.
+    systemd.tmpfiles.rules = [
+      "d /var/lib/bazarr 0750 bazarr bazarr -"
+      "d /var/lib/bazarr/config 0750 bazarr bazarr -"
+    ];
 
     systemd.services.home-ops-bazarr-bootstrap = {
       description = "Bootstrap Bazarr Sonarr/Radarr settings";

@@ -89,8 +89,6 @@ shelfmark-env
 `home-ops-arr-configs.service` seeds those API keys into the Arr app
 `config.xml` files before Sonarr/Radarr/Prowlarr/Lidarr start.
 
-When qBittorrent is enabled, Home Ops owns qBittorrent in two phases.
-
 `home-ops-qbittorrent-config.service` seeds the qBittorrent WebUI
 username/password into:
 
@@ -99,11 +97,8 @@ username/password into:
 ```
 
 It uses qBittorrent's PBKDF2-SHA512 WebUI password format and runs before the
-`docker-qbittorrent.service` container starts.
-
-`home-ops-qbittorrent-api-config.service` then waits for the live qBittorrent
-Web API and enforces the baseline behavior that should not be click-configured
-after every reinstall:
+`docker-qbittorrent.service` container starts. It also seeds the baseline
+behavior that should not be click-configured after every reinstall:
 
 ```text
 Default save path:        /data/torrents/complete
@@ -113,9 +108,39 @@ UPnP/NAT-PMP:             disabled
 Random listen port:       disabled
 WebUI port:               8081
 Listening port:           6881
-Categories:               movies, tv, music, books, audiobooks
-Category paths:            /data/torrents/complete/<category>
 ```
+
+qBit Manage owns the category/tag hygiene layer using the same `/data/torrents`
+view qBittorrent uses. Its configured categories are `movies`, `tv`, `music`,
+`books`, and `audiobooks`, each under `/data/torrents/complete/<category>`.
+
+There is intentionally no post-start qBittorrent API mutator in the deployment
+path. qBittorrent's Web API rejects state-changing calls when auth/host headers
+do not line up exactly, so the repo avoids making deploy success depend on that
+fragile path. Use `home-ops-smoke-test.service` to verify live qBittorrent state
+instead of mutating it during deploy.
+
+This trades automatic post-start correction for safer deployments. A NixOS
+switch should converge the machine and restart services, not fail because
+qBittorrent rejects a WebUI-origin-sensitive preference write. Drift is still
+covered: the smoke test checks qBittorrent's live API state and fails loudly if
+paths or safety settings no longer match the declared model.
+
+When changing qBittorrent defaults after deployment:
+
+- edit `homeOps.media.downloads.qbittorrent.*` options for startup-safe defaults
+  such as save path, incomplete path, WebUI port, listening port, UPnP, or
+  random-port behavior;
+- redeploy and restart `docker-qbittorrent.service` so
+  `home-ops-qbittorrent-config.service` can seed the config before qBittorrent
+  starts;
+- edit `machines/media-node/services/media/config/qbit-manage/config.yml` for
+  category/tag layout, then run `qbit-manage-sync.service`;
+- run `home-ops-smoke-test.service` to confirm the live Web API state matches
+  the declared model.
+
+Do not reintroduce a deploy-blocking Web API preference mutator unless
+qBittorrent's auth/origin behavior is explicitly handled and tested.
 
 The host also exposes `/data` as a Nix-owned compatibility path to the NAS data
 root. This keeps native Sonarr/Radarr and containerized qBittorrent using the
@@ -130,6 +155,15 @@ Sonarr category: tv
 Radarr category: movies
 qBittorrent API: 127.0.0.1:8081
 ```
+
+This service intentionally does not require a post-start qBittorrent API config
+unit. It only needs qBittorrent running and reachable with the generated WebUI
+credentials.
+
+The `HOME_OPS_QBIT_USERNAME_FILE` and `HOME_OPS_QBIT_PASSWORD_FILE` environment
+variables in this unit are still required. They are used to create/update the
+Sonarr and Radarr download-client records, not to mutate qBittorrent's global
+WebUI preferences.
 
 `shelfmark-env` supplies Shelfmark with the generated Prowlarr API key and the
 same qBittorrent WebUI username/password. Non-secret Shelfmark settings live in
@@ -319,7 +353,9 @@ restarts Seerr so it reloads `settings.json`.
 ## Media-node smoke test
 
 `home-ops-smoke-test.service` is intentionally on-demand. It does not run during
-deploy, because a transient warm-up delay should not block a NixOS switch.
+deploy, because a transient warm-up delay should not block a NixOS switch. Treat
+it as a post-deploy safety gate: deploy first, let services settle, then run the
+smoke test to catch live-state drift.
 
 Run it after a deploy or after changing app wiring:
 

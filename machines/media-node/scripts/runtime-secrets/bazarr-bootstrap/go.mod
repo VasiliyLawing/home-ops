@@ -1,3 +1,3 @@
-module home-ops-bazarr-bootstrap
+module home-ops-bootstrap-bazarr
 
 go 1.24

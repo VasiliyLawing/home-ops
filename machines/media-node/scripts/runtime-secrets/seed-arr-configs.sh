@@ -25,7 +25,7 @@ seed_config() {
     return 1
   fi
 
-  api_key="$(cat "$api_key_file" | xml_escape)"
+  api_key="$(xml_escape < "$api_key_file")"
   ssl_port=$((port + 1))
   install -d -m 0750 -o "$owner" -g "$group" "$(dirname "$config_file")"
 
@@ -50,9 +50,13 @@ seed_config() {
 </Config>
 EOF
   elif grep -q '<ApiKey>.*</ApiKey>' "$config_file"; then
-    sed -i "s#<ApiKey>.*</ApiKey>#<ApiKey>$api_key</ApiKey>#" "$config_file"
+    # printf is a builtin and sed reads its script from stdin, so the API key
+    # never appears in any process argv (/proc/*/cmdline).
+    printf '%s\n' "s#<ApiKey>.*</ApiKey>#<ApiKey>$api_key</ApiKey>#" \
+      | sed -i -f - "$config_file"
   else
-    sed -i "0,/<Config>/s#<Config>#<Config>\\n  <ApiKey>$api_key</ApiKey>#" "$config_file"
+    printf '%s\n' "0,/<Config>/s#<Config>#<Config>\\n  <ApiKey>$api_key</ApiKey>#" \
+      | sed -i -f - "$config_file"
   fi
 
   if grep -q '<SslPort>.*</SslPort>' "$config_file"; then

@@ -38,13 +38,10 @@ in
       enable = true;
       unmanaged = [ "interface-name:enp3s0" ];
     };
+    # 22 comes from services.openssh.openFirewall (default true); 80/443 are
+    # opened by the ingress module when it is enabled.
     firewall = {
       enable = true;
-      allowedTCPPorts = [
-        22
-        80
-        443
-      ];
       trustedInterfaces = [ "tailscale0" ];
     };
   };
