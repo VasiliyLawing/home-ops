@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: homelab
     steps:
       - uses: actions/checkout@v5

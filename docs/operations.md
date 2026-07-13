@@ -150,7 +150,7 @@ homeOps.media.books.calibreWeb.enable = true;
 NeutArr uses the upstream Docker Hub image:
 
 ```text
-iampuid0/neutarr:latest
+iampuid0/neutarr:1.8.0
 ```
 
 It is exposed on localhost port `9705`, stores config in
@@ -294,12 +294,30 @@ journalctl -u home-ops-seerr-bootstrap.service -n 120 --no-pager
 
 When the Jellyfin key exists, the bootstrap also pulls Jellyfin's Movies/TV
 media folders, enables them in Seerr, and sets the LAN Jellyfin external URL to
-`http://media-node:8096`. That makes Seerr's "Configure Media Server" setup step
-pre-filled and complete after the bootstrap runs.
+`http://media-node:8096`. It also marks Seerr's first-run setup as initialized,
+so the setup wizard should not ask you to toggle libraries after the bootstrap
+runs.
 
 If the Jellyfin key is missing, the bootstrap still writes Sonarr/Radarr
 settings and logs that Jellyfin was skipped. After writing settings, the service
 restarts Seerr so it reloads `settings.json`.
+
+## Media-node smoke test
+
+`home-ops-smoke-test.service` is intentionally on-demand. It does not run during
+deploy, because a transient warm-up delay should not block a NixOS switch.
+
+Run it after a deploy or after changing app wiring:
+
+```bash
+systemctl start home-ops-smoke-test.service
+journalctl -u home-ops-smoke-test.service -n 200 --no-pager
+```
+
+It checks failed systemd units, NAS media paths, qBittorrent's Gluetun network
+namespace, qBittorrent's API, Sonarr/Radarr download-client wiring, Prowlarr app
+links and FlareSolverr proxy, Jellyfin Movies/TV libraries, and Seerr's
+initialized Jellyfin/Sonarr/Radarr settings.
 
 ## Jellyfin bootstrap
 

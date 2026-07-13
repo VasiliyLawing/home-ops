@@ -7,7 +7,7 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: cachix/install-nix-action@v31
@@ -15,6 +15,20 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check flake
         run: nix flake check --no-build
+      - name: Check Go helper scripts
+        run: |
+          nix shell nixpkgs#go --command bash -c '
+            set -euo pipefail
+            while IFS= read -r -d "" module; do
+              dir="$(dirname "$module")"
+              echo "checking $dir"
+              (
+                cd "$dir"
+                go test ./...
+                go vet ./...
+              )
+            done < <(find machines/media-node/scripts/runtime-secrets -name go.mod -print0)
+          '
       - name: Dry-run media-node build
         run: nix build .#nixosConfigurations.media-node.config.system.build.toplevel --dry-run
       - name: Dry-run workstation-wsl build

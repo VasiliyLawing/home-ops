@@ -16,6 +16,7 @@
     ./services/media/qbit-manage.nix
     ./services/media/unpackerr.nix
     ./services/media/seerr-bootstrap.nix
+    ./services/media/smoke-test.nix
     ./services/media/books.nix
     ./services/media/music.nix
     ./services/ingress.nix
@@ -56,6 +57,7 @@
       qbitManage.enable = true;
       unpackerr.enable = true;
       seerrBootstrap.enable = true;
+      smokeTest.enable = true;
       books.enable = true;
       music.enable = true;
     };

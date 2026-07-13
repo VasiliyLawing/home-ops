@@ -27,8 +27,8 @@ in
       };
       image = lib.mkOption {
         type = lib.types.str;
-        default = "crocodilestick/calibre-web-automated:latest";
-        description = "Calibre-Web-Automated container image.";
+        default = "crocodilestick/calibre-web-automated:v4.0.6";
+        description = "Pinned Calibre-Web-Automated container image.";
       };
       webuiPort = lib.mkOption {
         type = lib.types.port;
@@ -51,8 +51,8 @@ in
       };
       image = lib.mkOption {
         type = lib.types.str;
-        default = "ghcr.io/calibrain/shelfmark:latest";
-        description = "Shelfmark container image. Pin this before real deployment.";
+        default = "ghcr.io/calibrain/shelfmark:v1.3.3";
+        description = "Pinned Shelfmark container image.";
       };
       webuiPort = lib.mkOption {
         type = lib.types.port;

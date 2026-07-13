@@ -50,6 +50,7 @@ machines/
 |           |-- configarr.nix
 |           |-- qbit-manage.nix
 |           |-- unpackerr.nix
+|           |-- smoke-test.nix
 |           |-- movies-tv.nix
 |           |-- books.nix
 |           `-- music.nix
@@ -76,6 +77,8 @@ profiles and TRaSH-Guides sync declaratively. Unpackerr handles archive
 extraction after downloads. Shelfmark is wired to Prowlarr and qBittorrent
 through generated host-local secrets. qBit Manage owns qBittorrent categories
 and safe hygiene rules once qBittorrent is enabled on the machine.
+`home-ops-smoke-test.service` is the on-demand post-deploy check for the whole
+media stack.
 
 ## Before deployment
 

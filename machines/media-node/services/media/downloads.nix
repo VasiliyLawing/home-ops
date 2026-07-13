@@ -32,8 +32,8 @@ in
       };
       image = lib.mkOption {
         type = lib.types.str;
-        default = "ghcr.io/qdm12/gluetun:latest";
-        description = "Gluetun container image. Pin this before real deployment.";
+        default = "ghcr.io/qdm12/gluetun:v3.41.1";
+        description = "Pinned Gluetun container image.";
       };
       environmentFile = lib.mkOption {
         type = lib.types.str;
@@ -51,8 +51,8 @@ in
       enable = lib.mkEnableOption "qBittorrent container sharing Gluetun's VPN network namespace";
       image = lib.mkOption {
         type = lib.types.str;
-        default = "lscr.io/linuxserver/qbittorrent:latest";
-        description = "qBittorrent container image. Pin this before real deployment.";
+        default = "lscr.io/linuxserver/qbittorrent:5.2.3";
+        description = "Pinned qBittorrent container image.";
       };
       webuiPort = lib.mkOption {
         type = lib.types.port;
