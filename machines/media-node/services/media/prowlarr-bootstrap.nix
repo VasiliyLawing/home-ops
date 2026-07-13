@@ -7,6 +7,7 @@
 
 let
   cfg = config.homeOps.media.prowlarrBootstrap;
+  bootstrapConfig = pkgs.writeText "home-ops-prowlarr-bootstrap.json" (builtins.readFile cfg.configFile);
   bootstrapProwlarr = pkgs.buildGoModule {
     pname = "home-ops-bootstrap-prowlarr";
     version = "0.1.0";
@@ -55,7 +56,6 @@ in
 
     systemd.services.home-ops-prowlarr-bootstrap = {
       description = "Bootstrap Prowlarr public indexers and app links";
-      wantedBy = [ "multi-user.target" ];
       after = [
         "home-ops-runtime-secrets.service"
         "home-ops-arr-configs.service"
@@ -73,7 +73,7 @@ in
         "home-ops-arr-configs.service"
       ];
       environment = {
-        HOME_OPS_PROWLARR_BOOTSTRAP_CONFIG = toString cfg.configFile;
+        HOME_OPS_PROWLARR_BOOTSTRAP_CONFIG = "${bootstrapConfig}";
         HOME_OPS_PROWLARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/prowlarr-api-key";
         HOME_OPS_SONARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/sonarr-api-key";
         HOME_OPS_RADARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/radarr-api-key";
@@ -89,7 +89,7 @@ in
       wantedBy = [ "timers.target" ];
       timerConfig = {
         OnCalendar = cfg.schedule;
-        Persistent = true;
+        Persistent = false;
       };
     };
   };
