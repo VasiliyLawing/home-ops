@@ -15,6 +15,9 @@ let
     src = ../../scripts/runtime-secrets/qbittorrent-bootstrap;
     vendorHash = null;
     env.CGO_ENABLED = "0";
+    postInstall = ''
+      mv "$out/bin/qbittorrent-bootstrap" "$out/bin/home-ops-bootstrap-qbittorrent-config"
+    '';
   };
 in
 {
