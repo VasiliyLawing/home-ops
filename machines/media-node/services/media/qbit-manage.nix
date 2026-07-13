@@ -50,6 +50,7 @@ in
     systemd.tmpfiles.rules = [
       "d /var/lib/home-ops/qbit-manage 0775 homeops media -"
       "d ${runtimeConfigDir} 0775 homeops media -"
+      "d ${runtimeConfigDir}/logs 0775 homeops media -"
     ];
 
     systemd.services.qbit-manage-sync = {
@@ -74,7 +75,7 @@ in
       serviceConfig = {
         Type = "oneshot";
         ExecStartPre = "${pkgs.coreutils}/bin/install -m 0644 -o homeops -g media ${cfg.configDir}/config.yml ${runtimeConfigDir}/config.yml";
-        ExecStart = "${pkgs.docker}/bin/docker run --rm --name qbit-manage-sync --network host --env-file ${cfg.credentialsEnvFile} --env TZ=${config.time.timeZone} --env PUID=1000 --env PGID=1001 --env QBT_RUN=true --env QBT_CONFIG_DIR=/config --env QBT_LOGFILE=/tmp/qbit_manage.log --env QBT_WEB_SERVER=false --volume ${runtimeConfigDir}:/config:ro --volume ${shared.dataRoot}/torrents:/data/torrents:rw ${cfg.image}";
+        ExecStart = "${pkgs.docker}/bin/docker run --rm --name qbit-manage-sync --network host --env-file ${cfg.credentialsEnvFile} --env TZ=${config.time.timeZone} --env PUID=1000 --env PGID=1001 --env QBT_RUN=true --env QBT_CONFIG_DIR=/config --env QBT_LOGFILE=/config/logs/qbit_manage.log --env QBT_WEB_SERVER=false --volume ${runtimeConfigDir}:/config:rw --volume ${shared.dataRoot}/torrents:/data/torrents:rw ${cfg.image}";
       };
     };
 

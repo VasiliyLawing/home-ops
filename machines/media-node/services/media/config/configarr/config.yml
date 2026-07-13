@@ -5,8 +5,6 @@
 # qBit Manage owns qBittorrent categories/tags/cleanup once enabled.
 
 telemetry: false
-localCustomFormatsPath: /app/cfs
-localConfigTemplatesPath: /app/templates
 
 sonarr:
   media-node:
@@ -37,12 +35,3 @@ radarr:
       - template: radarr-quality-definition-movie
       - template: radarr-quality-profile-hd-bluray-web
       - template: radarr-custom-formats-hd-bluray-web
-    quality_profiles:
-      - name: HD Bluray + WEB
-        reset_unmatched_scores:
-          enabled: true
-        upgrade:
-          allowed: true
-          until_quality: Remux-1080p
-          until_score: 10000
-          min_format_score: 100

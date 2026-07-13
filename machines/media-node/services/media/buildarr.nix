@@ -66,8 +66,11 @@ in
       ];
       serviceConfig = {
         Type = "oneshot";
-        ExecStartPre = "${pkgs.coreutils}/bin/install -m 0644 -o homeops -g media ${cfg.configDir}/buildarr.yml ${runtimeConfigDir}/buildarr.yml";
-        ExecStart = "${pkgs.docker}/bin/docker run --rm --name buildarr-sync --network host --env TZ=${config.time.timeZone} --env PUID=1000 --env PGID=1001 --volume ${runtimeConfigDir}:/config:ro --volume ${cfg.secretsFile}:/config/secrets.yml:ro ${cfg.image} run";
+        ExecStartPre = [
+          "${pkgs.coreutils}/bin/install -m 0644 -o homeops -g media ${cfg.configDir}/buildarr.yml ${runtimeConfigDir}/buildarr.yml"
+          "${pkgs.coreutils}/bin/install -m 0600 -o homeops -g media ${cfg.secretsFile} ${runtimeConfigDir}/secrets.yml"
+        ];
+        ExecStart = "${pkgs.docker}/bin/docker run --rm --name buildarr-sync --network host --env TZ=${config.time.timeZone} --env PUID=1000 --env PGID=1001 --volume ${runtimeConfigDir}:/config:rw ${cfg.image} run";
       };
     };
 

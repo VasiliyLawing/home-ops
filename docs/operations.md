@@ -170,14 +170,17 @@ It is exposed on localhost port `8098`, persists app data in
 ## Configarr sync
 
 Configarr handles Sonarr/Radarr quality-profile and TRaSH-Guides custom-format
-sync.
+sync. The Radarr `HD Bluray + WEB` profile is intentionally loaded from the
+Recyclarr template include without a local `quality_profiles` override; adding a
+partial override can make Radarr reject profile creation even when the systemd
+job itself exits successfully.
 
 It runs as a scheduled one-shot job:
 
 ```bash
 systemctl status configarr-sync.timer
 systemctl start configarr-sync.service
-journalctl -u configarr-sync.service
+journalctl -u configarr-sync.service -n 240 --no-pager
 ```
 
 The job runs Docker directly from systemd. It loads Sonarr/Radarr API keys from:
@@ -197,6 +200,10 @@ Configarr keeps its writable template cache under:
 ```text
 /var/lib/home-ops/configarr/repos
 ```
+
+When verifying a manual run, search the log for `ERROR` and confirm the
+execution summary shows Radarr success, not just that systemd marked the job as
+finished.
 
 ## Buildarr sync
 
@@ -218,7 +225,8 @@ machines/media-node/services/media/config/buildarr/buildarr.yml
 ```
 
 The job runs Docker directly from systemd. The committed config includes
-`secrets.yml`, and systemd mounts this generated secret file there:
+`secrets.yml`, and systemd copies this generated secret file into Buildarr's
+writable runtime config directory before the container starts:
 
 ```text
 /var/lib/home-ops/secrets/buildarr-secret.yml
@@ -263,7 +271,7 @@ It runs as a scheduled one-shot job:
 ```bash
 systemctl status qbit-manage-sync.timer
 systemctl start qbit-manage-sync.service
-journalctl -u qbit-manage-sync.service
+journalctl -u qbit-manage-sync.service -n 160 --no-pager
 ```
 
 The committed non-secret config lives at:
@@ -275,6 +283,12 @@ machines/media-node/services/media/config/qbit-manage/config.yml
 qBit Manage categories include `books` and `audiobooks` so Shelfmark-submitted
 torrents land in the same `/data/torrents/complete/...` layout seen by
 qBittorrent.
+
+qBit Manage also gets a writable runtime config directory for generated logs:
+
+```text
+/var/lib/home-ops/qbit-manage/config/logs
+```
 
 ## Shelfmark
 
