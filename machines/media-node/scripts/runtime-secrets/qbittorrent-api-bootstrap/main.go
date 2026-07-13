@@ -51,6 +51,7 @@ func login(baseURL string, username string, password string) (string, error) {
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Origin", baseURL)
 	req.Header.Set("Referer", baseURL+"/")
 
 	client := &http.Client{Timeout: 15 * time.Second}
@@ -87,6 +88,7 @@ func apiRequest(baseURL string, cookie string, endpoint string, form url.Values)
 	if cookie != "" {
 		req.Header.Set("Cookie", cookie)
 	}
+	req.Header.Set("Origin", baseURL)
 	req.Header.Set("Referer", baseURL+"/")
 
 	client := &http.Client{Timeout: 30 * time.Second}
@@ -114,6 +116,7 @@ func apiGet(baseURL string, cookie string, endpoint string) ([]byte, error) {
 	if cookie != "" {
 		req.Header.Set("Cookie", cookie)
 	}
+	req.Header.Set("Origin", baseURL)
 	req.Header.Set("Referer", baseURL+"/")
 	req.Header.Set("Accept", "application/json")
 

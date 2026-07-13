@@ -241,14 +241,15 @@ func qbittorrentCookie(ctx smokeContext) (string, error) {
 
 	req, err := http.NewRequest(
 		"POST",
-		"http://127.0.0.1:8081/api/v2/auth/login",
+		"http://localhost:8081/api/v2/auth/login",
 		strings.NewReader(form.Encode()),
 	)
 	if err != nil {
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Referer", "http://127.0.0.1:8081/")
+	req.Header.Set("Origin", "http://localhost:8081")
+	req.Header.Set("Referer", "http://localhost:8081/")
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
@@ -282,7 +283,7 @@ func checkQbittorrentAPI(ctx smokeContext) error {
 			return err
 		}
 
-		req, err := http.NewRequest("GET", "http://127.0.0.1:8081/api/v2/app/version", nil)
+		req, err := http.NewRequest("GET", "http://localhost:8081/api/v2/app/version", nil)
 		if err != nil {
 			return err
 		}
@@ -290,7 +291,8 @@ func checkQbittorrentAPI(ctx smokeContext) error {
 		if cookie != "" {
 			req.Header.Set("Cookie", cookie)
 		}
-		req.Header.Set("Referer", "http://127.0.0.1:8081/")
+		req.Header.Set("Origin", "http://localhost:8081")
+		req.Header.Set("Referer", "http://localhost:8081/")
 
 		client := &http.Client{Timeout: 10 * time.Second}
 		resp, err := client.Do(req)
@@ -310,7 +312,7 @@ func checkQbittorrentAPI(ctx smokeContext) error {
 			return fmt.Errorf("qBittorrent returned an empty version")
 		}
 
-		prefsReq, err := http.NewRequest("GET", "http://127.0.0.1:8081/api/v2/app/preferences", nil)
+		prefsReq, err := http.NewRequest("GET", "http://localhost:8081/api/v2/app/preferences", nil)
 		if err != nil {
 			return err
 		}
@@ -318,7 +320,8 @@ func checkQbittorrentAPI(ctx smokeContext) error {
 		if cookie != "" {
 			prefsReq.Header.Set("Cookie", cookie)
 		}
-		prefsReq.Header.Set("Referer", "http://127.0.0.1:8081/")
+		prefsReq.Header.Set("Origin", "http://localhost:8081")
+		prefsReq.Header.Set("Referer", "http://localhost:8081/")
 
 		prefsResp, err := client.Do(prefsReq)
 		if err != nil {

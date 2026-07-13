@@ -179,7 +179,7 @@ in
             "docker-qbittorrent.service"
           ];
           environment = {
-            HOME_OPS_QBIT_BASE_URL = "http://127.0.0.1:${toString cfg.qbittorrent.webuiPort}";
+            HOME_OPS_QBIT_BASE_URL = "http://localhost:${toString cfg.qbittorrent.webuiPort}";
             HOME_OPS_QBIT_USERNAME_FILE = "${config.homeOps.secrets.directory}/qbittorrent-webui-username";
             HOME_OPS_QBIT_PASSWORD_FILE = "${config.homeOps.secrets.directory}/qbittorrent-webui-password";
             HOME_OPS_QBIT_SAVE_PATH = cfg.qbittorrent.savePath;
