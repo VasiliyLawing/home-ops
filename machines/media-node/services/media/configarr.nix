@@ -7,6 +7,7 @@
 
 let
   cfg = config.homeOps.media.configarr;
+  runtimeConfigDir = "/var/lib/home-ops/configarr/config";
 in
 {
   options.homeOps.media.configarr = {
@@ -52,6 +53,7 @@ in
 
     systemd.tmpfiles.rules = [
       "d /var/lib/home-ops/configarr 0775 homeops media -"
+      "d ${runtimeConfigDir} 0775 homeops media -"
       "d ${cfg.reposDir} 0775 homeops media -"
     ];
 
@@ -70,7 +72,8 @@ in
       serviceConfig = {
         Type = "oneshot";
         EnvironmentFile = cfg.apiKeysEnvFile;
-        ExecStart = "${pkgs.docker}/bin/docker run --rm --name configarr-sync --network host --env TZ=${config.time.timeZone} --env SONARR_API_KEY --env RADARR_API_KEY --volume ${toString cfg.configDir}:/app/config:ro --volume ${cfg.reposDir}:/app/repos ${cfg.image}";
+        ExecStartPre = "${pkgs.coreutils}/bin/install -m 0644 -o homeops -g media ${cfg.configDir}/config.yml ${runtimeConfigDir}/config.yml";
+        ExecStart = "${pkgs.docker}/bin/docker run --rm --name configarr-sync --network host --env TZ=${config.time.timeZone} --env SONARR_API_KEY --env RADARR_API_KEY --volume ${runtimeConfigDir}:/app/config:ro --volume ${cfg.reposDir}:/app/repos ${cfg.image}";
       };
     };
 

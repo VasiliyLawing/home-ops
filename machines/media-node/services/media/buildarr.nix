@@ -7,6 +7,7 @@
 
 let
   cfg = config.homeOps.media.buildarr;
+  runtimeConfigDir = "/var/lib/home-ops/buildarr/config";
 in
 {
   options.homeOps.media.buildarr = {
@@ -45,6 +46,11 @@ in
       }
     ];
 
+    systemd.tmpfiles.rules = [
+      "d /var/lib/home-ops/buildarr 0775 homeops media -"
+      "d ${runtimeConfigDir} 0775 homeops media -"
+    ];
+
     systemd.services.buildarr-sync = {
       description = "Sync Buildarr app wiring";
       after = [
@@ -60,7 +66,8 @@ in
       ];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${pkgs.docker}/bin/docker run --rm --name buildarr-sync --network host --env TZ=${config.time.timeZone} --env PUID=1000 --env PGID=1001 --volume ${toString cfg.configDir}:/config:ro --volume ${cfg.secretsFile}:/config/secrets.yml:ro ${cfg.image} run";
+        ExecStartPre = "${pkgs.coreutils}/bin/install -m 0644 -o homeops -g media ${cfg.configDir}/buildarr.yml ${runtimeConfigDir}/buildarr.yml";
+        ExecStart = "${pkgs.docker}/bin/docker run --rm --name buildarr-sync --network host --env TZ=${config.time.timeZone} --env PUID=1000 --env PGID=1001 --volume ${runtimeConfigDir}:/config:ro --volume ${cfg.secretsFile}:/config/secrets.yml:ro ${cfg.image} run";
       };
     };
 
