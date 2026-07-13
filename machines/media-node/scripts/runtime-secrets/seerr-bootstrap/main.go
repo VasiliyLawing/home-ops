@@ -347,6 +347,45 @@ func configureJellyfin(settings map[string]interface{}, apiKey string, baseURL s
 	return nil
 }
 
+func seerrFirstRunComplete(settings map[string]interface{}) bool {
+	public := asMap(settings["public"])
+	initialized, ok := public["initialized"].(bool)
+	if !ok || !initialized {
+		return false
+	}
+
+	main := asMap(settings["main"])
+	mediaServerType, ok := main["mediaServerType"].(float64)
+	return ok && int(mediaServerType) != 4
+}
+
+func resetJellyfinFirstRunSettings(settings map[string]interface{}) {
+	main := asMap(settings["main"])
+	main["mediaServerType"] = 4
+	main["applicationTitle"] = "Seerr"
+	main["applicationUrl"] = "http://media-node:5055"
+	main["localLogin"] = true
+	main["mediaServerLogin"] = true
+	settings["main"] = main
+
+	public := asMap(settings["public"])
+	public["initialized"] = false
+	settings["public"] = public
+
+	settings["jellyfin"] = map[string]interface{}{
+		"name":                      "",
+		"ip":                        "",
+		"port":                      8096,
+		"useSsl":                    false,
+		"urlBase":                   "",
+		"externalHostname":          "http://media-node:8096",
+		"jellyfinForgotPasswordUrl": "",
+		"libraries":                 []interface{}{},
+		"serverId":                  "",
+		"apiKey":                    "",
+	}
+}
+
 func run() error {
 	settingsFile, err := requiredEnv("HOME_OPS_SEERR_SETTINGS_FILE")
 	if err != nil {
@@ -388,10 +427,15 @@ func run() error {
 		return err
 	}
 	if ok {
-		if err := configureJellyfin(settings, jellyfinKey, "http://127.0.0.1:8096"); err != nil {
-			return fmt.Errorf("configure Jellyfin: %w", err)
+		if seerrFirstRunComplete(settings) {
+			if err := configureJellyfin(settings, jellyfinKey, "http://127.0.0.1:8096"); err != nil {
+				return fmt.Errorf("configure Jellyfin: %w", err)
+			}
+			fmt.Println("Seerr: configured Jellyfin, Sonarr, and Radarr")
+		} else {
+			resetJellyfinFirstRunSettings(settings)
+			fmt.Println("Seerr: configured Sonarr and Radarr; skipped Jellyfin because Seerr first admin setup is not complete yet")
 		}
-		fmt.Println("Seerr: configured Jellyfin, Sonarr, and Radarr")
 	} else {
 		fmt.Printf("Seerr: configured Sonarr and Radarr; skipping Jellyfin because %s is missing or empty\n", jellyfinKeyFile)
 	}

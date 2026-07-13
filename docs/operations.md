@@ -294,8 +294,13 @@ journalctl -u home-ops-seerr-bootstrap.service -n 120 --no-pager
 
 When the Jellyfin key exists, the bootstrap also pulls Jellyfin's Movies/TV
 media folders, enables them in Seerr, and sets the LAN Jellyfin external URL to
-`http://media-node:8096`. Seerr's first admin user is still created by the
-first-run login flow; Home Ops does not fake that `initialized` state.
+`http://media-node:8096` after Seerr's first admin user exists.
+
+Before Seerr's first admin user exists, the bootstrap intentionally skips
+Jellyfin-in-Seerr settings and resets Seerr's media server type back to
+`NOT_CONFIGURED`. This keeps Seerr in the first-run setup flow, because the
+Jellyfin auth endpoint requires the first admin login to include the selected
+server type. Home Ops does not fake Seerr's first-run `initialized` state.
 
 If the Jellyfin key is missing, the bootstrap still writes Sonarr/Radarr
 settings and logs that Jellyfin was skipped. After writing settings, the service
