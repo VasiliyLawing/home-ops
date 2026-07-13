@@ -20,6 +20,10 @@ prowlarr:
   port: 9696
   protocol: "http"
   settings:
+    general:
+      security:
+        authentication: "external"
+        authentication_required: "local-disabled"
     apps:
       sync_profiles:
         delete_unmanaged: false

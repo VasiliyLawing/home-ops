@@ -38,7 +38,7 @@ seed_config() {
   <EnableSsl>False</EnableSsl>
   <LaunchBrowser>False</LaunchBrowser>
   <ApiKey>$api_key</ApiKey>
-  <AuthenticationMethod>None</AuthenticationMethod>
+  <AuthenticationMethod>External</AuthenticationMethod>
   <AuthenticationRequired>DisabledForLocalAddresses</AuthenticationRequired>
   <Branch>main</Branch>
   <LogLevel>info</LogLevel>
@@ -65,6 +65,18 @@ EOF
     sed -i "s#<EnableSsl>.*</EnableSsl>#<EnableSsl>False</EnableSsl>#" "$config_file"
   else
     sed -i "0,/<Config>/s#<Config>#<Config>\\n  <EnableSsl>False</EnableSsl>#" "$config_file"
+  fi
+
+  if grep -q '<AuthenticationMethod>.*</AuthenticationMethod>' "$config_file"; then
+    sed -i "s#<AuthenticationMethod>.*</AuthenticationMethod>#<AuthenticationMethod>External</AuthenticationMethod>#" "$config_file"
+  else
+    sed -i "0,/<Config>/s#<Config>#<Config>\\n  <AuthenticationMethod>External</AuthenticationMethod>#" "$config_file"
+  fi
+
+  if grep -q '<AuthenticationRequired>.*</AuthenticationRequired>' "$config_file"; then
+    sed -i "s#<AuthenticationRequired>.*</AuthenticationRequired>#<AuthenticationRequired>DisabledForLocalAddresses</AuthenticationRequired>#" "$config_file"
+  else
+    sed -i "0,/<Config>/s#<Config>#<Config>\\n  <AuthenticationRequired>DisabledForLocalAddresses</AuthenticationRequired>#" "$config_file"
   fi
 
   chmod 0640 "$config_file"
