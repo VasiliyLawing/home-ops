@@ -26,6 +26,9 @@ in
   };
 
   hardware = {
+    # amdgpu (and every other device needing blobs) fails to probe without
+    # this — no /dev/dri render node means no VAAPI transcoding.
+    enableRedistributableFirmware = true;
     cpu.amd.updateMicrocode = true;
     graphics = {
       enable = true;
