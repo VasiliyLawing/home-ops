@@ -61,28 +61,6 @@ EOF
 
 cat > "$HOME_OPS_SECRET_DIRECTORY/buildarr-secret.yml" <<EOF
 ---
-sonarr:
-  instances:
-    Sonarr:
-      api_key: "$sonarr_api_key"
-      settings:
-        download_clients:
-          definitions:
-            "qBittorrent":
-              username: "$qbittorrent_user"
-              password: "$qbittorrent_password"
-
-radarr:
-  instances:
-    Radarr:
-      api_key: "$radarr_api_key"
-      settings:
-        download_clients:
-          definitions:
-            "qBittorrent":
-              username: "$qbittorrent_user"
-              password: "$qbittorrent_password"
-
 prowlarr:
   api_key: "$prowlarr_api_key"
 EOF
