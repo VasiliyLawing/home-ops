@@ -275,6 +275,23 @@ func run() error {
 		lines = setINIValue(lines, "Preferences", item.key, item.value)
 	}
 
+	// qBittorrent 5.x reads save paths and the listening port from
+	// [BitTorrent] Session\* keys and ignores the legacy [Preferences]
+	// Downloads\*/Connection\* forms above (kept for older images).
+	sessionValues := []struct {
+		key   string
+		value string
+	}{
+		{`Session\DefaultSavePath`, savePath},
+		{`Session\TempPath`, tempPath},
+		{`Session\TempPathEnabled`, "true"},
+		{`Session\Port`, torrentingPort},
+	}
+
+	for _, item := range sessionValues {
+		lines = setINIValue(lines, "BitTorrent", item.key, item.value)
+	}
+
 	configDir := filepath.Dir(configFile)
 	if err := writeConfigFile(configFile, lines); err != nil {
 		return err

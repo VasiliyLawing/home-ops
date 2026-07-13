@@ -5,6 +5,36 @@ NixOS monorepo for homelab machines.
 Each machine owns its own project folder under `machines/`. Shared config only
 lives in `shared/` when more than one machine actually needs it.
 
+## Setup
+
+Full walkthrough in `docs/setup.md`; day-2 tasks in `docs/operations.md`.
+Everything is declarative except a handful of one-time manual steps:
+
+1. Replace the public placeholders: SSH public key in
+   `machines/media-node/host.nix`, NAS host/export in
+   `machines/media-node/configuration.nix`, real ingress hostnames before
+   enabling `homeOps.ingress`.
+2. Install with Disko + `nixos-install` from the NixOS ISO, then
+   `sudo tailscale up` on the machine.
+3. Put the Gluetun VPN env file at `/var/lib/home-ops/secrets/gluetun-env`
+   before enabling qBittorrent.
+4. Complete the Jellyfin first-run wizard, create an API key, place it at
+   `/var/lib/home-ops/secrets/jellyfin-api-key`, then start the on-demand
+   Jellyfin/Seerr bootstrap units.
+5. Add Prowlarr indexers in the UI (deliberately not code).
+
+## Credentials
+
+Service credentials are generated on the machine at first boot and live as
+root-only files under `/var/lib/home-ops/secrets/`. They are never in Git or
+the Nix store. To get the qBittorrent WebUI login (username is `admin`):
+
+```bash
+sudo cat /var/lib/home-ops/secrets/qbittorrent-webui-password
+```
+
+The Arr API keys sit in the same directory as `<app>-api-key` files.
+
 ## Shape
 
 ```text
@@ -76,14 +106,5 @@ the smoke test verifies the live Web API state instead of mutating it during
 deploy.
 `home-ops-smoke-test.service` is the on-demand post-deploy check for the whole
 media stack.
-
-## Before deployment
-
-Replace the public placeholders with real private values:
-
-1. SSH public key in `machines/media-node/host.nix`;
-2. NAS host/export in `machines/media-node/configuration.nix`;
-3. real ingress hostnames before enabling `homeOps.ingress`;
-4. Gluetun env file at `/var/lib/home-ops/secrets/gluetun-env` before enabling qBittorrent.
 
 The Pi monitoring layer is intentionally not present yet.
