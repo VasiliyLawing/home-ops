@@ -30,7 +30,7 @@ sonarr:
             "qBittorrent":
               type: "qbittorrent"
               host: "127.0.0.1"
-              port: 8080
+              port: 8081
               use_ssl: false
               category: "tv"
               recent_priority: "last"
@@ -50,7 +50,7 @@ radarr:
             "qBittorrent":
               type: "qbittorrent"
               hostname: "127.0.0.1"
-              port: 8080
+              port: 8081
               use_ssl: false
               category: "movies"
               recent_priority: "last"

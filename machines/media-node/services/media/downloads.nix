@@ -56,7 +56,7 @@ in
       };
       webuiPort = lib.mkOption {
         type = lib.types.port;
-        default = 8080;
+        default = 8081;
       };
       torrentingPort = lib.mkOption {
         type = lib.types.port;

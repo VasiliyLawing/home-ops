@@ -177,7 +177,7 @@ in
         PROWLARR_TORRENT_CLIENT = "qbittorrent";
         PROWLARR_TORRENT_ACTION = "keep";
 
-        QBITTORRENT_URL = "http://127.0.0.1:8080";
+        QBITTORRENT_URL = "http://127.0.0.1:8081";
         QBITTORRENT_CATEGORY = "books";
         QBITTORRENT_CATEGORY_AUDIOBOOK = "audiobooks";
       }
