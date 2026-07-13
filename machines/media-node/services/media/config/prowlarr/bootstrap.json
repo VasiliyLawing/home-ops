@@ -17,10 +17,22 @@
       "syncLevel": "addOnly"
     }
   ],
+  "indexerProxies": [
+    {
+      "name": "FlareSolverr",
+      "implementation": "FlareSolverr",
+      "required": true,
+      "fields": {
+        "host": "http://127.0.0.1:8191/",
+        "requestTimeout": 60
+      }
+    }
+  ],
   "indexers": [
     {
       "name": "1337x",
       "match": "1337x",
+      "required": false,
       "enable": true,
       "redirect": false,
       "priority": 10,
@@ -33,6 +45,7 @@
     {
       "name": "Nyaa.si",
       "match": "Nyaa.si",
+      "required": false,
       "enable": true,
       "redirect": false,
       "priority": 20,

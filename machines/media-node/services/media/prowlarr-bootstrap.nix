@@ -62,11 +62,17 @@ in
         "prowlarr.service"
         "sonarr.service"
         "radarr.service"
+      ]
+      ++ lib.optionals config.services.flaresolverr.enable [
+        "flaresolverr.service"
       ];
       wants = [
         "prowlarr.service"
         "sonarr.service"
         "radarr.service"
+      ]
+      ++ lib.optionals config.services.flaresolverr.enable [
+        "flaresolverr.service"
       ];
       requires = [
         "home-ops-runtime-secrets.service"

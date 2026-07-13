@@ -224,6 +224,11 @@ reading current Prowlarr remote state before it could apply our desired indexer
 and app-link config. The Home Ops bootstrap talks directly to Prowlarr's live
 schemas instead.
 
+The bootstrap also declares Prowlarr's FlareSolverr indexer proxy before public
+indexers are created. Public indexers are best-effort: if a public site is
+temporarily blocked, rate limited, or down, the sync logs the skipped indexer
+but still succeeds so internal app links do not flap.
+
 It runs as a scheduled one-shot job:
 
 ```bash

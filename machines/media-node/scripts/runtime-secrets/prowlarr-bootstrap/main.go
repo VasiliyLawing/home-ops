@@ -43,6 +43,7 @@ type desiredApplication struct {
 type desiredIndexer struct {
 	Name         string                 `json:"name"`
 	Match        string                 `json:"match"`
+	Required     bool                   `json:"required"`
 	Enable       bool                   `json:"enable"`
 	Redirect     bool                   `json:"redirect"`
 	Priority     int                    `json:"priority"`
@@ -50,11 +51,19 @@ type desiredIndexer struct {
 	Fields       map[string]interface{} `json:"fields"`
 }
 
+type desiredIndexerProxy struct {
+	Name           string                 `json:"name"`
+	Implementation string                 `json:"implementation"`
+	Required       bool                   `json:"required"`
+	Fields         map[string]interface{} `json:"fields"`
+}
+
 type bootstrapConfig struct {
-	BaseURL      string               `json:"baseUrl"`
-	ProwlarrURL  string               `json:"prowlarrUrl"`
-	Applications []desiredApplication `json:"applications"`
-	Indexers     []desiredIndexer     `json:"indexers"`
+	BaseURL        string                `json:"baseUrl"`
+	ProwlarrURL    string                `json:"prowlarrUrl"`
+	Applications   []desiredApplication  `json:"applications"`
+	IndexerProxies []desiredIndexerProxy `json:"indexerProxies"`
+	Indexers       []desiredIndexer      `json:"indexers"`
 }
 
 func requiredEnv(name string) (string, error) {
@@ -287,14 +296,48 @@ func configureIndexer(cfg bootstrapConfig, apiKey string, schemas []providerReso
 	return createOrUpdate(cfg.BaseURL, apiKey, "indexer", desired)
 }
 
+func configureIndexerProxy(cfg bootstrapConfig, apiKey string, schemas []providerResource, proxy desiredIndexerProxy) error {
+	match := proxy.Implementation
+	if match == "" {
+		match = proxy.Name
+	}
+	schema, err := findSchema(schemas, match)
+	if err != nil {
+		return err
+	}
+
+	desired := *schema
+	desired.ID = 0
+	desired.Name = proxy.Name
+	desired.Enable = true
+	for name, value := range proxy.Fields {
+		desired.Fields = setField(desired.Fields, name, value)
+	}
+
+	return createOrUpdate(cfg.BaseURL, apiKey, "indexerProxy", desired)
+}
+
 func configure(cfg bootstrapConfig, apiKey string) error {
 	appSchemas, err := getSchemas(cfg.BaseURL, apiKey, "applications")
+	if err != nil {
+		return err
+	}
+	indexerProxySchemas, err := getSchemas(cfg.BaseURL, apiKey, "indexerProxy")
 	if err != nil {
 		return err
 	}
 	indexerSchemas, err := getSchemas(cfg.BaseURL, apiKey, "indexer")
 	if err != nil {
 		return err
+	}
+
+	for _, proxy := range cfg.IndexerProxies {
+		if err := configureIndexerProxy(cfg, apiKey, indexerProxySchemas, proxy); err != nil {
+			if proxy.Required {
+				return err
+			}
+			fmt.Fprintf(os.Stderr, "indexerProxy: skipped %s: %v\n", proxy.Name, err)
+		}
 	}
 
 	for _, app := range cfg.Applications {
@@ -304,7 +347,10 @@ func configure(cfg bootstrapConfig, apiKey string) error {
 	}
 	for _, indexer := range cfg.Indexers {
 		if err := configureIndexer(cfg, apiKey, indexerSchemas, indexer); err != nil {
-			return err
+			if indexer.Required {
+				return err
+			}
+			fmt.Fprintf(os.Stderr, "indexer: skipped %s: %v\n", indexer.Name, err)
 		}
 	}
 
