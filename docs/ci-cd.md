@@ -11,8 +11,7 @@ The repo includes two GitHub Actions:
 Store these as repository or environment secrets:
 
 ```text
-TS_OAUTH_CLIENT_ID
-TS_AUDIENCE
+TS_AUTHKEY
 CLAN_SSH_PRIVATE_KEY
 ```
 
@@ -21,7 +20,9 @@ key configured in `machines/media-node/host.nix`.
 
 ## Tailscale policy
 
-The CI identity needs SSH/network access to `media-node` on TCP port 22.
+The Tailscale auth key should be ephemeral and tagged for CI, for example
+`tag:ci`. The CI identity needs SSH/network access to `media-node` on TCP port
+22.
 
 The deploy workflow assumes `media-node` resolves through MagicDNS. If not,
 update `clan.core.networking.targetHost` in:

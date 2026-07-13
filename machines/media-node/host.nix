@@ -2,7 +2,8 @@
 
 let
   adminSshKeys = [
-    "ssh-ed25519 REPLACE_WITH_PUBLIC_SSH_KEY home-ops-admin"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ+yCotEev0DvxbeVef5seO6fINjX1AkcI/GzTIgmLrn home-ops-admin"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC1/Rr8KokJGAWcXaeWN9p3MBl8hvRBVqbcvtLPP/MQI github-actions-home-ops-deploy"
   ];
 in
 {
