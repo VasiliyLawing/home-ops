@@ -15,7 +15,15 @@ let
     vendorHash = null;
     env.CGO_ENABLED = "0";
     postInstall = ''
-      mv "$out/bin/arr-download-client-bootstrap" "$out/bin/home-ops-bootstrap-arr-download-clients"
+      if [ -x "$out/bin/arr-download-client-bootstrap" ]; then
+        mv "$out/bin/arr-download-client-bootstrap" "$out/bin/home-ops-bootstrap-arr-download-clients"
+      elif [ -x "$out/bin/home-ops-arr-download-client-bootstrap" ]; then
+        mv "$out/bin/home-ops-arr-download-client-bootstrap" "$out/bin/home-ops-bootstrap-arr-download-clients"
+      else
+        echo "Could not find Arr download-client bootstrap binary. Available binaries:" >&2
+        ls -la "$out/bin" >&2
+        exit 1
+      fi
     '';
   };
 in
