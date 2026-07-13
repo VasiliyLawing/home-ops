@@ -205,6 +205,21 @@ func configureApp(app appConfig, qbitUser string, qbitPassword string, qbitHost 
 	return err
 }
 
+func configureAppWithRetry(app appConfig, qbitUser string, qbitPassword string, qbitHost string, qbitPort int) error {
+	var lastErr error
+	for attempt := 1; attempt <= 30; attempt++ {
+		err := configureApp(app, qbitUser, qbitPassword, qbitHost, qbitPort)
+		if err == nil {
+			return nil
+		}
+		lastErr = err
+		fmt.Fprintf(os.Stderr, "%s: waiting for API readiness (%d/30): %v\n", app.Name, attempt, err)
+		time.Sleep(2 * time.Second)
+	}
+
+	return lastErr
+}
+
 func run() error {
 	qbitUserFile, err := requiredEnv("HOME_OPS_QBIT_USERNAME_FILE")
 	if err != nil {
@@ -268,7 +283,7 @@ func run() error {
 	}
 
 	for _, app := range apps {
-		if err := configureApp(app, qbitUser, qbitPassword, qbitHost, qbitPort); err != nil {
+		if err := configureAppWithRetry(app, qbitUser, qbitPassword, qbitHost, qbitPort); err != nil {
 			return err
 		}
 	}
