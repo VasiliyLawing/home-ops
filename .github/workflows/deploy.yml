@@ -42,4 +42,4 @@ jobs:
           EOF
 
       - name: Deploy media-node
-        run: nix develop --command clan machines update media-node
+        run: nix run nixpkgs#nixos-rebuild -- switch --flake .#media-node --target-host media-node

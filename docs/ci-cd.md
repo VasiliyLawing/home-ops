@@ -3,8 +3,8 @@
 The repo includes two GitHub Actions:
 
 - `Nix CI`: validates the flake and dry-runs both machine builds.
-- `Deploy media-node`: manual deploy button that joins Tailscale and runs
-  `clan machines update media-node`.
+- `Deploy media-node`: manual deploy button that joins Tailscale and runs a
+  remote `nixos-rebuild switch` against `media-node`.
 
 ## Required GitHub secrets
 
@@ -24,9 +24,9 @@ The Tailscale auth key should be ephemeral and tagged for CI, for example
 `tag:ci`. The CI identity needs SSH/network access to `media-node` on TCP port
 22.
 
-The deploy workflow assumes `media-node` resolves through MagicDNS. If not,
-update `clan.core.networking.targetHost` in:
+The deploy workflow assumes `media-node` resolves through MagicDNS or the
+runner's SSH config. If not, update the deploy workflow target host in:
 
 ```text
-machines/media-node/configuration.nix
+.github/workflows/deploy.yml
 ```
