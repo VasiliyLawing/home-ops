@@ -294,9 +294,8 @@ journalctl -u home-ops-seerr-bootstrap.service -n 120 --no-pager
 
 When the Jellyfin key exists, the bootstrap also pulls Jellyfin's Movies/TV
 media folders, enables them in Seerr, and sets the LAN Jellyfin external URL to
-`http://media-node:8096`. It also marks Seerr's first-run setup as initialized,
-so the setup wizard should not ask you to toggle libraries after the bootstrap
-runs.
+`http://media-node:8096`. Seerr's first admin user is still created by the
+first-run login flow; Home Ops does not fake that `initialized` state.
 
 If the Jellyfin key is missing, the bootstrap still writes Sonarr/Radarr
 settings and logs that Jellyfin was skipped. After writing settings, the service
@@ -317,7 +316,7 @@ journalctl -u home-ops-smoke-test.service -n 200 --no-pager
 It checks failed systemd units, NAS media paths, qBittorrent's Gluetun network
 namespace, qBittorrent's API, Sonarr/Radarr download-client wiring, Prowlarr app
 links and FlareSolverr proxy, Jellyfin Movies/TV libraries, and Seerr's
-initialized Jellyfin/Sonarr/Radarr settings.
+Jellyfin/Sonarr/Radarr settings.
 
 ## Jellyfin bootstrap
 

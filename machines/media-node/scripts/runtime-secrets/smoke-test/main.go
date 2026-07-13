@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -216,11 +217,84 @@ func checkQbittorrentVPNNamespace(smokeContext) error {
 	return nil
 }
 
-func checkQbittorrentAPI(smokeContext) error {
+func qbittorrentCookie(ctx smokeContext) (string, error) {
+	username, err := readSecret(ctx.secretDir, "qbittorrent-webui-username")
+	if err != nil {
+		return "", err
+	}
+	password, err := readSecret(ctx.secretDir, "qbittorrent-webui-password")
+	if err != nil {
+		return "", err
+	}
+
+	form := url.Values{}
+	form.Set("username", username)
+	form.Set("password", password)
+
+	req, err := http.NewRequest(
+		"POST",
+		"http://127.0.0.1:8081/api/v2/auth/login",
+		strings.NewReader(form.Encode()),
+	)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Referer", "http://127.0.0.1:8081/")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", fmt.Errorf("qBittorrent login returned %d: %s", resp.StatusCode, strings.TrimSpace(string(responseBody)))
+	}
+	if strings.TrimSpace(string(responseBody)) != "Ok." {
+		return "", fmt.Errorf("qBittorrent login failed: %s", strings.TrimSpace(string(responseBody)))
+	}
+	for _, cookie := range resp.Cookies() {
+		if cookie.Name == "SID" && cookie.Value != "" {
+			return cookie.String(), nil
+		}
+	}
+	return "", fmt.Errorf("qBittorrent login did not return a SID cookie")
+}
+
+func checkQbittorrentAPI(ctx smokeContext) error {
 	return retry(func() error {
-		body, err := request("GET", "http://127.0.0.1:8081/api/v2/app/version", "", nil)
+		cookie, err := qbittorrentCookie(ctx)
 		if err != nil {
 			return err
+		}
+
+		req, err := http.NewRequest("GET", "http://127.0.0.1:8081/api/v2/app/version", nil)
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Accept", "text/plain")
+		req.Header.Set("Cookie", cookie)
+		req.Header.Set("Referer", "http://127.0.0.1:8081/")
+
+		client := &http.Client{Timeout: 10 * time.Second}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			return fmt.Errorf("GET qBittorrent app/version returned %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
 		}
 		if strings.TrimSpace(string(body)) == "" {
 			return fmt.Errorf("qBittorrent returned an empty version")
@@ -337,11 +411,6 @@ func checkSeerrSettings(ctx smokeContext) error {
 		return err
 	}
 
-	publicSettings := asMap(settings["public"])
-	if publicSettings["initialized"] != true {
-		return fmt.Errorf("Seerr public.initialized is not true")
-	}
-
 	main := asMap(settings["main"])
 	if mediaServerType, ok := main["mediaServerType"].(float64); !ok || int(mediaServerType) != 2 {
 		return fmt.Errorf("Seerr main.mediaServerType is not Jellyfin")
@@ -389,7 +458,7 @@ func run() error {
 		{name: "Radarr has qBittorrent download client", run: checkArrDownloadClient("Radarr", "http://127.0.0.1:7878", "radarr-api-key")},
 		{name: "Prowlarr app links and FlareSolverr proxy", run: checkProwlarr},
 		{name: "Jellyfin Movies/TV libraries", run: checkJellyfin},
-		{name: "Seerr settings initialized", run: checkSeerrSettings},
+		{name: "Seerr media settings configured", run: checkSeerrSettings},
 	}
 
 	failures := 0

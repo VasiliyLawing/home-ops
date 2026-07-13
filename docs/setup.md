@@ -187,7 +187,8 @@ sudo journalctl -u home-ops-bazarr-bootstrap.service
 Seerr's Sonarr/Radarr settings are Nix-owned. Jellyfin wiring is added once a
 real Jellyfin API key exists at `/var/lib/home-ops/secrets/jellyfin-api-key`.
 The Seerr bootstrap also enables the Jellyfin Movies/TV libraries so the media
-server setup is initialized:
+server setup is pre-filled. Create the first Seerr admin through the UI once;
+Home Ops does not fake Seerr's first-run initialized state:
 
 ```bash
 sudo systemctl start home-ops-jellyfin-bootstrap.service

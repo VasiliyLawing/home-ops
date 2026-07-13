@@ -344,10 +344,6 @@ func configureJellyfin(settings map[string]interface{}, apiKey string, baseURL s
 	main["localLogin"] = true
 	main["mediaServerLogin"] = true
 	settings["main"] = main
-
-	public := asMap(settings["public"])
-	public["initialized"] = true
-	settings["public"] = public
 	return nil
 }
 
