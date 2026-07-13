@@ -318,6 +318,28 @@ systemctl start home-ops-jellyfin-bootstrap.service
 journalctl -u home-ops-jellyfin-bootstrap.service -n 80 --no-pager
 ```
 
+## Bazarr bootstrap
+
+`home-ops-bazarr-bootstrap.service` owns Bazarr's Sonarr/Radarr connection
+settings. It edits only the relevant scalar keys in Bazarr's config file and
+preserves the rest of the config.
+
+It writes:
+
+```text
+Sonarr URL/API key -> 127.0.0.1:8989
+Radarr URL/API key -> 127.0.0.1:7878
+Default undefined audio/subtitle language -> en
+```
+
+It runs before Bazarr starts:
+
+```bash
+systemctl status home-ops-bazarr-bootstrap.service
+journalctl -u home-ops-bazarr-bootstrap.service -n 80 --no-pager
+systemctl status bazarr.service
+```
+
 ## qBit Manage
 
 qBit Manage is enabled once qBittorrent is enabled and the Gluetun env file is

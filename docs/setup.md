@@ -176,6 +176,14 @@ sudo systemctl start configarr-sync.service
 sudo journalctl -u configarr-sync.service
 ```
 
+Bazarr's Sonarr/Radarr connections are Nix-owned:
+
+```bash
+sudo systemctl start home-ops-bazarr-bootstrap.service
+sudo systemctl restart bazarr.service
+sudo journalctl -u home-ops-bazarr-bootstrap.service
+```
+
 Seerr's Sonarr/Radarr settings are Nix-owned. Jellyfin wiring is added once a
 real Jellyfin API key exists at `/var/lib/home-ops/secrets/jellyfin-api-key`:
 

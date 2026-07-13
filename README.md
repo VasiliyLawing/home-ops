@@ -70,7 +70,8 @@ Prowlarr indexer proxies, and Sonarr/Radarr qBittorrent download-client
 bootstrap directly through the Arr APIs. Actual Prowlarr indexers are added
 manually in the UI. Home Ops also bootstraps Seerr's Sonarr/Radarr settings,
 creates Jellyfin Movies/TV libraries, and completes Jellyfin wiring when a real
-Jellyfin API key is placed on the host. Configarr owns Sonarr/Radarr quality
+Jellyfin API key is placed on the host. Bazarr's Sonarr/Radarr connections are
+bootstrapped from the same generated Arr API keys. Configarr owns Sonarr/Radarr quality
 profiles and TRaSH-Guides sync declaratively. Unpackerr handles archive
 extraction after downloads. Shelfmark is wired to Prowlarr and qBittorrent
 through generated host-local secrets. qBit Manage owns qBittorrent categories

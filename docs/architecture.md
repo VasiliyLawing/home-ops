@@ -54,6 +54,7 @@ The media stack is still split by domain:
 - `services/media/jellyfin-bootstrap.nix`: Jellyfin Movies/TV library bootstrap;
 - `services/media/downloads.nix`: SABnzbd and VPN-isolated qBittorrent;
 - `services/media/movies-tv.nix`: Sonarr, Radarr, Prowlarr, Bazarr, Flaresolverr, Neutarr;
+- `services/media/bazarr-bootstrap.nix`: Bazarr Sonarr/Radarr settings bootstrap;
 - `services/media/arr-download-clients.nix`: Sonarr/Radarr qBittorrent download-client bootstrap;
 - `services/media/prowlarr-bootstrap.nix`: Prowlarr app-link and indexer-proxy bootstrap;
 - `services/media/configarr.nix`: Configarr profile/custom-format/TRaSH sync for Sonarr and Radarr;
@@ -87,6 +88,7 @@ configuration is split so tools do not fight each other:
 - Configarr owns Sonarr/Radarr quality profiles, quality definitions, and
   TRaSH-Guides custom-format sync.
 - `home-ops-jellyfin-bootstrap.service` owns Jellyfin Movies/TV libraries.
+- `home-ops-bazarr-bootstrap.service` owns Bazarr's Sonarr/Radarr connections.
 - `home-ops-prowlarr-bootstrap.service` owns Prowlarr app links to
   Sonarr/Radarr and shared indexer proxies such as FlareSolverr.
 - `home-ops-seerr-bootstrap.service` owns Seerr's Sonarr/Radarr settings and

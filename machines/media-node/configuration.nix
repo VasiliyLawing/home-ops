@@ -9,6 +9,7 @@
     ./services/media/jellyfin-bootstrap.nix
     ./services/media/downloads.nix
     ./services/media/movies-tv.nix
+    ./services/media/bazarr-bootstrap.nix
     ./services/media/arr-download-clients.nix
     ./services/media/prowlarr-bootstrap.nix
     ./services/media/configarr.nix
@@ -48,6 +49,7 @@
       };
 
       moviesTv.enable = true;
+      bazarrBootstrap.enable = true;
       arrDownloadClients.enable = true;
       prowlarrBootstrap.enable = true;
       configarr.enable = true;
