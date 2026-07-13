@@ -72,6 +72,9 @@ func login(baseURL string, username string, password string) (string, error) {
 			return "SID=" + cookie.Value, nil
 		}
 	}
+	if strings.TrimSpace(string(body)) == "" {
+		return "", nil
+	}
 	return "", fmt.Errorf("login did not return SID cookie: %s", strings.TrimSpace(string(body)))
 }
 
@@ -81,7 +84,9 @@ func apiRequest(baseURL string, cookie string, endpoint string, form url.Values)
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Cookie", cookie)
+	if cookie != "" {
+		req.Header.Set("Cookie", cookie)
+	}
 	req.Header.Set("Referer", baseURL+"/")
 
 	client := &http.Client{Timeout: 30 * time.Second}
@@ -106,7 +111,9 @@ func apiGet(baseURL string, cookie string, endpoint string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Cookie", cookie)
+	if cookie != "" {
+		req.Header.Set("Cookie", cookie)
+	}
 	req.Header.Set("Referer", baseURL+"/")
 	req.Header.Set("Accept", "application/json")
 

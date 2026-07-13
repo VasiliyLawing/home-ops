@@ -269,6 +269,9 @@ func qbittorrentCookie(ctx smokeContext) (string, error) {
 			return "SID=" + cookie.Value, nil
 		}
 	}
+	if strings.TrimSpace(string(responseBody)) == "" {
+		return "", nil
+	}
 	return "", fmt.Errorf("qBittorrent login did not return a SID cookie: %s", strings.TrimSpace(string(responseBody)))
 }
 
@@ -284,7 +287,9 @@ func checkQbittorrentAPI(ctx smokeContext) error {
 			return err
 		}
 		req.Header.Set("Accept", "text/plain")
-		req.Header.Set("Cookie", cookie)
+		if cookie != "" {
+			req.Header.Set("Cookie", cookie)
+		}
 		req.Header.Set("Referer", "http://127.0.0.1:8081/")
 
 		client := &http.Client{Timeout: 10 * time.Second}
@@ -310,7 +315,9 @@ func checkQbittorrentAPI(ctx smokeContext) error {
 			return err
 		}
 		prefsReq.Header.Set("Accept", "application/json")
-		prefsReq.Header.Set("Cookie", cookie)
+		if cookie != "" {
+			prefsReq.Header.Set("Cookie", cookie)
+		}
 		prefsReq.Header.Set("Referer", "http://127.0.0.1:8081/")
 
 		prefsResp, err := client.Do(prefsReq)
