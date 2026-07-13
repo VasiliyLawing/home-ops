@@ -159,7 +159,8 @@ sudo systemctl start home-ops-arr-download-clients.service
 sudo journalctl -u home-ops-arr-download-clients.service
 ```
 
-Home Ops owns public Prowlarr indexers and Prowlarr app links to Sonarr/Radarr.
+Home Ops owns Prowlarr app links to Sonarr/Radarr and the FlareSolverr indexer
+proxy. Add actual Prowlarr indexers manually in the UI.
 After Sonarr, Radarr, and Prowlarr have started at least once, run:
 
 ```bash

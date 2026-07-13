@@ -1,7 +1,8 @@
 # Configarr owns Sonarr/Radarr quality definitions, quality profiles, and
 # TRaSH-Guides custom-format sync.
 #
-# Home Ops Prowlarr bootstrap owns Prowlarr app links and public indexers.
+# Home Ops Prowlarr bootstrap owns Prowlarr app links and indexer proxies.
+# Add actual Prowlarr indexers manually in the UI.
 # qBit Manage owns qBittorrent categories/tags/cleanup once enabled.
 
 telemetry: false

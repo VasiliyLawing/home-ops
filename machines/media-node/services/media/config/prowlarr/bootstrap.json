@@ -22,39 +22,14 @@
       "name": "FlareSolverr",
       "implementation": "FlareSolverr",
       "required": true,
+      "tags": [
+        "flaresolverr"
+      ],
       "fields": {
         "host": "http://127.0.0.1:8191/",
         "requestTimeout": 60
       }
     }
   ],
-  "indexers": [
-    {
-      "name": "1337x",
-      "match": "1337x",
-      "required": false,
-      "enable": true,
-      "redirect": false,
-      "priority": 10,
-      "appProfileId": 1,
-      "fields": {
-        "sort": "created",
-        "type": "desc"
-      }
-    },
-    {
-      "name": "Nyaa.si",
-      "match": "Nyaa.si",
-      "required": false,
-      "enable": true,
-      "redirect": false,
-      "priority": 20,
-      "appProfileId": 1,
-      "fields": {
-        "sort": "created",
-        "type": "desc",
-        "prefer_magnet_links": true
-      }
-    }
-  ]
+  "indexers": []
 }

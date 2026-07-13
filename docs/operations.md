@@ -216,18 +216,18 @@ finished.
 
 ## Prowlarr bootstrap
 
-`home-ops-prowlarr-bootstrap.service` handles public Prowlarr indexers and the
-Prowlarr links to Sonarr/Radarr.
+`home-ops-prowlarr-bootstrap.service` handles Prowlarr app links to
+Sonarr/Radarr and shared indexer proxies such as FlareSolverr.
 
 This intentionally replaces Buildarr. Buildarr's Prowlarr plugin failed while
-reading current Prowlarr remote state before it could apply our desired indexer
-and app-link config. The Home Ops bootstrap talks directly to Prowlarr's live
-schemas instead.
+reading current Prowlarr remote state before it could apply our desired app-link
+config. The Home Ops bootstrap talks directly to Prowlarr's live schemas
+instead.
 
-The bootstrap also declares Prowlarr's FlareSolverr indexer proxy before public
-indexers are created. Public indexers are best-effort: if a public site is
-temporarily blocked, rate limited, or down, the sync logs the skipped indexer
-but still succeeds so internal app links do not flap.
+Prowlarr only uses FlareSolverr when the proxy and indexer have matching tags.
+The bootstrap therefore creates a `flaresolverr` tag and attaches it to both
+the FlareSolverr proxy. Add actual indexers manually in Prowlarr and attach the
+same `flaresolverr` tag to Cloudflare-prone indexers.
 
 It runs as a scheduled one-shot job:
 

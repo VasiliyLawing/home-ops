@@ -54,7 +54,7 @@ The media stack is still split by domain:
 - `services/media/downloads.nix`: SABnzbd and VPN-isolated qBittorrent;
 - `services/media/movies-tv.nix`: Sonarr, Radarr, Prowlarr, Bazarr, Flaresolverr, Neutarr;
 - `services/media/arr-download-clients.nix`: Sonarr/Radarr qBittorrent download-client bootstrap;
-- `services/media/prowlarr-bootstrap.nix`: Prowlarr public indexer and app-link bootstrap;
+- `services/media/prowlarr-bootstrap.nix`: Prowlarr app-link and indexer-proxy bootstrap;
 - `services/media/configarr.nix`: Configarr profile/custom-format/TRaSH sync for Sonarr and Radarr;
 - `services/media/qbit-manage.nix`: qBit Manage category/tag/cleanup skeleton;
 - `services/media/unpackerr.nix`: archive extraction for completed downloads;
@@ -68,8 +68,10 @@ qBittorrent WebUI credentials before the VPN-isolated container starts.
 
 Static app config files live under `services/.../config/` only when there is a
 real config artifact worth owning in Git. The Prowlarr bootstrap has JSON
-because public indexers and app links are real desired state. Configarr has one
-because quality profiles, quality definitions, and TRaSH-Guides custom-format
+because app links and indexer proxies are real desired state. Actual Prowlarr
+indexers are added manually in the UI because public indexer availability and
+anti-bot behavior can be brittle. Configarr has one because quality profiles,
+quality definitions, and TRaSH-Guides custom-format
 choices are real desired state. qBit Manage has one because qBittorrent
 categories and hygiene rules are real desired state. Most services in this stack
 are configured by NixOS module options, runtime state, or their own web/API
@@ -82,8 +84,8 @@ configuration is split so tools do not fight each other:
 
 - Configarr owns Sonarr/Radarr quality profiles, quality definitions, and
   TRaSH-Guides custom-format sync.
-- `home-ops-prowlarr-bootstrap.service` owns Prowlarr public indexers and
-  Prowlarr app links to Sonarr/Radarr.
+- `home-ops-prowlarr-bootstrap.service` owns Prowlarr app links to
+  Sonarr/Radarr and shared indexer proxies such as FlareSolverr.
 - `home-ops-arr-download-clients.service` owns Sonarr/Radarr qBittorrent
   download-client definitions using each app's own API schema.
 - qBit Manage owns qBittorrent categories, tags, and cleanup once enabled.
@@ -121,8 +123,9 @@ Nix-generated `arr-api-keys.env` file.
 
 Prowlarr bootstrap runs as `home-ops-prowlarr-bootstrap.service` plus a daily
 timer. It uses the live Prowlarr provider schemas, then fills only the small set
-of values this repo owns. This replaces Buildarr for Prowlarr because the
-Buildarr Prowlarr plugin proved brittle against current Prowlarr remote state.
+of values this repo owns: app links and indexer proxies. This replaces Buildarr
+for Prowlarr because the Buildarr Prowlarr plugin proved brittle against current
+Prowlarr remote state.
 
 Unpackerr runs as a lightweight container with the same `/data` mount path used
 by qBittorrent, Sonarr, and Radarr, so it sees archives at the same paths the

@@ -29,7 +29,7 @@ let
 in
 {
   options.homeOps.media.prowlarrBootstrap = {
-    enable = lib.mkEnableOption "Prowlarr public indexer and app-link bootstrap";
+    enable = lib.mkEnableOption "Prowlarr app-link and indexer-proxy bootstrap";
     configFile = lib.mkOption {
       type = lib.types.path;
       default = ./config/prowlarr/bootstrap.json;
@@ -55,7 +55,7 @@ in
     ];
 
     systemd.services.home-ops-prowlarr-bootstrap = {
-      description = "Bootstrap Prowlarr public indexers and app links";
+      description = "Bootstrap Prowlarr app links and indexer proxies";
       after = [
         "home-ops-runtime-secrets.service"
         "home-ops-arr-configs.service"

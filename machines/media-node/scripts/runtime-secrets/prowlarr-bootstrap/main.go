@@ -29,7 +29,13 @@ type providerResource struct {
 	Redirect           bool    `json:"redirect,omitempty"`
 	AppProfileID       int     `json:"appProfileId,omitempty"`
 	Priority           int     `json:"priority,omitempty"`
+	Tags               []int   `json:"tags,omitempty"`
 	Fields             []field `json:"fields"`
+}
+
+type tagResource struct {
+	ID    int    `json:"id,omitempty"`
+	Label string `json:"label"`
 }
 
 type desiredApplication struct {
@@ -48,6 +54,7 @@ type desiredIndexer struct {
 	Redirect     bool                   `json:"redirect"`
 	Priority     int                    `json:"priority"`
 	AppProfileID int                    `json:"appProfileId"`
+	Tags         []string               `json:"tags"`
 	Fields       map[string]interface{} `json:"fields"`
 }
 
@@ -55,6 +62,7 @@ type desiredIndexerProxy struct {
 	Name           string                 `json:"name"`
 	Implementation string                 `json:"implementation"`
 	Required       bool                   `json:"required"`
+	Tags           []string               `json:"tags"`
 	Fields         map[string]interface{} `json:"fields"`
 }
 
@@ -236,6 +244,57 @@ func createOrUpdate(baseURL string, apiKey string, endpoint string, desired prov
 	return err
 }
 
+func ensureTags(baseURL string, apiKey string, labels []string) ([]int, error) {
+	if len(labels) == 0 {
+		return nil, nil
+	}
+
+	body, err := request("GET", normalizeBaseURL(baseURL)+"/api/v1/tag", apiKey, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var existing []tagResource
+	if err := json.Unmarshal(body, &existing); err != nil {
+		return nil, err
+	}
+
+	ids := make([]int, 0, len(labels))
+	for _, label := range labels {
+		label = strings.TrimSpace(label)
+		if label == "" {
+			continue
+		}
+
+		var id int
+		for _, tag := range existing {
+			if equalName(tag.Label, label) {
+				id = tag.ID
+				break
+			}
+		}
+
+		if id == 0 {
+			payload := tagResource{Label: label}
+			response, err := request("POST", normalizeBaseURL(baseURL)+"/api/v1/tag", apiKey, payload)
+			if err != nil {
+				return nil, err
+			}
+			var created tagResource
+			if err := json.Unmarshal(response, &created); err != nil {
+				return nil, err
+			}
+			id = created.ID
+			existing = append(existing, created)
+			fmt.Printf("tag: created %s\n", label)
+		}
+
+		ids = append(ids, id)
+	}
+
+	return ids, nil
+}
+
 func configureApplication(cfg bootstrapConfig, apiKey string, schemas []providerResource, app desiredApplication) error {
 	schema, err := findSchema(schemas, app.Implementation)
 	if err != nil {
@@ -289,6 +348,11 @@ func configureIndexer(cfg bootstrapConfig, apiKey string, schemas []providerReso
 	if desired.AppProfileID == 0 {
 		desired.AppProfileID = 1
 	}
+	tags, err := ensureTags(cfg.BaseURL, apiKey, indexer.Tags)
+	if err != nil {
+		return err
+	}
+	desired.Tags = tags
 	for name, value := range indexer.Fields {
 		desired.Fields = setField(desired.Fields, name, value)
 	}
@@ -310,6 +374,11 @@ func configureIndexerProxy(cfg bootstrapConfig, apiKey string, schemas []provide
 	desired.ID = 0
 	desired.Name = proxy.Name
 	desired.Enable = true
+	tags, err := ensureTags(cfg.BaseURL, apiKey, proxy.Tags)
+	if err != nil {
+		return err
+	}
+	desired.Tags = tags
 	for name, value := range proxy.Fields {
 		desired.Fields = setField(desired.Fields, name, value)
 	}

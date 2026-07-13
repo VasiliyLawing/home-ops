@@ -65,9 +65,10 @@ machines/
 Nix files declare the system. The only machine-owned scripts are runtime
 secret/bootstrap helpers where code is genuinely clearer than Nix strings.
 Static app config files live under `services/.../config/` only when an app has
-an actual config artifact worth owning in Git. Home Ops owns Prowlarr public
-indexers, Prowlarr app links, and Sonarr/Radarr qBittorrent download-client
-bootstrap directly through the Arr APIs. Configarr owns Sonarr/Radarr quality
+an actual config artifact worth owning in Git. Home Ops owns Prowlarr app links,
+Prowlarr indexer proxies, and Sonarr/Radarr qBittorrent download-client
+bootstrap directly through the Arr APIs. Actual Prowlarr indexers are added
+manually in the UI. Configarr owns Sonarr/Radarr quality
 profiles and TRaSH-Guides sync declaratively. Unpackerr handles archive
 extraction after downloads. Shelfmark is wired to Prowlarr and qBittorrent
 through generated host-local secrets. qBit Manage owns qBittorrent categories
