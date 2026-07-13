@@ -62,7 +62,7 @@ in
       image = "ghcr.io/gh-code-forge/neutarr:latest";
       autoStart = true;
       volumes = [ "/var/lib/home-ops/neutarr:/config" ];
-      extraOptions = [ "--pull=newer" ];
+      extraOptions = [ "--pull=always" ];
     };
   };
 }

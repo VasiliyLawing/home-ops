@@ -124,7 +124,7 @@ in
         "${shared.dataRoot}:/data"
       ];
       extraOptions = [
-        "--pull=newer"
+        "--pull=always"
         "--network=host"
       ];
     };

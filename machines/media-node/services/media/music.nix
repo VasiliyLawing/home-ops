@@ -47,7 +47,7 @@ in
         "${shared.dataRoot}/media/music:/music"
         "${shared.dataRoot}/media/podcasts:/podcasts"
       ];
-      extraOptions = [ "--pull=newer" ];
+      extraOptions = [ "--pull=always" ];
     };
   };
 }
