@@ -296,6 +296,28 @@ If the Jellyfin key is missing, the bootstrap still writes Sonarr/Radarr
 settings and logs that Jellyfin was skipped. After writing settings, the service
 restarts Seerr so it reloads `settings.json`.
 
+## Jellyfin bootstrap
+
+`home-ops-jellyfin-bootstrap.service` creates the baseline Jellyfin libraries:
+
+```text
+Movies -> /mnt/nas/data/media/movies
+TV     -> /mnt/nas/data/media/tv
+```
+
+It uses the host-local Jellyfin API key at:
+
+```text
+/var/lib/home-ops/secrets/jellyfin-api-key
+```
+
+Run it after Jellyfin's first admin user and API key exist:
+
+```bash
+systemctl start home-ops-jellyfin-bootstrap.service
+journalctl -u home-ops-jellyfin-bootstrap.service -n 80 --no-pager
+```
+
 ## qBit Manage
 
 qBit Manage is enabled once qBittorrent is enabled and the Gluetun env file is

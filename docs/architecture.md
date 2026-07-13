@@ -51,6 +51,7 @@ tooling. Those are machine-owned concerns.
 The media stack is still split by domain:
 
 - `services/media/shared.nix`: shared paths, Jellyfin, Seerr, Docker backend;
+- `services/media/jellyfin-bootstrap.nix`: Jellyfin Movies/TV library bootstrap;
 - `services/media/downloads.nix`: SABnzbd and VPN-isolated qBittorrent;
 - `services/media/movies-tv.nix`: Sonarr, Radarr, Prowlarr, Bazarr, Flaresolverr, Neutarr;
 - `services/media/arr-download-clients.nix`: Sonarr/Radarr qBittorrent download-client bootstrap;
@@ -85,6 +86,7 @@ configuration is split so tools do not fight each other:
 
 - Configarr owns Sonarr/Radarr quality profiles, quality definitions, and
   TRaSH-Guides custom-format sync.
+- `home-ops-jellyfin-bootstrap.service` owns Jellyfin Movies/TV libraries.
 - `home-ops-prowlarr-bootstrap.service` owns Prowlarr app links to
   Sonarr/Radarr and shared indexer proxies such as FlareSolverr.
 - `home-ops-seerr-bootstrap.service` owns Seerr's Sonarr/Radarr settings and

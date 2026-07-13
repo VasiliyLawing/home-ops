@@ -6,6 +6,7 @@
     ./secrets.nix
     ./nas-client.nix
     ./services/media/shared.nix
+    ./services/media/jellyfin-bootstrap.nix
     ./services/media/downloads.nix
     ./services/media/movies-tv.nix
     ./services/media/arr-download-clients.nix
@@ -36,6 +37,7 @@
 
     media = {
       shared.enable = true;
+      jellyfinBootstrap.enable = true;
 
       downloads = {
         sabnzbd.enable = true;

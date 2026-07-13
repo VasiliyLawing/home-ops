@@ -180,6 +180,8 @@ Seerr's Sonarr/Radarr settings are Nix-owned. Jellyfin wiring is added once a
 real Jellyfin API key exists at `/var/lib/home-ops/secrets/jellyfin-api-key`:
 
 ```bash
+sudo systemctl start home-ops-jellyfin-bootstrap.service
+sudo journalctl -u home-ops-jellyfin-bootstrap.service
 sudo systemctl start home-ops-seerr-bootstrap.service
 sudo journalctl -u home-ops-seerr-bootstrap.service
 ```
