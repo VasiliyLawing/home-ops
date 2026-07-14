@@ -22,6 +22,7 @@
     ./services/media/books.nix
     ./services/media/music.nix
     ./services/media/wizarr.nix
+    ./services/media/cleanuparr.nix
     ./services/ingress.nix
     ./services/security.nix
     ./services/authelia.nix
@@ -63,6 +64,7 @@
       books.enable = true;
       music.enable = true;
       wizarr.enable = true;
+      cleanuparr.enable = true;
     };
 
     dashboard.enable = true;
