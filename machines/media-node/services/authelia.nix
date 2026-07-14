@@ -73,7 +73,7 @@ let
       if [ -f "$tsv" ]; then
         while IFS=$'\t' read -r u dn email groups_csv; do
           # skip blanks and comments
-          case "$u" in ''|\#*) continue;; esac
+          case "$u" in '''|"#"*) continue;; esac
           [ -z "''${groups_csv:-}" ] && groups_csv="users"
           [ "$u" = "${cfg.adminUsername}" ] && continue  # admin already written
           user_pw="$(ensure_password_secret "$u" "")"
