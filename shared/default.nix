@@ -1,6 +1,18 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 {
+  options.homeOps.tailscaleAddress = lib.mkOption {
+    type = lib.types.str;
+    description = ''
+      This machine's stable Tailscale IPv4 address. Used to bind Docker port
+      publishes to the tailnet only when host networking isn't an option
+      (e.g. sidecar VPN setups where the container shares another container's
+      network namespace). Set per-machine in that machine's configuration.
+    '';
+  };
+
+  config = {
+
   time.timeZone = "America/Chicago";
 
   users = {
@@ -36,5 +48,7 @@
       dates = "weekly";
       options = "--delete-older-than 14d";
     };
+  };
+
   };
 }

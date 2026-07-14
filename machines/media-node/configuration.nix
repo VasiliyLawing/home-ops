@@ -32,6 +32,11 @@
   networking.hostName = "media-node";
 
   homeOps = {
+    # Stable tailnet IP for this device — used by containers that can't run
+    # in --network=host mode (Gluetun VPN sidecar) so they still bind on the
+    # tailnet interface only rather than 0.0.0.0.
+    tailscaleAddress = "100.105.176.79";
+
     secrets.enable = true;
 
     nas = {

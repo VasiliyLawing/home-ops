@@ -70,14 +70,15 @@ in
     virtualisation.oci-containers.containers.neutarr = lib.mkIf cfg.neutarr.enable {
       image = cfg.neutarr.image;
       autoStart = true;
-      extraOptions = [ "--network=host" ];
       environment = {
         PUID = "1000";
         PGID = "1001";
         TZ = config.time.timeZone;
       };
       volumes = [ "/var/lib/home-ops/neutarr:/config" ];
-      extraOptions = [ "--add-host=host.docker.internal:host-gateway" ];
+      # Host networking → --add-host isn't meaningful; host.docker.internal
+      # is superseded by plain 127.0.0.1 pointing at the actual host.
+      extraOptions = [ "--network=host" ];
     };
   };
 }
