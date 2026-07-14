@@ -220,6 +220,38 @@ It is exposed on localhost port `8098`, persists app data in
 /mnt/nas/data/media/music/aurral
 ```
 
+## Soulseek music pipeline
+
+Music acquisition runs over Soulseek instead of the indexer path:
+Aurral request -> Lidarr wanted list -> Soularr (every 15 min) searches and
+downloads via slskd -> Lidarr imports -> nightly beets pass tags in place ->
+Navidrome serves it. Scrobbling is Navidrome's built-in Last.fm/ListenBrainz
+support (per-user, linked in the Navidrome UI) — no multi-scrobbler needed.
+
+slskd is the native NixOS service; Soularr is `ghcr.io/mrusse/soularr` on host
+networking with its status UI on port `8265` (tailscale-only, like the slskd
+web UI on `5030`). All components reference downloads by the same path string
+`/data/soulseek/complete`, which resolves on the host through the `/data`
+symlink and inside the Soularr container through an equivalent mount.
+
+Soulseek credentials are runtime-generated in `/var/lib/home-ops/secrets`
+(`slskd-slsk-username`/`-password`): there is no signup — slskd's first login
+registers the account. To use an existing Soulseek identity, overwrite those
+two files before slskd first starts (or stop slskd, overwrite, remove
+`slskd-env`, restart `home-ops-runtime-secrets` then `slskd`). The slskd web
+UI logs in as `admin` with `slskd-web-password`.
+
+The soulseek listen port `50300` is opened in the host firewall; forward it on
+the router to media-node or transfers from other NAT'd peers will fail. slskd
+shares the music library read-only (good etiquette; avoids leecher throttling)
+and garbage-collects imported downloads after 14 days.
+
+```bash
+systemctl status slskd docker-soularr
+journalctl -u docker-soularr -n 100 --no-pager
+systemctl start beets-import.service   # on-demand tag pass
+```
+
 ## Configarr sync
 
 Configarr handles Sonarr/Radarr quality-profile and TRaSH-Guides custom-format

@@ -60,6 +60,10 @@ in
         "prowlarr-api-key"
         "qbittorrent-webui-username"
         "qbittorrent-webui-password"
+        "slskd-slsk-username"
+        "slskd-slsk-password"
+        "slskd-web-password"
+        "slskd-api-key"
       ];
       description = "Stable secret file names generated on first boot.";
     };

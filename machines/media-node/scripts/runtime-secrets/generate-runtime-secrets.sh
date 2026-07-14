@@ -18,6 +18,9 @@ write_secret() {
       literal:*)
         printf '%s\n' "${generator#literal:}" > "$path"
         ;;
+      slskd-username)
+        printf 'slskd-%s\n' "$(openssl rand -hex 6)" > "$path"
+        ;;
       *)
         echo "Unknown generator for $name: $generator" >&2
         return 1
@@ -40,6 +43,9 @@ for name in "${secret_files[@]}"; do
     qbittorrent-webui-password)
       write_secret "$name" hex48
       ;;
+    slskd-slsk-username)
+      write_secret "$name" slskd-username
+      ;;
     *)
       write_secret "$name" hex48
       ;;
@@ -60,6 +66,10 @@ prowlarr_api_key="$(read_secret prowlarr-api-key)"
 lidarr_api_key="$(read_secret lidarr-api-key)"
 qbittorrent_user="$(read_secret qbittorrent-webui-username)"
 qbittorrent_password="$(read_secret qbittorrent-webui-password)"
+slskd_slsk_username="$(read_secret slskd-slsk-username)"
+slskd_slsk_password="$(read_secret slskd-slsk-password)"
+slskd_web_password="$(read_secret slskd-web-password)"
+slskd_api_key="$(read_secret slskd-api-key)"
 
 cat > "$HOME_OPS_SECRET_DIRECTORY/arr-api-keys.env" <<EOF
 SONARR_API_KEY=$sonarr_api_key
@@ -84,13 +94,26 @@ QBITTORRENT_USERNAME=$qbittorrent_user
 QBITTORRENT_PASSWORD=$qbittorrent_password
 EOF
 
+# Soulseek accounts are registered implicitly: slskd's first login with these
+# generated credentials creates the account. To use an existing Soulseek
+# identity instead, overwrite slskd-slsk-username/-password before first start.
+cat > "$HOME_OPS_SECRET_DIRECTORY/slskd-env" <<EOF
+SLSKD_SLSK_USERNAME=$slskd_slsk_username
+SLSKD_SLSK_PASSWORD=$slskd_slsk_password
+SLSKD_USERNAME=admin
+SLSKD_PASSWORD=$slskd_web_password
+SLSKD_API_KEY=role=ReadWrite;cidr=0.0.0.0/0,::/0;$slskd_api_key
+EOF
+
 chmod 0600 \
   "$HOME_OPS_SECRET_DIRECTORY/arr-api-keys.env" \
   "$HOME_OPS_SECRET_DIRECTORY/unpackerr-env" \
   "$HOME_OPS_SECRET_DIRECTORY/qbittorrent-env" \
-  "$HOME_OPS_SECRET_DIRECTORY/shelfmark-env"
+  "$HOME_OPS_SECRET_DIRECTORY/shelfmark-env" \
+  "$HOME_OPS_SECRET_DIRECTORY/slskd-env"
 chown root:root \
   "$HOME_OPS_SECRET_DIRECTORY/arr-api-keys.env" \
   "$HOME_OPS_SECRET_DIRECTORY/unpackerr-env" \
   "$HOME_OPS_SECRET_DIRECTORY/qbittorrent-env" \
-  "$HOME_OPS_SECRET_DIRECTORY/shelfmark-env"
+  "$HOME_OPS_SECRET_DIRECTORY/shelfmark-env" \
+  "$HOME_OPS_SECRET_DIRECTORY/slskd-env"

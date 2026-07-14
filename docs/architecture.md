@@ -59,7 +59,8 @@ The media stack is still split by domain:
 - `services/media/unpackerr.nix`: archive extraction for completed downloads;
 - `services/media/seerr-bootstrap.nix`: Seerr Jellyfin/Sonarr/Radarr settings bootstrap;
 - `services/media/books.nix`: Audiobookshelf, Calibre-Web, Shelfmark;
-- `services/media/music.nix`: Lidarr, Navidrome, Aurral.
+- `services/media/music.nix`: Lidarr, Navidrome, Aurral, plus the Soulseek
+  pipeline (slskd, Soularr) and a nightly in-place beets tagging run.
 
 The Nix modules describe services, options, dependencies, and systemd wiring.
 Shell scripts are kept to the bootstrap boundary only: generating host-local
