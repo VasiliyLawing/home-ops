@@ -70,7 +70,7 @@ in
     virtualisation.oci-containers.containers.neutarr = lib.mkIf cfg.neutarr.enable {
       image = cfg.neutarr.image;
       autoStart = true;
-      ports = [ "127.0.0.1:9705:9705" ];
+      extraOptions = [ "--network=host" ];
       environment = {
         PUID = "1000";
         PGID = "1001";

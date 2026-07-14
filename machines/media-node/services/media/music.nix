@@ -192,7 +192,6 @@ in
     virtualisation.oci-containers.containers.aurral = lib.mkIf cfg.aurral.enable {
       image = cfg.aurral.image;
       autoStart = true;
-      ports = [ "127.0.0.1:8098:3001" ];
       environment = {
         PUID = "1000";
         PGID = "1001";
@@ -204,7 +203,10 @@ in
         "${shared.dataRoot}/media/music/aurral:/app/downloads"
         "${shared.dataRoot}/media/music:/data:ro"
       ];
-      extraOptions = [ "--add-host=host.docker.internal:host-gateway" ];
+      # Host networking: NixOS firewall gates via trustedInterfaces=tailscale0.
+      # Aurral binds on its container's own port 3001 → reach it at :3001 over
+      # Tailscale (was previously remapped to 8098 via docker publish).
+      extraOptions = [ "--network=host" ];
     };
 
     # Host networking so Soularr reaches Lidarr (127.0.0.1:8686) and slskd

@@ -136,7 +136,6 @@ in
     virtualisation.oci-containers.containers.calibre-web-automated = lib.mkIf calibreWebAutomated.enable {
       image = calibreWebAutomated.image;
       autoStart = true;
-      ports = [ "127.0.0.1:${toString calibreWebAutomated.webuiPort}:8083" ];
       environment = {
         PUID = "1000";
         PGID = "1001";
@@ -149,6 +148,8 @@ in
         "${shared.dataRoot}/media/books/imports:/cwa-book-ingest"
         "${shared.dataRoot}/media/books/library:/calibre-library"
       ];
+      # Host networking so Tailscale reaches :8083; NixOS firewall gates LAN.
+      extraOptions = [ "--network=host" ];
     };
 
     virtualisation.oci-containers.containers.shelfmark = lib.mkIf shelfmark.enable {

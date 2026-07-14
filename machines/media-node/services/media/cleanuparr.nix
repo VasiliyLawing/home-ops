@@ -28,16 +28,14 @@ in
 
     virtualisation.oci-containers.containers.cleanuparr = {
       image = cfg.image;
-      ports = [ "127.0.0.1:${toString cfg.port}:11011" ];
       volumes = [ "${cfg.dataDir}:/config" ];
       environment = {
         TZ = config.time.timeZone;
-        # Tell Cleanuparr its base path — matches the docker-compose defaults.
         PORT = "11011";
       };
-      # Reach Sonarr/Radarr/Lidarr on the host (127.0.0.1 inside the container
-      # would point at itself, not at the arr apps).
-      extraOptions = [ "--add-host=host.docker.internal:host-gateway" ];
+      # Host networking: NixOS firewall's trustedInterfaces=tailscale0 handles
+      # gating, and http://localhost:8989 inside the container hits Sonarr.
+      extraOptions = [ "--network=host" ];
     };
   };
 }
