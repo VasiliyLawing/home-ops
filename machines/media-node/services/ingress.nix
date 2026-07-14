@@ -4,12 +4,29 @@ let
   cfg = config.homeOps.ingress;
   autheliaCfg = config.homeOps.authelia;
   autheliaEnabled = autheliaCfg.enable && (lib.elem cfg.requestsHost autheliaCfg.protectedHosts);
-  forwardAuthBlock = lib.optionalString autheliaEnabled ''
-    forward_auth 127.0.0.1:${toString autheliaCfg.port} {
-      uri /api/authz/forward-auth
-      copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
-    }
-  '';
+  # Gate the browser SPA behind Authelia but leave /api/* unauthenticated so
+  # native apps (Pocketseerr et al.) can still reach Seerr with their own
+  # API keys — forward_auth would 302 them to the login page, which apps
+  # can't follow. API brute-forcing is still gated by Seerr's own auth +
+  # the fail2ban jail.
+  seerrRouteBlock =
+    if autheliaEnabled then
+      ''
+        handle /api/* {
+          reverse_proxy 127.0.0.1:5055
+        }
+        handle {
+          forward_auth 127.0.0.1:${toString autheliaCfg.port} {
+            uri /api/authz/forward-auth
+            copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+          }
+          reverse_proxy 127.0.0.1:5055
+        }
+      ''
+    else
+      ''
+        reverse_proxy 127.0.0.1:5055
+      '';
 in
 {
   options.homeOps.ingress = {
@@ -43,10 +60,7 @@ in
           ${cfg.jellyfinHost}.extraConfig = ''
             reverse_proxy 127.0.0.1:8096
           '';
-          ${cfg.requestsHost}.extraConfig = ''
-            ${forwardAuthBlock}
-            reverse_proxy 127.0.0.1:5055
-          '';
+          ${cfg.requestsHost}.extraConfig = seerrRouteBlock;
         }
         (lib.mkIf autheliaCfg.enable {
           ${autheliaCfg.host}.extraConfig = ''
