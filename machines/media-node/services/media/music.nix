@@ -85,9 +85,7 @@ in
     services.navidrome = {
       enable = true;
       settings = {
-        # TEMP: LAN-bound while testing; back to 127.0.0.1 with the firewall
-        # cleanup below.
-        Address = "0.0.0.0";
+        Address = "127.0.0.1";
         Port = 4533;
         MusicFolder = "${shared.dataRoot}/media/music";
       };
@@ -120,16 +118,9 @@ in
       };
     };
 
-    # TEMP: slskd web UI (5030), Soularr status UI (8265), and Navidrome
-    # (4533) open to the LAN while testing the pipeline; drop these back to
-    # tailscale-only once it works.
-    networking.firewall.allowedTCPPorts = [
-      4533
-    ]
-    ++ lib.optionals cfg.soulseek.enable [
-      5030
-      8265
-    ];
+    # Reach Navidrome / slskd web UI / Soularr status via Tailscale (or SSH
+    # -L forwarding). services.slskd.openFirewall handles the Soulseek P2P
+    # listen port (50300) separately, so nothing here.
 
     systemd.tmpfiles.rules = lib.optionals cfg.soulseek.enable [
       "d ${shared.dataRoot}/soulseek 0775 homeops media -"
