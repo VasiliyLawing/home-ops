@@ -82,9 +82,12 @@ in
 
     services.authelia.instances.${instanceName} = {
       enable = true;
+      # Authelia runs as authelia-main and can't read root-owned secrets;
+      # systemd LoadCredential (below) copies them to a per-service credentials
+      # tmpfs owned by the service user.
       secrets = {
-        jwtSecretFile = "/var/lib/home-ops/secrets/authelia-jwt-secret";
-        storageEncryptionKeyFile = "/var/lib/home-ops/secrets/authelia-storage-encryption-key";
+        jwtSecretFile = "/run/credentials/authelia-${instanceName}.service/jwt-secret";
+        storageEncryptionKeyFile = "/run/credentials/authelia-${instanceName}.service/storage-encryption-key";
       };
       settings = {
         server.address = "tcp://127.0.0.1:${toString cfg.port}/";
@@ -122,6 +125,11 @@ in
 
     systemd.tmpfiles.rules = [
       "d ${stateDir} 0750 authelia-${instanceName} authelia-${instanceName} -"
+    ];
+
+    systemd.services."authelia-${instanceName}".serviceConfig.LoadCredential = [
+      "jwt-secret:/var/lib/home-ops/secrets/authelia-jwt-secret"
+      "storage-encryption-key:/var/lib/home-ops/secrets/authelia-storage-encryption-key"
     ];
 
     systemd.services.home-ops-authelia-seed = {
