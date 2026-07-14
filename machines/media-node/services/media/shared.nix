@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   cfg = config.homeOps.media.shared;
@@ -56,6 +56,19 @@ in
       openFirewall = true;
       group = "media";
     };
+
+    # Jellyfin's network.xml is app-managed (not a NixOS option), so we patch
+    # it before start if KnownProxies is still empty. Trusting 127.0.0.1 lets
+    # Jellyfin honor Caddy's X-Forwarded-Proto and generate https URLs (the
+    # SSO plugin depends on this to build its OIDC redirect_uri).
+    systemd.services.jellyfin.preStart = ''
+      cfg=/var/lib/jellyfin/config/network.xml
+      if [ -f "$cfg" ] && grep -q '<KnownProxies />' "$cfg"; then
+        ${pkgs.gnused}/bin/sed -i \
+          's|<KnownProxies />|<KnownProxies>\n    <string>127.0.0.1</string>\n  </KnownProxies>|' \
+          "$cfg"
+      fi
+    '';
 
     # GPU access for VAAPI transcoding and Vulkan tone mapping on the 780M.
     users.users.jellyfin.extraGroups = [

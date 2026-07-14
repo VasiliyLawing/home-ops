@@ -109,8 +109,13 @@ in
 
     systemd.services.home-ops-jellyfin-plugins = {
       description = "Bootstrap Jellyfin plugin repositories and desired plugins";
+      # Runs on every boot; the ConditionPathExists silently skips it on
+      # fresh installs before the admin has been created and the API key
+      # file been generated (rather than crashlooping the unit).
+      wantedBy = [ "multi-user.target" ];
       after = [ "jellyfin.service" ];
       wants = [ "jellyfin.service" ];
+      unitConfig.ConditionPathExists = cfg.apiKeyFile;
       environment = {
         HOME_OPS_JELLYFIN_PLUGIN_CONFIG = "${pluginState}";
         HOME_OPS_JELLYFIN_API_KEY_FILE = cfg.apiKeyFile;

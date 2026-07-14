@@ -8,6 +8,7 @@
     ./services/media/shared.nix
     ./services/media/jellyfin-bootstrap.nix
     ./services/media/jellyfin-plugins.nix
+    ./services/media/jellyfin-sso-bootstrap.nix
     ./services/media/downloads.nix
     ./services/media/movies-tv.nix
     ./services/media/bazarr-bootstrap.nix
@@ -41,6 +42,7 @@
       shared.enable = true;
       jellyfinBootstrap.enable = true;
       jellyfinPlugins.enable = true;
+      jellyfinSsoBootstrap.enable = true;
 
       downloads = {
         sabnzbd.enable = true;
