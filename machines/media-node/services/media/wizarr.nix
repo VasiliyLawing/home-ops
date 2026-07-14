@@ -35,6 +35,11 @@ in
       environment = {
         TZ = config.time.timeZone;
       };
+      # Wizarr needs to reach Jellyfin (and later other media servers) on the
+      # host; localhost inside the container points at the container itself.
+      # host.docker.internal → host-gateway is Docker's cross-platform way to
+      # expose the host IP into the container.
+      extraOptions = [ "--add-host=host.docker.internal:host-gateway" ];
     };
   };
 }
