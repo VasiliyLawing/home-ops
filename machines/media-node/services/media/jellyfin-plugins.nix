@@ -123,6 +123,9 @@ in
       };
       serviceConfig = {
         Type = "oneshot";
+        # jellyfin.service reports "active" before it's bound to :8096, so a
+        # wants= dependency isn't enough — poll until the port answers.
+        ExecStartPre = "${pkgs.curl}/bin/curl --retry 60 --retry-delay 1 --retry-all-errors --retry-connrefused -sSf -o /dev/null http://127.0.0.1:8096/System/Ping";
         ExecStart = "${bootstrapPlugins}/bin/home-ops-bootstrap-jellyfin-plugins";
       };
     };
