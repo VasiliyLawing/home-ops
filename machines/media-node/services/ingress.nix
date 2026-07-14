@@ -18,6 +18,27 @@ let
     + ''
       reverse_proxy 127.0.0.1:${toString dashboardCfg.port}
     '';
+  # Calibre-Web: browser gated by Authelia, but /opds/* and /kobo/* skip the
+  # gate so ereader/OPDS clients can hit Calibre-Web's own HTTP Basic auth
+  # (they can't follow OIDC redirects, same story as Seerr /api/*).
+  booksRouteBlock =
+    if autheliaProtects cfg.booksHost then
+      ''
+        handle /opds* {
+          reverse_proxy 127.0.0.1:8083
+        }
+        handle /kobo/* {
+          reverse_proxy 127.0.0.1:8083
+        }
+        handle {
+          ${forwardAuthBlock}
+          reverse_proxy 127.0.0.1:8083
+        }
+      ''
+    else
+      ''
+        reverse_proxy 127.0.0.1:8083
+      '';
 in
 {
   options.homeOps.ingress = {
@@ -25,6 +46,11 @@ in
     jellyfinHost = lib.mkOption {
       type = lib.types.str;
       default = "media.example.com";
+    };
+    booksHost = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "External hostname for Calibre-Web (null = don't publish).";
     };
   };
 
@@ -63,6 +89,9 @@ in
           "invite.lawing.net".extraConfig = ''
             reverse_proxy 127.0.0.1:${toString wizarrCfg.port}
           '';
+        })
+        (lib.mkIf (cfg.booksHost != null) {
+          ${cfg.booksHost}.extraConfig = booksRouteBlock;
         })
       ];
     };

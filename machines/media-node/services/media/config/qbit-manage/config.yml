@@ -36,7 +36,10 @@ cat:
   movies: "/data/torrents/complete/movies"
   tv: "/data/torrents/complete/tv"
   music: "/data/torrents/complete/music"
-  books: "/data/torrents/complete/books"
+  # Route books straight into Calibre-Web-Automated's ingest watchdir.
+  # CWA moves imported files out, so torrent seeding stops post-ingest — fine
+  # for books (private trackers rarely required, ratio impact minimal).
+  books: "/data/media/books/imports"
   audiobooks: "/data/torrents/complete/audiobooks"
   incomplete: "/data/torrents/incomplete"
   Uncategorized: "/data/torrents/*"

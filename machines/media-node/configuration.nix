@@ -70,6 +70,7 @@
     ingress = {
       enable = true;
       jellyfinHost = "media.lawing.net";
+      booksHost = "books.lawing.net";
     };
 
     security.enable = true;
@@ -78,6 +79,7 @@
       enable = true;
       protectedHosts = [
         "home.lawing.net"
+        "books.lawing.net"
       ];
     };
   };
@@ -96,6 +98,7 @@
       "auth.lawing.net"
       "home.lawing.net"
       "invite.lawing.net"
+      "books.lawing.net"
     ];
     proxied = false;
   };
