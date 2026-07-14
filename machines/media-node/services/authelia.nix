@@ -9,6 +9,7 @@ let
     name = "home-ops-authelia-seed-users";
     runtimeInputs = [
       pkgs.coreutils
+      pkgs.gawk
       autheliaPkg
     ];
     text = ''
