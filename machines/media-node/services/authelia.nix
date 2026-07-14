@@ -82,6 +82,36 @@ let
       fi
 
       install -m 0600 -o authelia-${instanceName} -g authelia-${instanceName} "$tmp" "$users_file"
+
+      # OIDC clients — one entry per registered app. Client secret must be
+      # pbkdf2-hashed in Authelia's config; plaintext lives in the secret
+      # file for the app-side plugin to consume verbatim.
+      oidc_file="${stateDir}/oidc-clients.yml"
+      jellyfin_secret="$(cat /var/lib/home-ops/secrets/authelia-oidc-jellyfin-secret)"
+      jellyfin_secret_hash="$(authelia crypto hash generate pbkdf2 --variant sha512 --password "$jellyfin_secret" --no-confirm | awk -F': ' '/^Digest:/ {print $2}')"
+
+      oidc_tmp="$(mktemp)"
+      trap 'rm -f "$tmp" "$oidc_tmp"' EXIT
+      cat > "$oidc_tmp" <<EOF
+      identity_providers:
+        oidc:
+          claims_policies:
+            default:
+              id_token: [email, email_verified, preferred_username, name, groups]
+          clients:
+            - client_id: jellyfin
+              client_name: Jellyfin
+              client_secret: "$jellyfin_secret_hash"
+              public: false
+              authorization_policy: two_factor
+              require_pkce: false
+              redirect_uris:
+                - https://${cfg.jellyfinHost}/sso/OID/redirect/authelia
+              scopes: [openid, profile, groups, email]
+              userinfo_signed_response_alg: none
+              token_endpoint_auth_method: client_secret_post
+      EOF
+      install -m 0640 -o authelia-${instanceName} -g authelia-${instanceName} "$oidc_tmp" "$oidc_file"
     '';
   };
 in
@@ -123,6 +153,11 @@ in
         Format (tabs): username<TAB>Displayname<TAB>email<TAB>groups(csv)
       '';
     };
+    jellyfinHost = lib.mkOption {
+      type = lib.types.str;
+      default = "media.lawing.net";
+      description = "External Jellyfin hostname — used to build the OIDC redirect URI.";
+    };
     protectedHosts = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
@@ -140,12 +175,18 @@ in
 
     services.authelia.instances.${instanceName} = {
       enable = true;
+      # OIDC clients (currently just Jellyfin) are declared at runtime in
+      # /var/lib/authelia-main/oidc-clients.yml because the client_secret has
+      # to be pbkdf2-hashed by the authelia CLI at bootstrap time.
+      settingsFiles = [ "${stateDir}/oidc-clients.yml" ];
       # Authelia runs as authelia-main and can't read root-owned secrets;
       # systemd LoadCredential (below) copies them to a per-service credentials
       # tmpfs owned by the service user.
       secrets = {
         jwtSecretFile = "/run/credentials/authelia-${instanceName}.service/jwt-secret";
         storageEncryptionKeyFile = "/run/credentials/authelia-${instanceName}.service/storage-encryption-key";
+        oidcHmacSecretFile = "/run/credentials/authelia-${instanceName}.service/oidc-hmac-secret";
+        oidcIssuerPrivateKeyFile = "/run/credentials/authelia-${instanceName}.service/oidc-jwks-key";
       };
       settings = {
         server.address = "tcp://127.0.0.1:${toString cfg.port}/";
@@ -194,6 +235,8 @@ in
     systemd.services."authelia-${instanceName}".serviceConfig.LoadCredential = [
       "jwt-secret:/var/lib/home-ops/secrets/authelia-jwt-secret"
       "storage-encryption-key:/var/lib/home-ops/secrets/authelia-storage-encryption-key"
+      "oidc-hmac-secret:/var/lib/home-ops/secrets/authelia-oidc-hmac-secret"
+      "oidc-jwks-key:/var/lib/home-ops/secrets/authelia-oidc-jwks-key"
     ];
 
     systemd.services.home-ops-authelia-seed = {

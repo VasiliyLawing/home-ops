@@ -54,6 +54,11 @@ in
           Url = "https://raw.githubusercontent.com/n00bcodr/jellyfin-plugins/main/10.11/manifest.json";
           Enabled = true;
         }
+        {
+          Name = "SSO Authentication";
+          Url = "https://raw.githubusercontent.com/9p4/jellyfin-plugin-sso/manifest-release/manifest.json";
+          Enabled = true;
+        }
       ];
       description = "Jellyfin plugin repositories to merge into the server catalog.";
     };
@@ -80,6 +85,10 @@ in
         {
           name = "Jellyfin Enhanced";
           repositoryUrl = "https://raw.githubusercontent.com/n00bcodr/jellyfin-plugins/main/10.11/manifest.json";
+        }
+        {
+          name = "SSO Authentication";
+          repositoryUrl = "https://raw.githubusercontent.com/9p4/jellyfin-plugin-sso/manifest-release/manifest.json";
         }
       ];
       description = "Jellyfin plugin packages to install from the configured repositories.";

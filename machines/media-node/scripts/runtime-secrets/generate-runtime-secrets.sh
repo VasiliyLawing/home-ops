@@ -21,6 +21,9 @@ write_secret() {
       slskd-username)
         printf 'slskd-%s\n' "$(openssl rand -hex 6)" > "$path"
         ;;
+      rsa4096)
+        openssl genrsa -out "$path" 4096 2>/dev/null
+        ;;
       *)
         echo "Unknown generator for $name: $generator" >&2
         return 1
@@ -45,6 +48,9 @@ for name in "${secret_files[@]}"; do
       ;;
     slskd-slsk-username)
       write_secret "$name" slskd-username
+      ;;
+    authelia-oidc-jwks-key)
+      write_secret "$name" rsa4096
       ;;
     *)
       write_secret "$name" hex48

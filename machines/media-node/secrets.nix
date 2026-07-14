@@ -67,6 +67,9 @@ in
         "authelia-jwt-secret"
         "authelia-storage-encryption-key"
         "authelia-admin-password"
+        "authelia-oidc-hmac-secret"
+        "authelia-oidc-jwks-key"
+        "authelia-oidc-jellyfin-secret"
       ];
       description = "Stable secret file names generated on first boot.";
     };
