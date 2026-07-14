@@ -43,21 +43,25 @@ sonarr:
           allowed: true
           until_score: 10000
           min_format_score: 100
-      # Hand-rolled: TRaSH doesn't ship a TV Bluray profile because most TV is
-      # WEB-only, but some shows (e.g. Silicon Valley) do get Bluray releases.
-      # Full hierarchy: try highest-first, walk down to 720p HDTV as last resort.
-      # until_quality caps upgrades at Bluray-1080p so files stop churning once
-      # they hit that; Remux-1080p is only taken if it happens to appear first.
-      - name: Bluray-1080p + WEB
+      # Hand-rolled: TRaSH doesn't ship a broad "grab anything" TV profile.
+      # Full ladder: take whatever exists (down to SD as last resort) and keep
+      # upgrading toward the top until Bluray-2160p.
+      - name: Best Available
         reset_unmatched_scores:
           enabled: true
         upgrade:
           allowed: true
-          until_quality: Bluray-1080p
+          until_quality: Bluray-2160p
           until_score: 10000
         min_format_score: 0
         quality_sort: top
         qualities:
+          - name: Remux-2160p
+          - name: Bluray-2160p
+          - name: WEB 2160p
+            qualities:
+              - WEBDL-2160p
+              - WEBRip-2160p
           - name: Remux-1080p
           - name: Bluray-1080p
           - name: WEB 1080p
@@ -71,6 +75,12 @@ sonarr:
               - WEBDL-720p
               - WEBRip-720p
           - name: HDTV-720p
+          - name: WEB 480p
+            qualities:
+              - WEBDL-480p
+              - WEBRip-480p
+          - name: DVD
+          - name: SDTV
 
 radarr:
   media-node:
