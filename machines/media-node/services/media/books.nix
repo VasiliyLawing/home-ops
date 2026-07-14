@@ -85,7 +85,7 @@ in
 
     services.audiobookshelf = {
       enable = true;
-      host = "127.0.0.1";
+      host = "0.0.0.0";
       port = 13378;
     };
 
@@ -162,7 +162,7 @@ in
         TZ = config.time.timeZone;
         DOCKERMODE = "true";
 
-        FLASK_HOST = "127.0.0.1";
+        FLASK_HOST = "0.0.0.0";
         FLASK_PORT = toString shelfmark.webuiPort;
         SEARCH_MODE = "universal";
 

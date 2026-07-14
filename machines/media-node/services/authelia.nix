@@ -189,7 +189,7 @@ in
         oidcIssuerPrivateKeyFile = "/run/credentials/authelia-${instanceName}.service/oidc-jwks-key";
       };
       settings = {
-        server.address = "tcp://127.0.0.1:${toString cfg.port}/";
+        server.address = "tcp://0.0.0.0:${toString cfg.port}/";
         log.level = "info";
         totp.issuer = cfg.domain;
         authentication_backend = {

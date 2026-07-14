@@ -85,7 +85,9 @@ in
     services.navidrome = {
       enable = true;
       settings = {
-        Address = "127.0.0.1";
+        # Bind all interfaces; NixOS firewall's trustedInterfaces=tailscale0
+        # gates LAN because 4533 isn't in allowedTCPPorts.
+        Address = "0.0.0.0";
         Port = 4533;
         MusicFolder = "${shared.dataRoot}/media/music";
       };

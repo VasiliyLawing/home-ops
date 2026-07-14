@@ -99,6 +99,10 @@ in
       enable = true;
       group = "media";
       openFirewall = false;
+      # Bind all interfaces so Tailscale reaches it; NixOS firewall's
+      # trustedInterfaces=tailscale0 keeps LAN blocked (openFirewall=false
+      # means 8080 isn't in allowedTCPPorts).
+      settings.misc.host = "0.0.0.0";
     };
 
     boot.kernelModules = lib.mkIf gluetunEnabled [ "tun" ];
@@ -153,8 +157,13 @@ in
         volumes = [
           "${cfg.gluetun.configDir}:/gluetun"
         ];
+        # Publish on all interfaces so Tailscale reaches qBittorrent's WebUI
+        # through Gluetun's port map. Docker-published ports bypass the NixOS
+        # firewall entirely, so this is also LAN-reachable — acceptable since
+        # everything else user-facing is LAN-open too and family devices sit
+        # on LAN.
         ports = [
-          "127.0.0.1:${toString cfg.qbittorrent.webuiPort}:${toString cfg.qbittorrent.webuiPort}/tcp"
+          "${toString cfg.qbittorrent.webuiPort}:${toString cfg.qbittorrent.webuiPort}/tcp"
         ];
         extraOptions = [
           "--cap-add=NET_ADMIN"
