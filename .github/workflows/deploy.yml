@@ -2,6 +2,14 @@ name: Deploy media-node
 
 on:
   workflow_dispatch:
+  # Auto-deploy on any main-branch lockfile bump — Renovate merges nixpkgs
+  # security patches into flake.lock and this pushes them to the box within
+  # minutes. Only lockfile-only changes trigger; other pushes still need a
+  # manual dispatch so mid-edit work doesn't accidentally deploy.
+  push:
+    branches: [main]
+    paths:
+      - flake.lock
 
 permissions:
   contents: read

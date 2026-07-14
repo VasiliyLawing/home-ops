@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "timezone": "America/Chicago",
+  "schedule": ["before 6am on monday"],
+  "nix": { "enabled": true },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"],
+    "automerge": true,
+    "commitMessageAction": "flake.lock: refresh nixpkgs + inputs"
+  },
+  "packageRules": [
+    {
+      "description": "Auto-merge nix flake input bumps (nixpkgs channel commits, etc.) once CI is green.",
+      "matchManagers": ["nix"],
+      "automerge": true,
+      "matchUpdateTypes": ["digest", "minor", "patch"]
+    },
+    {
+      "description": "Auto-merge GitHub Actions bumps except majors — those need eyes.",
+      "matchManagers": ["github-actions"],
+      "automerge": true,
+      "matchUpdateTypes": ["digest", "minor", "patch"]
+    }
+  ]
+}
