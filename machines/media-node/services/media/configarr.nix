@@ -14,7 +14,7 @@ in
     enable = lib.mkEnableOption "Configarr Sonarr/Radarr quality profile sync";
     image = lib.mkOption {
       type = lib.types.str;
-      default = "ghcr.io/raydak-labs/configarr:v1.30.0";
+      default = "ghcr.io/raydak-labs/configarr:1.30.0";
       description = "Pinned Configarr container image.";
     };
     configDir = lib.mkOption {
