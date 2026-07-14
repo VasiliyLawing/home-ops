@@ -45,8 +45,9 @@ sonarr:
           min_format_score: 100
       # Hand-rolled: TRaSH doesn't ship a TV Bluray profile because most TV is
       # WEB-only, but some shows (e.g. Silicon Valley) do get Bluray releases.
-      # Prefers Bluray-1080p, falls back to WEB-1080p. No CF scoring yet — add
-      # if we start grabbing garbage releases.
+      # Full hierarchy: try highest-first, walk down to 720p HDTV as last resort.
+      # until_quality caps upgrades at Bluray-1080p so files stop churning once
+      # they hit that; Remux-1080p is only taken if it happens to appear first.
       - name: Bluray-1080p + WEB
         reset_unmatched_scores:
           enabled: true
@@ -57,11 +58,19 @@ sonarr:
         min_format_score: 0
         quality_sort: top
         qualities:
+          - name: Remux-1080p
           - name: Bluray-1080p
           - name: WEB 1080p
             qualities:
               - WEBDL-1080p
               - WEBRip-1080p
+          - name: HDTV-1080p
+          - name: Bluray-720p
+          - name: WEB 720p
+            qualities:
+              - WEBDL-720p
+              - WEBRip-720p
+          - name: HDTV-720p
 
 radarr:
   media-node:
