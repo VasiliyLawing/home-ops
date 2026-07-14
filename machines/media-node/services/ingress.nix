@@ -3,23 +3,28 @@
 let
   cfg = config.homeOps.ingress;
   autheliaCfg = config.homeOps.authelia;
-  autheliaEnabled = autheliaCfg.enable && (lib.elem cfg.requestsHost autheliaCfg.protectedHosts);
+  dashboardCfg = config.homeOps.dashboard;
+  wizarrCfg = config.homeOps.media.wizarr;
+  forwardAuthBlock = ''
+    forward_auth 127.0.0.1:${toString autheliaCfg.port} {
+      uri /api/authz/forward-auth
+      copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+    }
+  '';
+  autheliaProtects = host: autheliaCfg.enable && (lib.elem host autheliaCfg.protectedHosts);
   # Gate the browser SPA behind Authelia but leave /api/* unauthenticated so
   # native apps (Pocketseerr et al.) can still reach Seerr with their own
   # API keys — forward_auth would 302 them to the login page, which apps
   # can't follow. API brute-forcing is still gated by Seerr's own auth +
   # the fail2ban jail.
   seerrRouteBlock =
-    if autheliaEnabled then
+    if autheliaProtects cfg.requestsHost then
       ''
         handle /api/* {
           reverse_proxy 127.0.0.1:5055
         }
         handle {
-          forward_auth 127.0.0.1:${toString autheliaCfg.port} {
-            uri /api/authz/forward-auth
-            copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
-          }
+          ${forwardAuthBlock}
           reverse_proxy 127.0.0.1:5055
         }
       ''
@@ -27,6 +32,12 @@ let
       ''
         reverse_proxy 127.0.0.1:5055
       '';
+  # Homepage: browser-only, no native clients — safe to gate the whole thing.
+  dashboardRouteBlock =
+    (lib.optionalString (autheliaProtects dashboardCfg.host) forwardAuthBlock)
+    + ''
+      reverse_proxy 127.0.0.1:${toString dashboardCfg.port}
+    '';
 in
 {
   options.homeOps.ingress = {
@@ -65,6 +76,17 @@ in
         (lib.mkIf autheliaCfg.enable {
           ${autheliaCfg.host}.extraConfig = ''
             reverse_proxy 127.0.0.1:${toString autheliaCfg.port}
+          '';
+        })
+        (lib.mkIf dashboardCfg.enable {
+          ${dashboardCfg.host}.extraConfig = dashboardRouteBlock;
+        })
+        # Wizarr must be publicly reachable without auth: invitees click a link
+        # in an email/message and land here to claim their Jellyfin account.
+        # Putting Authelia in front defeats the point.
+        (lib.mkIf wizarrCfg.enable {
+          "invite.lawing.net".extraConfig = ''
+            reverse_proxy 127.0.0.1:${toString wizarrCfg.port}
           '';
         })
       ];

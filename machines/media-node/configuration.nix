@@ -21,9 +21,11 @@
     ./services/media/smoke-test.nix
     ./services/media/books.nix
     ./services/media/music.nix
+    ./services/media/wizarr.nix
     ./services/ingress.nix
     ./services/security.nix
     ./services/authelia.nix
+    ./services/dashboard.nix
   ];
 
   networking.hostName = "media-node";
@@ -60,7 +62,10 @@
       smokeTest.enable = true;
       books.enable = true;
       music.enable = true;
+      wizarr.enable = true;
     };
+
+    dashboard.enable = true;
 
     ingress = {
       enable = true;
@@ -72,7 +77,10 @@
 
     authelia = {
       enable = true;
-      protectedHosts = [ "media.request.lawing.net" ];
+      protectedHosts = [
+        "media.request.lawing.net"
+        "home.lawing.net"
+      ];
     };
   };
 
@@ -89,6 +97,8 @@
       "media.lawing.net"
       "media.request.lawing.net"
       "auth.lawing.net"
+      "home.lawing.net"
+      "invite.lawing.net"
     ];
     proxied = false;
   };
