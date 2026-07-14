@@ -21,6 +21,7 @@
     ./services/media/books.nix
     ./services/media/music.nix
     ./services/ingress.nix
+    ./services/security.nix
   ];
 
   networking.hostName = "media-node";
@@ -63,6 +64,8 @@
       jellyfinHost = "media.lawing.net";
       requestsHost = "media.request.lawing.net";
     };
+
+    security.enable = true;
   };
 
   services.caddy.email = "vblawing@gmail.com";
