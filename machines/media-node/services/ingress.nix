@@ -2,6 +2,14 @@
 
 let
   cfg = config.homeOps.ingress;
+  autheliaCfg = config.homeOps.authelia;
+  autheliaEnabled = autheliaCfg.enable && (lib.elem cfg.requestsHost autheliaCfg.protectedHosts);
+  forwardAuthBlock = lib.optionalString autheliaEnabled ''
+    forward_auth 127.0.0.1:${toString autheliaCfg.port} {
+      uri /api/authz/forward-auth
+      copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+    }
+  '';
 in
 {
   options.homeOps.ingress = {
@@ -30,14 +38,22 @@ in
         http_port 1919
         https_port 2929
       '';
-      virtualHosts = {
-        ${cfg.jellyfinHost}.extraConfig = ''
-          reverse_proxy 127.0.0.1:8096
-        '';
-        ${cfg.requestsHost}.extraConfig = ''
-          reverse_proxy 127.0.0.1:5055
-        '';
-      };
+      virtualHosts = lib.mkMerge [
+        {
+          ${cfg.jellyfinHost}.extraConfig = ''
+            reverse_proxy 127.0.0.1:8096
+          '';
+          ${cfg.requestsHost}.extraConfig = ''
+            ${forwardAuthBlock}
+            reverse_proxy 127.0.0.1:5055
+          '';
+        }
+        (lib.mkIf autheliaCfg.enable {
+          ${autheliaCfg.host}.extraConfig = ''
+            reverse_proxy 127.0.0.1:${toString autheliaCfg.port}
+          '';
+        })
+      ];
     };
   };
 }

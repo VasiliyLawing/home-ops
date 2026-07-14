@@ -22,6 +22,7 @@
     ./services/media/music.nix
     ./services/ingress.nix
     ./services/security.nix
+    ./services/authelia.nix
   ];
 
   networking.hostName = "media-node";
@@ -66,6 +67,11 @@
     };
 
     security.enable = true;
+
+    authelia = {
+      enable = true;
+      protectedHosts = [ "media.request.lawing.net" ];
+    };
   };
 
   services.caddy.email = "vblawing@gmail.com";
