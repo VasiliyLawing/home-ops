@@ -12,26 +12,6 @@ let
     }
   '';
   autheliaProtects = host: autheliaCfg.enable && (lib.elem host autheliaCfg.protectedHosts);
-  # Gate the browser SPA behind Authelia but leave /api/* unauthenticated so
-  # native apps (Pocketseerr et al.) can still reach Seerr with their own
-  # API keys — forward_auth would 302 them to the login page, which apps
-  # can't follow. API brute-forcing is still gated by Seerr's own auth +
-  # the fail2ban jail.
-  seerrRouteBlock =
-    if autheliaProtects cfg.requestsHost then
-      ''
-        handle /api/* {
-          reverse_proxy 127.0.0.1:5055
-        }
-        handle {
-          ${forwardAuthBlock}
-          reverse_proxy 127.0.0.1:5055
-        }
-      ''
-    else
-      ''
-        reverse_proxy 127.0.0.1:5055
-      '';
   # Homepage: browser-only, no native clients — safe to gate the whole thing.
   dashboardRouteBlock =
     (lib.optionalString (autheliaProtects dashboardCfg.host) forwardAuthBlock)
@@ -45,10 +25,6 @@ in
     jellyfinHost = lib.mkOption {
       type = lib.types.str;
       default = "media.example.com";
-    };
-    requestsHost = lib.mkOption {
-      type = lib.types.str;
-      default = "requests.example.com";
     };
   };
 
@@ -71,7 +47,6 @@ in
           ${cfg.jellyfinHost}.extraConfig = ''
             reverse_proxy 127.0.0.1:8096
           '';
-          ${cfg.requestsHost}.extraConfig = seerrRouteBlock;
         }
         (lib.mkIf autheliaCfg.enable {
           ${autheliaCfg.host}.extraConfig = ''

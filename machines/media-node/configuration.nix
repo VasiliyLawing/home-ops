@@ -70,7 +70,6 @@
     ingress = {
       enable = true;
       jellyfinHost = "media.lawing.net";
-      requestsHost = "media.request.lawing.net";
     };
 
     security.enable = true;
@@ -78,7 +77,6 @@
     authelia = {
       enable = true;
       protectedHosts = [
-        "media.request.lawing.net"
         "home.lawing.net"
       ];
     };
@@ -95,7 +93,6 @@
     apiTokenFile = "/var/lib/home-ops/secrets/cloudflare-token";
     domains = [
       "media.lawing.net"
-      "media.request.lawing.net"
       "auth.lawing.net"
       "home.lawing.net"
       "invite.lawing.net"
