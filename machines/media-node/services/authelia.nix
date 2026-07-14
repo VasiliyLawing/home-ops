@@ -109,7 +109,7 @@ let
                 - https://${cfg.jellyfinHost}/sso/OID/redirect/authelia
               scopes: [openid, profile, groups, email]
               userinfo_signed_response_alg: none
-              token_endpoint_auth_method: client_secret_basic
+              token_endpoint_auth_method: client_secret_post
       EOF
       install -m 0640 -o authelia-${instanceName} -g authelia-${instanceName} "$oidc_tmp" "$oidc_file"
     '';
