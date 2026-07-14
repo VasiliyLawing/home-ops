@@ -266,14 +266,11 @@ func qbittorrentCookie(ctx smokeContext) (string, error) {
 		return "", fmt.Errorf("qBittorrent login returned %d: %s", resp.StatusCode, strings.TrimSpace(string(responseBody)))
 	}
 	for _, cookie := range resp.Cookies() {
-		if cookie.Name == "SID" && cookie.Value != "" {
-			return "SID=" + cookie.Value, nil
+		if strings.HasPrefix(cookie.Name, "QBT_SID_") && cookie.Value != "" {
+			return cookie.Name + "=" + cookie.Value, nil
 		}
 	}
-	if strings.TrimSpace(string(responseBody)) == "" {
-		return "", nil
-	}
-	return "", fmt.Errorf("qBittorrent login did not return a SID cookie: %s", strings.TrimSpace(string(responseBody)))
+	return "", fmt.Errorf("qBittorrent login did not return a QBT_SID_* cookie: %s", strings.TrimSpace(string(responseBody)))
 }
 
 func checkQbittorrentAPI(ctx smokeContext) error {
