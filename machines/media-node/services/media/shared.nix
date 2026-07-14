@@ -65,7 +65,7 @@ in
 
     services.seerr = {
       enable = true;
-      openFirewall = false;
+      openFirewall = true;
     };
 
     users = {
