@@ -58,11 +58,8 @@
       music.enable = true;
     };
 
-    # Off until inbound 80/443 from the internet actually reach this box —
-    # LE ACME was timing out on 71.194.232.206 (router forward not live or
-    # ISP blocking). Hostnames stay defined so re-enabling is one flag flip.
     ingress = {
-      enable = false;
+      enable = true;
       jellyfinHost = "lawing.duckdns.org";
       requestsHost = "lawingreq.duckdns.org";
     };
