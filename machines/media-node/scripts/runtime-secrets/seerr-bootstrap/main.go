@@ -144,7 +144,15 @@ func selectProfile(baseURL string, apiKey string, preferredName string) (quality
 			return profile, nil
 		}
 	}
-	return profiles[0], nil
+	// Fail loudly rather than silently pinning an arbitrary profiles[0]: the
+	// preferred profile (e.g. "Best Available") is created by configarr-sync,
+	// which has no boot-time ordering with this bootstrap. If it hasn't run
+	// yet, retry later instead of wiring Seerr to whatever happens to be first.
+	names := make([]string, len(profiles))
+	for i, p := range profiles {
+		names[i] = p.Name
+	}
+	return qualityProfile{}, fmt.Errorf("quality profile %q not found on %s (have: %s) — has configarr-sync run yet?", preferredName, baseURL, strings.Join(names, ", "))
 }
 
 func ensureRootFolder(baseURL string, apiKey string, desiredPath string) error {
@@ -430,10 +438,10 @@ func run() error {
 		return err
 	}
 
-	if err := configureArrWithRetry(settings, "sonarr", sonarrKey, "http://127.0.0.1:8989", "/mnt/nas/data/media/tv", "WEB-1080p"); err != nil {
+	if err := configureArrWithRetry(settings, "sonarr", sonarrKey, "http://127.0.0.1:8989", "/mnt/nas/data/media/tv", "Best Available"); err != nil {
 		return fmt.Errorf("configure Sonarr: %w", err)
 	}
-	if err := configureArrWithRetry(settings, "radarr", radarrKey, "http://127.0.0.1:7878", "/mnt/nas/data/media/movies", "HD Bluray + WEB"); err != nil {
+	if err := configureArrWithRetry(settings, "radarr", radarrKey, "http://127.0.0.1:7878", "/mnt/nas/data/media/movies", "Best Available"); err != nil {
 		return fmt.Errorf("configure Radarr: %w", err)
 	}
 

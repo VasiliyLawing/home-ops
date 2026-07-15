@@ -16,6 +16,7 @@ let
       pkgs.coreutils
       pkgs.gawk
       pkgs.openssl
+      pkgs.yq-go
       autheliaPkg
     ];
     text = ''
@@ -46,10 +47,27 @@ let
         cat "$path"
       }
 
+      # Password hash for a user: reuse the one already in users.yml if present
+      # (so a password the user changed via Authelia's reset flow survives),
+      # otherwise hash the generated/seeded plaintext secret. yq (a real YAML
+      # parser) reads the existing file regardless of how Authelia reformatted
+      # it, sidestepping the fixed-indent/regex fragility of grep-based matching.
+      resolved_hash() {
+        # $1 = username, $2 = plaintext-secret fallback source (or "")
+        local u="$1" src="$2" existing
+        if [ -s "$users_file" ]; then
+          existing="$(yq -r ".users.\"$u\".password // \"\"" "$users_file")"
+          if [ -n "$existing" ]; then
+            printf '%s' "$existing"
+            return
+          fi
+        fi
+        hash_password "$(ensure_password_secret "$u" "$src")"
+      }
+
       write_user_block() {
-        # $1 = username, $2 = displayname, $3 = email, $4 = comma-groups, $5 = password
-        local u="$1" dn="$2" email="$3" groups_csv="$4" pw="$5" hash
-        hash="$(hash_password "$pw")"
+        # $1 = username, $2 = displayname, $3 = email, $4 = comma-groups, $5 = hash
+        local u="$1" dn="$2" email="$3" groups_csv="$4" hash="$5"
         {
           printf '  %s:\n' "$u"
           printf '    disabled: false\n'
@@ -66,24 +84,14 @@ let
       tmp="$(mktemp)"
       trap 'rm -f "$tmp"' EXIT
 
-      # Append-only: entries already in users.yml are never rewritten, so a
-      # password a user changed through Authelia's reset flow survives every
-      # restart. Only genuinely new users (admin on first boot, new TSV rows)
-      # get generated passwords and appended blocks.
-      if [ -s "$users_file" ]; then
-        cat "$users_file" > "$tmp"
-      else
-        printf 'users:\n' > "$tmp"
-      fi
+      # Rebuild users.yml from scratch every run so removing a TSV row actually
+      # revokes the account and group/email edits take effect. Password hashes
+      # are carried forward per-user by resolved_hash, so nobody's changed
+      # password is lost. Admin is always written; TSV supplies the rest.
+      printf 'users:\n' > "$tmp"
 
-      user_missing() {
-        ! grep -q "^  $1:" "$tmp"
-      }
-
-      if user_missing "${cfg.adminUsername}"; then
-        admin_pw="$(ensure_password_secret ${cfg.adminUsername} "$secret_dir/authelia-admin-password")"
-        write_user_block "${cfg.adminUsername}" "${cfg.adminDisplayName}" "${cfg.adminEmail}" "admins" "$admin_pw"
-      fi
+      admin_hash="$(resolved_hash "${cfg.adminUsername}" "$secret_dir/authelia-admin-password")"
+      write_user_block "${cfg.adminUsername}" "${cfg.adminDisplayName}" "${cfg.adminEmail}" "admins" "$admin_hash"
 
       if [ -f "$tsv" ]; then
         # `|| [ -n "$u" ]` keeps the last line when the hand-edited TSV lacks
@@ -92,9 +100,8 @@ let
           # skip blanks and comments
           case "$u" in '''|"#"*) continue;; esac
           [ -z "''${groups_csv:-}" ] && groups_csv="users"
-          user_missing "$u" || continue
-          user_pw="$(ensure_password_secret "$u" "")"
-          write_user_block "$u" "$dn" "$email" "$groups_csv" "$user_pw"
+          [ "$u" = "${cfg.adminUsername}" ] && continue  # admin already written
+          write_user_block "$u" "$dn" "$email" "$groups_csv" "$(resolved_hash "$u" "")"
         done < "$tsv"
       fi
 

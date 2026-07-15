@@ -73,18 +73,21 @@ let
         fi
       }
       trap cleanup EXIT
+      # Seed once: if the plugin config already exists, leave it alone. This
+      # is a bootstrap, not an enforcer — once seeded, the admin owns the file
+      # (any SSO settings changed in the Jellyfin UI must survive reboots).
+      if [ -e "$dst" ]; then
+        exit 0
+      fi
+
       secret="$(cat "$secret_file")"
       # sed -e "s|A|B|" isn't safe if $secret contains |, but our hex-only
       # secrets never do; still play it safe with a distinctive sentinel.
       sed "s|@OID_SECRET@|$secret|" ${xmlTemplate} > "$tmp"
 
-      if cmp -s "$tmp" "$dst" 2>/dev/null; then
-        exit 0  # already seeded, nothing to do — no Jellyfin restart
-      fi
-
       # Write while Jellyfin is down: the SSO plugin persists its in-memory
       # config on shutdown and would clobber a file written while it runs.
-      # The restart also makes Jellyfin load a freshly-installed plugin DLL,
+      # The restart also makes Jellyfin load the freshly-installed plugin DLL,
       # which the plugin bootstrap deliberately doesn't do.
       systemctl stop jellyfin.service
       jellyfin_stopped=true
@@ -134,14 +137,15 @@ in
         "home-ops-jellyfin-plugins.service"
         "jellyfin.service"
       ];
+      # wants=, not requires=: the plugins bootstrap can transiently fail
+      # (60s Jellyfin-ping timeout, external plugin-manifest fetches), and a
+      # hard requires= would cancel SSO seeding on any such blip. Ordered
+      # after it so it runs post-install when it does succeed; the
+      # ConditionPathExists on the plugin API key still gates a fresh box.
       wants = [
         "home-ops-runtime-secrets.service"
         "home-ops-jellyfin-plugins.service"
         "jellyfin.service"
-      ];
-      requires = [
-        "home-ops-runtime-secrets.service"
-        "home-ops-jellyfin-plugins.service"
       ];
       unitConfig.ConditionPathExists = [
         cfg.clientSecretFile

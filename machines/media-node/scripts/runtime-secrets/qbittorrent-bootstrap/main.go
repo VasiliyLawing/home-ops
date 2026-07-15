@@ -286,6 +286,15 @@ func run() error {
 		{`Session\TempPath`, tempPath},
 		{`Session\TempPathEnabled`, "true"},
 		{`Session\Port`, torrentingPort},
+		// Queueing: stalled/near-dead torrents (0 seeds) must NOT occupy an
+		// active-download slot, or a handful of poorly-seeded grabs block the
+		// whole queue. IgnoreSlowTorrentsForQueueing frees the slot once a
+		// torrent drops below the slow-DL threshold so the next one starts.
+		{`Session\QueueingSystemEnabled`, "true"},
+		{`Session\MaxActiveDownloads`, "5"},
+		{`Session\MaxActiveTorrents`, "8"},
+		{`Session\MaxActiveUploads`, "5"},
+		{`Session\IgnoreSlowTorrentsForQueueing`, "true"},
 	}
 
 	for _, item := range sessionValues {

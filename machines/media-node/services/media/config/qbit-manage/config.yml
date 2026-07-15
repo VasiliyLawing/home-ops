@@ -36,10 +36,11 @@ cat:
   movies: "/data/torrents/complete/movies"
   tv: "/data/torrents/complete/tv"
   music: "/data/torrents/complete/music"
-  # Route books straight into Calibre-Web-Automated's ingest watchdir.
-  # CWA moves imported files out, so torrent seeding stops post-ingest — fine
-  # for books (private trackers rarely required, ratio impact minimal).
-  books: "/data/media/books/imports"
+  # Books seed in the torrents tree like everything else. Shelfmark copies
+  # completed books into Calibre-Web-Automated's ingest watchdir itself
+  # (PROWLARR_TORRENT_ACTION=keep), so pointing the category straight at the
+  # ingest dir would let CWA delete files qBittorrent is still seeding.
+  books: "/data/torrents/complete/books"
   audiobooks: "/data/torrents/complete/audiobooks"
   incomplete: "/data/torrents/incomplete"
   Uncategorized: "/data/torrents/*"
