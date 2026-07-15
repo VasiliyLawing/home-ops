@@ -16,3 +16,6 @@ secrets/
 *.agekey
 *.sops.yaml
 /.mcp.json
+
+# Go build artifacts from local compile checks
+*.exe
