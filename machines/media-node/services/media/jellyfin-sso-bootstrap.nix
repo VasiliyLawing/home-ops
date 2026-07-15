@@ -65,7 +65,14 @@ let
       dst=/var/lib/jellyfin/plugins/configurations/SSO-Auth.xml
       secret_file=${cfg.clientSecretFile}
       tmp="$(mktemp)"
-      trap 'rm -f "$tmp"' EXIT
+      jellyfin_stopped=false
+      cleanup() {
+        rm -f "$tmp"
+        if [ "$jellyfin_stopped" = true ]; then
+          systemctl start jellyfin.service || true
+        fi
+      }
+      trap cleanup EXIT
       secret="$(cat "$secret_file")"
       # sed -e "s|A|B|" isn't safe if $secret contains |, but our hex-only
       # secrets never do; still play it safe with a distinctive sentinel.
@@ -80,8 +87,10 @@ let
       # The restart also makes Jellyfin load a freshly-installed plugin DLL,
       # which the plugin bootstrap deliberately doesn't do.
       systemctl stop jellyfin.service
+      jellyfin_stopped=true
       install -D -m 0640 -o jellyfin -g media "$tmp" "$dst"
       systemctl start jellyfin.service
+      jellyfin_stopped=false
     '';
   };
 in
@@ -127,9 +136,17 @@ in
       ];
       wants = [
         "home-ops-runtime-secrets.service"
+        "home-ops-jellyfin-plugins.service"
         "jellyfin.service"
       ];
-      unitConfig.ConditionPathExists = cfg.clientSecretFile;
+      requires = [
+        "home-ops-runtime-secrets.service"
+        "home-ops-jellyfin-plugins.service"
+      ];
+      unitConfig.ConditionPathExists = [
+        cfg.clientSecretFile
+        config.homeOps.media.jellyfinPlugins.apiKeyFile
+      ];
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${seed}/bin/home-ops-jellyfin-sso-bootstrap";
