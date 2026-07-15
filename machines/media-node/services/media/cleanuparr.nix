@@ -13,7 +13,7 @@ in
     port = lib.mkOption {
       type = lib.types.int;
       default = 11011;
-      description = "Host port bound to 127.0.0.1 only; Tailscale-only, no LAN or public exposure.";
+      description = "Port Cleanuparr binds on the host (host networking). Tailscale-reachable; LAN blocked by the firewall.";
     };
     dataDir = lib.mkOption {
       type = lib.types.str;
@@ -31,7 +31,7 @@ in
       volumes = [ "${cfg.dataDir}:/config" ];
       environment = {
         TZ = config.time.timeZone;
-        PORT = "11011";
+        PORT = toString cfg.port;
       };
       # Host networking: NixOS firewall's trustedInterfaces=tailscale0 handles
       # gating, and http://localhost:8989 inside the container hits Sonarr.

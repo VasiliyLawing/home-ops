@@ -11,11 +11,8 @@ in
       default = "ghcr.io/wizarrrr/wizarr:v2026.7.1";
       description = "Pinned Wizarr container image.";
     };
-    port = lib.mkOption {
-      type = lib.types.int;
-      default = 5690;
-      description = "Host port bound to 127.0.0.1 only; Caddy fronts external access.";
-    };
+    # No port option: the container image listens on a fixed 5690 and host
+    # networking exposes exactly that. Caddy (ingress.nix) hardcodes it.
     dataDir = lib.mkOption {
       type = lib.types.str;
       default = "/var/lib/wizarr";

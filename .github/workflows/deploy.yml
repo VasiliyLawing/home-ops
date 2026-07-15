@@ -2,10 +2,11 @@ name: Deploy media-node
 
 on:
   workflow_dispatch:
-  # Auto-deploy on any main-branch lockfile bump — Renovate merges nixpkgs
-  # security patches into flake.lock and this pushes them to the box within
-  # minutes. Only lockfile-only changes trigger; other pushes still need a
-  # manual dispatch so mid-edit work doesn't accidentally deploy.
+  # Auto-deploy Renovate's flake.lock merges so nixpkgs security patches land
+  # on the box within minutes. NOTE: GitHub `paths:` matches when ANY changed
+  # file matches, so the path filter alone would also fire on a human push
+  # that bundles a lockfile bump with other edits — the actor gate on the job
+  # below is what actually restricts auto-deploys to Renovate.
   push:
     branches: [main]
     paths:
@@ -20,6 +21,10 @@ concurrency:
 
 jobs:
   deploy:
+    # Manual dispatches always run; pushes only auto-deploy when they come
+    # from Renovate (lockfile maintenance). Human pushes touching flake.lock
+    # still require a manual dispatch.
+    if: github.event_name == 'workflow_dispatch' || github.actor == 'renovate[bot]'
     runs-on: ubuntu-24.04
     environment: homelab
     steps:

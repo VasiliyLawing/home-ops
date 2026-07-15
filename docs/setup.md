@@ -154,19 +154,21 @@ The default book library service is Calibre-Web-Automated on localhost port
 For a fresh install, open Calibre-Web-Automated and change the default admin
 password after the first successful deploy.
 
-NeutArr is available on localhost port `9705`. During its first-run wizard, use
-the host gateway URLs for Arr apps:
+NeutArr is available on localhost port `9705`. It runs with host networking,
+so during its first-run wizard use plain loopback URLs for the Arr apps
+(`host.docker.internal` does not resolve under host networking):
 
 ```text
-http://host.docker.internal:8989
-http://host.docker.internal:7878
-http://host.docker.internal:8686
+http://127.0.0.1:8989
+http://127.0.0.1:7878
+http://127.0.0.1:8686
 ```
 
-Aurral is available on localhost port `8098`. During onboarding, point Lidarr to:
+Aurral is available on localhost port `3001` (its native port; host networking
+removed the old `8098` remap). During onboarding, point Lidarr to:
 
 ```text
-http://host.docker.internal:8686
+http://127.0.0.1:8686
 ```
 
 ## 6. Run app sync jobs once

@@ -46,8 +46,10 @@ in
             }
             {
               Seerr = {
-                href = "https://media.request.lawing.net";
-                description = "Requests";
+                # Tailscale-only since Seerr left the public internet; family
+                # requests go through the Jellyfin Enhanced plugin instead.
+                href = "http://media-node:5055";
+                description = "Requests (Tailscale)";
                 icon = "jellyseerr.svg";
               };
             }
@@ -129,14 +131,9 @@ in
           ];
         }
         {
+          # qBittorrent has no tile: its WebUI is loopback-only inside the
+          # Gluetun namespace by design (SSH tunnel for the rare admin visit).
           Downloads = [
-            {
-              qBittorrent = {
-                href = "http://media-node:8081";
-                description = "Torrents";
-                icon = "qbittorrent.svg";
-              };
-            }
             {
               Sabnzbd = {
                 href = "http://media-node:8080";

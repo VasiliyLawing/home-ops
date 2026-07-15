@@ -86,8 +86,9 @@ in
         # in an email/message and land here to claim their Jellyfin account.
         # Putting Authelia in front defeats the point.
         (lib.mkIf wizarrCfg.enable {
+          # 5690 is Wizarr's fixed container port (host networking).
           "invite.lawing.net".extraConfig = ''
-            reverse_proxy 127.0.0.1:${toString wizarrCfg.port}
+            reverse_proxy 127.0.0.1:5690
           '';
         })
         (lib.mkIf (cfg.booksHost != null) {

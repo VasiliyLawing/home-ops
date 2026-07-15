@@ -197,14 +197,15 @@ NeutArr uses the upstream Docker Hub image:
 iampuid0/neutarr:1.8.0
 ```
 
-It is exposed on localhost port `9705`, stores config in
+It runs with host networking on port `9705`, stores config in
 `/var/lib/home-ops/neutarr`, and should be configured in its first-run wizard to
-reach host-native Arr services through:
+reach host-native Arr services through plain loopback
+(`host.docker.internal` does not resolve under host networking):
 
 ```text
-http://host.docker.internal:8989  # Sonarr
-http://host.docker.internal:7878  # Radarr
-http://host.docker.internal:8686  # Lidarr
+http://127.0.0.1:8989  # Sonarr
+http://127.0.0.1:7878  # Radarr
+http://127.0.0.1:8686  # Lidarr
 ```
 
 Aurral uses the upstream GHCR image pinned to the stable 1.x line:
@@ -213,7 +214,8 @@ Aurral uses the upstream GHCR image pinned to the stable 1.x line:
 ghcr.io/lklynet/aurral:1.76.0
 ```
 
-It is exposed on localhost port `8098`, persists app data in
+It runs with host networking on its native port `3001` (reachable over
+Tailscale; the old `8098` docker remap is gone), persists app data in
 `/var/lib/home-ops/aurral`, and writes generated music flows under:
 
 ```text

@@ -57,7 +57,9 @@ let
     name = "home-ops-jellyfin-sso-bootstrap";
     runtimeInputs = [
       pkgs.coreutils
+      pkgs.diffutils
       pkgs.gnused
+      pkgs.systemd
     ];
     text = ''
       dst=/var/lib/jellyfin/plugins/configurations/SSO-Auth.xml
@@ -68,7 +70,18 @@ let
       # sed -e "s|A|B|" isn't safe if $secret contains |, but our hex-only
       # secrets never do; still play it safe with a distinctive sentinel.
       sed "s|@OID_SECRET@|$secret|" ${xmlTemplate} > "$tmp"
+
+      if cmp -s "$tmp" "$dst" 2>/dev/null; then
+        exit 0  # already seeded, nothing to do — no Jellyfin restart
+      fi
+
+      # Write while Jellyfin is down: the SSO plugin persists its in-memory
+      # config on shutdown and would clobber a file written while it runs.
+      # The restart also makes Jellyfin load a freshly-installed plugin DLL,
+      # which the plugin bootstrap deliberately doesn't do.
+      systemctl stop jellyfin.service
       install -D -m 0640 -o jellyfin -g media "$tmp" "$dst"
+      systemctl start jellyfin.service
     '';
   };
 in

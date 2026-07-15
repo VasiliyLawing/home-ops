@@ -78,7 +78,10 @@ in
 
     services.seerr = {
       enable = true;
-      openFirewall = true;
+      # Tailscale-only: trustedInterfaces=tailscale0 passes traffic without
+      # opening 5055 to the LAN. Family reaches request features through the
+      # Jellyfin Enhanced plugin, which proxies to Seerr server-side.
+      openFirewall = false;
     };
 
     users = {

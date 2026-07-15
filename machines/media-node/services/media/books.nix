@@ -30,11 +30,8 @@ in
         default = "crocodilestick/calibre-web-automated:v4.0.6";
         description = "Pinned Calibre-Web-Automated container image.";
       };
-      webuiPort = lib.mkOption {
-        type = lib.types.port;
-        default = 8083;
-        description = "Localhost-bound Calibre-Web-Automated web UI port.";
-      };
+      # No webuiPort option: the container hardcodes CWA_PORT_OVERRIDE=8083
+      # and host networking exposes exactly that port.
     };
     calibreWeb.enable = lib.mkOption {
       type = lib.types.bool;
@@ -57,7 +54,7 @@ in
       webuiPort = lib.mkOption {
         type = lib.types.port;
         default = 8099;
-        description = "Localhost-bound Shelfmark web UI port.";
+        description = "Shelfmark web UI port (host networking; Tailscale-reachable, LAN blocked).";
       };
       environmentFile = lib.mkOption {
         type = lib.types.str;
@@ -180,9 +177,7 @@ in
         QBITTORRENT_CATEGORY_AUDIOBOOK = "audiobooks";
       }
       // lib.optionalAttrs (calibreWeb.enable || calibreWebAutomated.enable) {
-        CALIBRE_WEB_URL = "http://127.0.0.1:${toString (
-          if calibreWebAutomated.enable then calibreWebAutomated.webuiPort else 8083
-        )}";
+        CALIBRE_WEB_URL = "http://127.0.0.1:8083";
       };
       volumes = [
         "/var/lib/home-ops/shelfmark:/config"

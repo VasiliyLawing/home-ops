@@ -65,17 +65,34 @@ let
 
       tmp="$(mktemp)"
       trap 'rm -f "$tmp"' EXIT
-      printf 'users:\n' > "$tmp"
 
-      admin_pw="$(ensure_password_secret ${cfg.adminUsername} "$secret_dir/authelia-admin-password")"
-      write_user_block "${cfg.adminUsername}" "${cfg.adminDisplayName}" "${cfg.adminEmail}" "admins" "$admin_pw"
+      # Append-only: entries already in users.yml are never rewritten, so a
+      # password a user changed through Authelia's reset flow survives every
+      # restart. Only genuinely new users (admin on first boot, new TSV rows)
+      # get generated passwords and appended blocks.
+      if [ -s "$users_file" ]; then
+        cat "$users_file" > "$tmp"
+      else
+        printf 'users:\n' > "$tmp"
+      fi
+
+      user_missing() {
+        ! grep -q "^  $1:" "$tmp"
+      }
+
+      if user_missing "${cfg.adminUsername}"; then
+        admin_pw="$(ensure_password_secret ${cfg.adminUsername} "$secret_dir/authelia-admin-password")"
+        write_user_block "${cfg.adminUsername}" "${cfg.adminDisplayName}" "${cfg.adminEmail}" "admins" "$admin_pw"
+      fi
 
       if [ -f "$tsv" ]; then
-        while IFS=$'\t' read -r u dn email groups_csv; do
+        # `|| [ -n "$u" ]` keeps the last line when the hand-edited TSV lacks
+        # a trailing newline (read returns nonzero on an unterminated line).
+        while IFS=$'\t' read -r u dn email groups_csv || [ -n "$u" ]; do
           # skip blanks and comments
           case "$u" in '''|"#"*) continue;; esac
           [ -z "''${groups_csv:-}" ] && groups_csv="users"
-          [ "$u" = "${cfg.adminUsername}" ] && continue  # admin already written
+          user_missing "$u" || continue
           user_pw="$(ensure_password_secret "$u" "")"
           write_user_block "$u" "$dn" "$email" "$groups_csv" "$user_pw"
         done < "$tsv"
