@@ -157,12 +157,12 @@ in
         volumes = [
           "${cfg.gluetun.configDir}:/gluetun"
         ];
-        # Docker's bridge-mode port publish bypasses the NixOS firewall, so a
-        # plain '8081:8081' would leak to LAN. Bind to the box's Tailscale IP
-        # specifically so only the tailnet can reach qBittorrent's WebUI
-        # (Gluetun's sidecar VPN setup rules out --network=host here).
+        # qBit inside Gluetun stays loopback-only. Docker's bridge-mode port
+        # publish bypasses the NixOS firewall, so 0.0.0.0 would leak to LAN;
+        # host networking isn't an option for a VPN sidecar. Admin UI access
+        # via SSH tunnel (arrs reach it internally through the container ip).
         ports = [
-          "${config.homeOps.tailscaleAddress}:${toString cfg.qbittorrent.webuiPort}:${toString cfg.qbittorrent.webuiPort}/tcp"
+          "127.0.0.1:${toString cfg.qbittorrent.webuiPort}:${toString cfg.qbittorrent.webuiPort}/tcp"
         ];
         extraOptions = [
           "--cap-add=NET_ADMIN"
