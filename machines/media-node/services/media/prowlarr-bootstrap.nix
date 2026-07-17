@@ -71,6 +71,9 @@ in
         HOME_OPS_PROWLARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/prowlarr-api-key";
         HOME_OPS_SONARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/sonarr-api-key";
         HOME_OPS_RADARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/radarr-api-key";
+        # Operator-provisioned (external account secret, like cloudflare-token):
+        #   install -m 600 /dev/stdin /var/lib/home-ops/secrets/nzbgeek-api-key <<< "<key>"
+        HOME_OPS_NZBGEEK_API_KEY_FILE = "${config.homeOps.secrets.directory}/nzbgeek-api-key";
       };
       serviceConfig = {
         Type = "oneshot";

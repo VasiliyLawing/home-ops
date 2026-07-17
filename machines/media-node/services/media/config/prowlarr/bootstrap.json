@@ -31,5 +31,14 @@
       }
     }
   ],
-  "indexers": []
+  "indexers": [
+    {
+      "name": "NZBgeek",
+      "match": "NZBgeek",
+      "enable": true,
+      "priority": 10,
+      "apiKeyFileEnv": "HOME_OPS_NZBGEEK_API_KEY_FILE",
+      "fields": {}
+    }
+  ]
 }

@@ -56,6 +56,9 @@ type desiredIndexer struct {
 	AppProfileID int                    `json:"appProfileId"`
 	Tags         []string               `json:"tags"`
 	Fields       map[string]interface{} `json:"fields"`
+	// APIKeyFileEnv names an env var holding a secret-file path; its content
+	// is set as the indexer's apiKey field (keeps keys out of bootstrap.json).
+	APIKeyFileEnv string `json:"apiKeyFileEnv"`
 }
 
 type desiredIndexerProxy struct {
@@ -356,6 +359,17 @@ func configureIndexer(cfg bootstrapConfig, apiKey string, schemas []providerReso
 	desired.Tags = tags
 	for name, value := range indexer.Fields {
 		desired.Fields = setField(desired.Fields, name, value)
+	}
+	if indexer.APIKeyFileEnv != "" {
+		keyFile, err := requiredEnv(indexer.APIKeyFileEnv)
+		if err != nil {
+			return err
+		}
+		key, err := readSecret(keyFile)
+		if err != nil {
+			return err
+		}
+		desired.Fields = setField(desired.Fields, "apiKey", key)
 	}
 
 	return createOrUpdate(cfg.BaseURL, apiKey, "indexer", desired)
