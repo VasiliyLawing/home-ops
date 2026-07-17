@@ -122,7 +122,15 @@ func setFieldIfPresent(fields []field, name string, value interface{}) []field {
 	return fields
 }
 
-func qBittorrentSchema(app appConfig) (downloadClient, error) {
+// clientSpec describes one download client to upsert into an arr app.
+type clientSpec struct {
+	Implementation  string
+	Name            string
+	DefaultProtocol string
+	Fields          map[string]interface{}
+}
+
+func clientSchema(app appConfig, spec clientSpec) (downloadClient, error) {
 	body, err := request("GET", normalizeBaseURL(app.BaseURL)+"/api/v3/downloadclient/schema", app.APIKey, nil)
 	if err != nil {
 		return downloadClient{}, err
@@ -134,12 +142,12 @@ func qBittorrentSchema(app appConfig) (downloadClient, error) {
 	}
 
 	for _, schema := range schemas {
-		if strings.EqualFold(schema.Implementation, "qbittorrent") || strings.EqualFold(schema.ImplementationName, "qbittorrent") {
+		if strings.EqualFold(schema.Implementation, spec.Implementation) || strings.EqualFold(schema.ImplementationName, spec.Implementation) {
 			schema.ID = 0
 			schema.Enable = true
-			schema.Name = "qBittorrent"
+			schema.Name = spec.Name
 			if schema.Protocol == "" {
-				schema.Protocol = "torrent"
+				schema.Protocol = spec.DefaultProtocol
 			}
 			if schema.Priority == 0 {
 				schema.Priority = 1
@@ -148,7 +156,7 @@ func qBittorrentSchema(app appConfig) (downloadClient, error) {
 		}
 	}
 
-	return downloadClient{}, fmt.Errorf("%s: qBittorrent download-client schema not found", app.Name)
+	return downloadClient{}, fmt.Errorf("%s: %s download-client schema not found", app.Name, spec.Name)
 }
 
 func existingClient(app appConfig, name string) (*downloadClient, error) {
@@ -171,18 +179,15 @@ func existingClient(app appConfig, name string) (*downloadClient, error) {
 	return nil, nil
 }
 
-func configureApp(app appConfig, qbitUser string, qbitPassword string, qbitHost string, qbitPort int) error {
-	client, err := qBittorrentSchema(app)
+func configureApp(app appConfig, spec clientSpec) error {
+	client, err := clientSchema(app, spec)
 	if err != nil {
 		return err
 	}
 
-	client.Fields = setFieldIfPresent(client.Fields, "host", qbitHost)
-	client.Fields = setFieldIfPresent(client.Fields, "port", qbitPort)
-	client.Fields = setFieldIfPresent(client.Fields, "useSsl", false)
-	client.Fields = setFieldIfPresent(client.Fields, "urlBase", "")
-	client.Fields = setFieldIfPresent(client.Fields, "username", qbitUser)
-	client.Fields = setFieldIfPresent(client.Fields, "password", qbitPassword)
+	for name, value := range spec.Fields {
+		client.Fields = setFieldIfPresent(client.Fields, name, value)
+	}
 	client.Fields = setFieldIfPresent(client.Fields, app.CategoryField, app.Category)
 
 	existing, err := existingClient(app, client.Name)
@@ -193,7 +198,7 @@ func configureApp(app appConfig, qbitUser string, qbitPassword string, qbitHost 
 	if existing == nil {
 		_, err = request("POST", normalizeBaseURL(app.BaseURL)+"/api/v3/downloadclient", app.APIKey, client)
 		if err == nil {
-			fmt.Printf("%s: created qBittorrent download client\n", app.Name)
+			fmt.Printf("%s: created %s download client\n", app.Name, spec.Name)
 		}
 		return err
 	}
@@ -201,20 +206,25 @@ func configureApp(app appConfig, qbitUser string, qbitPassword string, qbitHost 
 	client.ID = existing.ID
 	_, err = request("PUT", fmt.Sprintf("%s/api/v3/downloadclient/%d", normalizeBaseURL(app.BaseURL), existing.ID), app.APIKey, client)
 	if err == nil {
-		fmt.Printf("%s: updated qBittorrent download client\n", app.Name)
+		fmt.Printf("%s: updated %s download client\n", app.Name, spec.Name)
 	}
 	return err
 }
 
-func configureAppWithRetry(app appConfig, qbitUser string, qbitPassword string, qbitHost string, qbitPort int) error {
+func configureAppWithRetry(app appConfig, specs []clientSpec) error {
 	var lastErr error
 	for attempt := 1; attempt <= 30; attempt++ {
-		err := configureApp(app, qbitUser, qbitPassword, qbitHost, qbitPort)
-		if err == nil {
+		lastErr = nil
+		for _, spec := range specs {
+			if err := configureApp(app, spec); err != nil {
+				lastErr = err
+				break
+			}
+		}
+		if lastErr == nil {
 			return nil
 		}
-		lastErr = err
-		fmt.Fprintf(os.Stderr, "%s: waiting for API readiness (%d/30): %v\n", app.Name, attempt, err)
+		fmt.Fprintf(os.Stderr, "%s: waiting for API readiness (%d/30): %v\n", app.Name, attempt, lastErr)
 		time.Sleep(2 * time.Second)
 	}
 
@@ -268,6 +278,54 @@ func run() error {
 		return err
 	}
 
+	specs := []clientSpec{
+		{
+			Implementation:  "qbittorrent",
+			Name:            "qBittorrent",
+			DefaultProtocol: "torrent",
+			Fields: map[string]interface{}{
+				"host":     qbitHost,
+				"port":     qbitPort,
+				"useSsl":   false,
+				"urlBase":  "",
+				"username": qbitUser,
+				"password": qbitPassword,
+			},
+		},
+	}
+
+	// SABnzbd is optional: configured only when the env trio is present.
+	if sabKeyFile := strings.TrimSpace(os.Getenv("HOME_OPS_SAB_API_KEY_FILE")); sabKeyFile != "" {
+		sabHost, err := requiredEnv("HOME_OPS_SAB_HOST")
+		if err != nil {
+			return err
+		}
+		sabPortText, err := requiredEnv("HOME_OPS_SAB_PORT")
+		if err != nil {
+			return err
+		}
+		sabPort, err := strconv.Atoi(sabPortText)
+		if err != nil {
+			return fmt.Errorf("invalid HOME_OPS_SAB_PORT: %w", err)
+		}
+		sabKey, err := readSecret(sabKeyFile)
+		if err != nil {
+			return err
+		}
+		specs = append(specs, clientSpec{
+			Implementation:  "sabnzbd",
+			Name:            "SABnzbd",
+			DefaultProtocol: "usenet",
+			Fields: map[string]interface{}{
+				"host":    sabHost,
+				"port":    sabPort,
+				"useSsl":  false,
+				"urlBase": "",
+				"apiKey":  sabKey,
+			},
+		})
+	}
+
 	apps := []appConfig{
 		{
 			Name:          "Sonarr",
@@ -286,7 +344,7 @@ func run() error {
 	}
 
 	for _, app := range apps {
-		if err := configureAppWithRetry(app, qbitUser, qbitPassword, qbitHost, qbitPort); err != nil {
+		if err := configureAppWithRetry(app, specs); err != nil {
 			return err
 		}
 	}

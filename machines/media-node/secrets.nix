@@ -60,6 +60,7 @@ in
         "prowlarr-api-key"
         "qbittorrent-webui-username"
         "qbittorrent-webui-password"
+        "sabnzbd-api-key"
         "slskd-slsk-username"
         "slskd-slsk-password"
         "slskd-web-password"

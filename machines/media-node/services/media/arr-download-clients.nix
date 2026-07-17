@@ -48,7 +48,8 @@ in
       ]
       ++ lib.optionals downloads.qbittorrent.bootstrapConfig [
         "home-ops-qbittorrent-config.service"
-      ];
+      ]
+      ++ lib.optionals downloads.sabnzbd.enable [ "sabnzbd.service" ];
       wants = [
         "sonarr.service"
         "radarr.service"
@@ -56,7 +57,8 @@ in
       ]
       ++ lib.optionals downloads.qbittorrent.bootstrapConfig [
         "home-ops-qbittorrent-config.service"
-      ];
+      ]
+      ++ lib.optionals downloads.sabnzbd.enable [ "sabnzbd.service" ];
       requires = [ "home-ops-runtime-secrets.service" ];
       environment = {
         # These credentials are for the Sonarr/Radarr qBittorrent download-client
@@ -68,6 +70,11 @@ in
         HOME_OPS_RADARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/radarr-api-key";
         HOME_OPS_QBIT_HOST = "127.0.0.1";
         HOME_OPS_QBIT_PORT = toString downloads.qbittorrent.webuiPort;
+      }
+      // lib.optionalAttrs downloads.sabnzbd.enable {
+        HOME_OPS_SAB_API_KEY_FILE = "${config.homeOps.secrets.directory}/sabnzbd-api-key";
+        HOME_OPS_SAB_HOST = "127.0.0.1";
+        HOME_OPS_SAB_PORT = "8080";
       };
       serviceConfig = {
         Type = "oneshot";
