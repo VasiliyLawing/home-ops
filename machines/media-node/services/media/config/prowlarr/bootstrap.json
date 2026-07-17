@@ -36,6 +36,7 @@
       "name": "NZBgeek",
       "match": "NZBgeek",
       "enable": true,
+      "redirect": true,
       "priority": 10,
       "apiKeyFileEnv": "HOME_OPS_NZBGEEK_API_KEY_FILE",
       "fields": {}
