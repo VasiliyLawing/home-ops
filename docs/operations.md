@@ -398,10 +398,11 @@ systemctl start home-ops-smoke-test.service
 journalctl -u home-ops-smoke-test.service -n 200 --no-pager
 ```
 
-It checks failed systemd units, the Prowlarr bootstrap timer's next activation,
-NAS media paths, qBittorrent's Gluetun network namespace, qBittorrent's API,
-Sonarr/Radarr download-client wiring, Prowlarr app links and FlareSolverr proxy,
-Jellyfin Movies/TV libraries, and Seerr's Jellyfin/Sonarr/Radarr settings.
+It checks failed systemd units, that the Prowlarr bootstrap is inactive between
+scheduled runs and its timer has a next activation, NAS media paths,
+qBittorrent's Gluetun network namespace, qBittorrent's API, Sonarr/Radarr
+download-client wiring, Prowlarr app links and FlareSolverr proxy, Jellyfin
+Movies/TV libraries, and Seerr's Jellyfin/Sonarr/Radarr settings.
 
 ## Jellyfin bootstrap
 
