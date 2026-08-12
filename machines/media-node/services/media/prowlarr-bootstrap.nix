@@ -78,7 +78,9 @@ in
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${bootstrapProwlarr}/bin/home-ops-bootstrap-prowlarr";
-        RemainAfterExit = true;
+        # Timer-driven oneshots must become inactive after they finish so the
+        # next timer activation can start them again.
+        RemainAfterExit = false;
       };
     };
 
@@ -86,7 +88,7 @@ in
       wantedBy = [ "timers.target" ];
       timerConfig = {
         OnCalendar = cfg.schedule;
-        Persistent = false;
+        Persistent = true;
       };
     };
   };
