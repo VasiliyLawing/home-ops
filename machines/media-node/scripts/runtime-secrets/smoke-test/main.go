@@ -194,6 +194,45 @@ func checkOptionalUnits(units ...string) func(smokeContext) error {
 	}
 }
 
+func checkRecurringTimer(timer string, target string) func(smokeContext) error {
+	return func(smokeContext) error {
+		if _, err := commandOutput("systemctl", "is-active", "--quiet", timer); err != nil {
+			return fmt.Errorf("%s is not active", timer)
+		}
+
+		targetState, err := commandOutput(
+			"systemctl",
+			"show",
+			"--property=ActiveState",
+			"--value",
+			target,
+		)
+		if err != nil {
+			return err
+		}
+		targetState = strings.TrimSpace(targetState)
+		if targetState != "inactive" {
+			return fmt.Errorf("%s is %s, want inactive between timer runs", target, targetState)
+		}
+
+		nextActivation, err := commandOutput(
+			"systemctl",
+			"show",
+			"--property=NextElapseUSecRealtime",
+			"--value",
+			timer,
+		)
+		if err != nil {
+			return err
+		}
+		nextActivation = strings.TrimSpace(nextActivation)
+		if nextActivation == "" || nextActivation == "n/a" {
+			return fmt.Errorf("%s has no next activation", timer)
+		}
+		return nil
+	}
+}
+
 func checkNasPaths(ctx smokeContext) error {
 	requiredPaths := []string{
 		filepath.Join(ctx.dataRoot, "torrents", "complete"),
@@ -505,6 +544,7 @@ func run() error {
 		{name: "no failed systemd units", run: checkNoFailedUnits},
 		{name: "core media units active", run: checkRequiredUnits("jellyfin.service", "seerr.service", "sonarr.service", "radarr.service", "prowlarr.service", "bazarr.service", "sabnzbd.service", "docker-gluetun.service", "docker-qbittorrent.service", "docker-unpackerr.service")},
 		{name: "optional media units active when installed", run: checkOptionalUnits("flaresolverr.service", "audiobookshelf.service", "lidarr.service", "navidrome.service", "docker-aurral.service", "docker-neutarr.service", "docker-shelfmark.service", "docker-calibre-web-automated.service")},
+		{name: "Prowlarr bootstrap timer can recur", run: checkRecurringTimer("home-ops-prowlarr-bootstrap.timer", "home-ops-prowlarr-bootstrap.service")},
 		{name: "NAS media paths exist", run: checkNasPaths},
 		{name: "qBittorrent shares Gluetun network namespace", run: checkQbittorrentVPNNamespace},
 		{name: "qBittorrent Web API reachable", run: checkQbittorrentAPI},
