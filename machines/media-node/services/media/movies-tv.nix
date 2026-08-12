@@ -2,6 +2,7 @@
 
 let
   cfg = config.homeOps.media.moviesTv;
+  shared = config.homeOps.media.shared;
 in
 {
   options.homeOps.media.moviesTv = {
@@ -49,6 +50,11 @@ in
         group = "prowlarr";
       };
     };
+    # Do not let the library managers start against missing media roots. The
+    # NFS share is an automount, so this also triggers and waits for the mount.
+    systemd.services.sonarr.unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+    systemd.services.radarr.unitConfig.RequiresMountsFor = [ shared.dataRoot ];
+
     # Prowlarr's generated config.xml is seeded before the service starts, so it
     # needs a stable owner. The upstream service uses DynamicUser; force a static
     # system user here so the config file can remain least-privilege owned by

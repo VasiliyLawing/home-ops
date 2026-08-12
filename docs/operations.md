@@ -53,6 +53,10 @@ setup. The NixOS mount therefore uses:
 nfsvers=3,proto=tcp,mountproto=tcp,nolock
 ```
 
+Sonarr and Radarr require this mount explicitly. Starting either service
+triggers the automount and waits for the NAS, preventing the library managers
+from running against missing media roots.
+
 If the automount looks present but the directory appears empty or returns
 `No such device`, test the raw mount with:
 
@@ -399,10 +403,11 @@ journalctl -u home-ops-smoke-test.service -n 200 --no-pager
 ```
 
 It checks failed systemd units, that the Prowlarr bootstrap is inactive between
-scheduled runs and its timer has a next activation, NAS media paths,
-qBittorrent's Gluetun network namespace, qBittorrent's API, Sonarr/Radarr
-download-client wiring, Prowlarr app links and FlareSolverr proxy, Jellyfin
-Movies/TV libraries, and Seerr's Jellyfin/Sonarr/Radarr settings.
+scheduled runs and its timer has a next activation, Sonarr/Radarr NAS mount
+dependencies, NAS media paths, qBittorrent's Gluetun network namespace,
+qBittorrent's API, Sonarr/Radarr download-client wiring, Prowlarr app links and
+FlareSolverr proxy, Jellyfin Movies/TV libraries, and Seerr's
+Jellyfin/Sonarr/Radarr settings.
 
 ## Jellyfin bootstrap
 
