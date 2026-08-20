@@ -67,6 +67,12 @@ in
       globalConfig = ''
         http_port 1919
         https_port 2929
+
+        # Public 443 is forwarded to internal 2929. Disable HTTP/3 so Caddy
+        # does not advertise the unreachable internal port via Alt-Svc.
+        servers :2929 {
+          protocols h1 h2
+        }
       '';
       virtualHosts = lib.mkMerge [
         {
