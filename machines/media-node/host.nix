@@ -25,6 +25,13 @@ in
     };
   };
 
+  # No disk swap by design (single NVMe, ext4). Jellyfin transcode buffers
+  # have peaked above 20G of 28G; zram gives the OOM killer headroom.
+  zramSwap = {
+    enable = true;
+    memoryPercent = 25;
+  };
+
   hardware = {
     # amdgpu (and every other device needing blobs) fails to probe without
     # this — no /dev/dri render node means no VAAPI transcoding.

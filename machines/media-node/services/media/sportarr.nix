@@ -70,8 +70,10 @@ in
       serviceConfig.Type = "oneshot";
     };
 
+    # 0700: config.xml carries the API key and Sportarr writes it 0664.
+    # home-ops-sportarr-api-key reads it as root, so nothing else needs in.
     systemd.tmpfiles.rules = [
-      "d ${cfg.dataDir} 0775 homeops media -"
+      "d ${cfg.dataDir} 0700 homeops media -"
     ];
 
     # Same NAS-mount guard as Sonarr/Radarr: never start against a missing /data.
