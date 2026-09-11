@@ -103,6 +103,13 @@ in
                 icon = "dispatcharr.svg";
               };
             }
+            {
+              EPlusTV = {
+                href = "http://media-node:8000";
+                description = "NFL+ / Sunday Ticket as channels";
+                icon = "mdi-football";
+              };
+            }
           ];
         }
         {

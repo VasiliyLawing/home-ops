@@ -65,6 +65,7 @@ The media stack is still split by domain:
 - `services/media/cleanuparr.nix`: stalled/malicious torrent cleanup;
 - `services/media/sportarr.nix`: Sportarr sports-event PVR (Sonarr fork, container);
 - `services/media/dispatcharr.nix`: Dispatcharr IPTV manager / HDHomeRun emulator (container);
+- `services/media/eplustv.nix`: EPlusTV, own-subscription sports as M3U/XMLTV channels (container);
 - `services/media/wizarr.nix`: Jellyfin invite onboarding;
 - `services/media/seerr-bootstrap.nix`: Seerr Jellyfin/Sonarr/Radarr settings bootstrap;
 - `services/media/books.nix`: Audiobookshelf, Calibre-Web, Shelfmark;
@@ -138,6 +139,13 @@ cross the namespace; Jellyfin adds the tuner by URL. The IPTV source itself
 (M3U or Xtream credentials), the Jellyfin tuner/guide, and Sportarr's IPTV
 source are added in the respective UIs; they are not bootstrapped until the
 provider URLs are stable.
+
+EPlusTV is the channel *source*: it logs into the operator's own NFL+,
+Sunday Ticket, ESPN and similar accounts and serves them as
+`http://127.0.0.1:8000/channels.m3u` + `/xmltv.xml`, which Dispatcharr imports
+like any playlist. It runs on host networking, outside Gluetun, on purpose:
+these are legitimate accounts, and a foreign VPN exit is the fastest way to
+get them geo-blocked.
 
 What is and is not behind the VPN, by design: the two things that carry the
 content — torrent peers (qBittorrent) and IPTV streams (Dispatcharr) — only

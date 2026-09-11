@@ -252,6 +252,23 @@ Sportarr            Settings -> IPTV Sources -> M3U http://127.0.0.1:9191/output
                     + the same EPG URL; map channels to leagues for DVR
 ```
 
+EPlusTV uses the upstream Docker Hub image:
+
+```text
+m0ngr31/eplustv:v4.16.3
+```
+
+Host networking on port `8000` (Tailscale-only), state in `/var/lib/eplustv`.
+Provider logins expire and break with app updates, so bump the pin when
+channels stop resolving. First-run wiring:
+
+```text
+EPlusTV :8000       log into NFL (NFL+ / Sunday Ticket), ESPN, etc.
+Dispatcharr :9191   Add M3U  http://127.0.0.1:8000/channels.m3u
+                    Add EPG  http://127.0.0.1:8000/xmltv.xml
+                    then create channels from the imported streams
+```
+
 Aurral uses the upstream GHCR image pinned to the stable 1.x line:
 
 ```text
