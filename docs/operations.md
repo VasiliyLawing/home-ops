@@ -252,6 +252,10 @@ Sportarr            Settings -> IPTV Sources -> M3U http://127.0.0.1:9191/output
                     + the same EPG URL; map channels to leagues for DVR
 ```
 
+Only for sources that must egress via the VPN. EPlusTV is consumed directly
+(see below), not through Dispatcharr: from inside Gluetun's namespace
+`127.0.0.1:8000` is Gluetun's control server, not EPlusTV.
+
 EPlusTV uses the upstream Docker Hub image:
 
 ```text
@@ -263,11 +267,23 @@ Provider logins expire and break with app updates, so bump the pin when
 channels stop resolving. First-run wiring:
 
 ```text
-EPlusTV :8000       log into NFL (NFL+ / Sunday Ticket), ESPN, etc.
-Dispatcharr :9191   Add M3U  http://127.0.0.1:8000/channels.m3u
-                    Add EPG  http://127.0.0.1:8000/xmltv.xml
-                    then create channels from the imported streams
+EPlusTV :8000   Options -> Dedicated Linear Channels on; # of Channels 20
+                NFL card -> Enabled (NFL.com login) -> Sunday Ticket (Google login)
+                NFL card -> Linear Channels -> NFL Network
+Jellyfin        Live TV -> Tuner: M3U http://127.0.0.1:8000/channels.m3u
+                                  M3U http://127.0.0.1:8000/linear-channels.m3u
+                          Guide: XMLTV http://127.0.0.1:8000/xmltv.xml
+                                 XMLTV http://127.0.0.1:8000/linear-xmltv.xml
+Sportarr        Settings -> IPTV Sources: the two M3Us above (M3U type)
+                Settings -> EPG Sources:  the two XMLTVs, attached to each source
+                IPTV Channels -> map "NFL Network" to the NFL league
 ```
+
+Those Jellyfin/Sportarr entries were created through their APIs on 2026-09-10
+and live in each app's database, not in Nix. EPlusTV schedules games into
+the numbered "EPlusTV N" slots a couple of days ahead; Sportarr's DVR resolves
+the slot per game through the EPG, so an empty guide means EPlusTV has not
+found events yet, not a wiring fault.
 
 Aurral uses the upstream GHCR image pinned to the stable 1.x line:
 
