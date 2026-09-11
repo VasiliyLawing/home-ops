@@ -231,6 +231,24 @@ SABnzbd:     http://127.0.0.1:8080, category sports
 Root folder: /data/media/sports
 ```
 
+Dispatcharr uses the upstream GHCR all-in-one image:
+
+```text
+ghcr.io/dispatcharr/dispatcharr:0.30.0
+```
+
+It runs with host networking on port `9191` (Tailscale-only) with state in
+`/var/lib/dispatcharr`. First-run wiring, all in UIs:
+
+```text
+Dispatcharr :9191   add M3U/Xtream source + EPG, select channels
+Jellyfin            Live TV -> tuner auto-discovered as HDHomeRun
+                    (fallback: http://127.0.0.1:9191/hdhr)
+                    guide: XMLTV http://127.0.0.1:9191/output/epg
+Sportarr            Settings -> IPTV Sources -> M3U http://127.0.0.1:9191/output/m3u
+                    + the same EPG URL; map channels to leagues for DVR
+```
+
 Aurral uses the upstream GHCR image pinned to the stable 1.x line:
 
 ```text
