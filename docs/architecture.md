@@ -113,7 +113,7 @@ Manage:
 ```text
 Sonarr -> tv
 Radarr -> movies
-Sportarr -> sports
+Sportarr -> sports (qBittorrent and SABnzbd)
 Shelfmark books -> books
 Shelfmark audiobooks -> audiobooks
 ```
