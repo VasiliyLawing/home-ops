@@ -24,6 +24,7 @@
     ./services/media/wizarr.nix
     ./services/media/cleanuparr.nix
     ./services/media/sportarr.nix
+    ./services/media/dispatcharr.nix
     ./services/ingress.nix
     ./services/security.nix
     ./services/authelia.nix
@@ -67,6 +68,7 @@
       wizarr.enable = true;
       cleanuparr.enable = true;
       sportarr.enable = true;
+      dispatcharr.enable = true;
     };
 
     dashboard.enable = true;

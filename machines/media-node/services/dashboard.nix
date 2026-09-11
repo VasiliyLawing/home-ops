@@ -96,6 +96,13 @@ in
                 icon = "sportarr.svg";
               };
             }
+            {
+              Dispatcharr = {
+                href = "http://media-node:9191";
+                description = "IPTV channels + guide";
+                icon = "dispatcharr.svg";
+              };
+            }
           ];
         }
         {

@@ -64,6 +64,7 @@ The media stack is still split by domain:
 - `services/media/unpackerr.nix`: archive extraction for completed downloads;
 - `services/media/cleanuparr.nix`: stalled/malicious torrent cleanup;
 - `services/media/sportarr.nix`: Sportarr sports-event PVR (Sonarr fork, container);
+- `services/media/dispatcharr.nix`: Dispatcharr IPTV manager / HDHomeRun emulator (container);
 - `services/media/wizarr.nix`: Jellyfin invite onboarding;
 - `services/media/seerr-bootstrap.nix`: Seerr Jellyfin/Sonarr/Radarr settings bootstrap;
 - `services/media/books.nix`: Audiobookshelf, Calibre-Web, Shelfmark;
@@ -124,6 +125,13 @@ API key is the one Sportarr generates itself, exported by
 config seeder forces `AuthenticationMethod=External` and Sportarr rejects
 non-local clients in that mode. Sportarr has no `/downloadclient/schema`
 endpoint, so its download clients are configured once in the UI.
+
+Live sports run through Dispatcharr. It is the all-in-one image (Postgres on
+a unix socket, Redis on host loopback 6379) with host networking, so Jellyfin
+discovers its HDHomeRun emulation and both Jellyfin and Sportarr consume it at
+`127.0.0.1:9191`. The IPTV source itself (M3U or Xtream credentials), the
+Jellyfin tuner/guide, and Sportarr's IPTV source are added in the respective
+UIs; they are not bootstrapped until the provider URLs are stable.
 
 Other media apps are intentionally not wired to qBittorrent unless they submit
 downloads. Jellyfin, Audiobookshelf, Calibre-Web-Automated, Navidrome, and
