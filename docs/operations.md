@@ -212,6 +212,24 @@ http://127.0.0.1:7878  # Radarr
 http://127.0.0.1:8686  # Lidarr
 ```
 
+Sportarr uses the upstream Docker Hub image:
+
+```text
+sportarr/sportarr:4.1.7.1117
+```
+
+It runs with host networking on its fixed port `1867` (Tailscale-only), stores
+config in `/var/lib/home-ops/sportarr`, and sees the NAS as `/data` like the
+other Arr apps. First-run wiring is manual in its UI, using loopback like
+NeutArr:
+
+```text
+Prowlarr:    http://127.0.0.1:9696  (add Sportarr as an app in Prowlarr too)
+qBittorrent: 127.0.0.1:8081, category sports
+SABnzbd:     http://127.0.0.1:8080
+Root folder: /data/media/sports
+```
+
 Aurral uses the upstream GHCR image pinned to the stable 1.x line:
 
 ```text

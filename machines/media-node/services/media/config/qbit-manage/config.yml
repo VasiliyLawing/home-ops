@@ -42,6 +42,7 @@ cat:
   # ingest dir would let CWA delete files qBittorrent is still seeding.
   books: "/data/torrents/complete/books"
   audiobooks: "/data/torrents/complete/audiobooks"
+  sports: "/data/torrents/complete/sports"
   incomplete: "/data/torrents/incomplete"
   Uncategorized: "/data/torrents/*"
 

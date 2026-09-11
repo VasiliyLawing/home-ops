@@ -88,6 +88,17 @@ in
           ];
         }
         {
+          Sports = [
+            {
+              Sportarr = {
+                href = "http://media-node:1867";
+                description = "Sports event PVR";
+                icon = "sportarr.svg";
+              };
+            }
+          ];
+        }
+        {
           Music = [
             {
               Navidrome = {

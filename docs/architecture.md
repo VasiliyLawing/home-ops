@@ -43,12 +43,17 @@ machine-owned concerns.
 - `scripts/runtime-secrets/`: small bootstrap helpers for secrets, Arr
   `config.xml` files, and qBittorrent WebUI credentials;
 - `services/ingress.nix`: Caddy routes;
+- `services/security.nix`: host hardening;
+- `services/authelia.nix`: SSO in front of the public dashboard and books hosts;
+- `services/dashboard.nix`: Homepage dashboard;
 - `services/media/*.nix`: the media application stack.
 
 The media stack is still split by domain:
 
 - `services/media/shared.nix`: shared paths, Jellyfin, Seerr, Docker backend;
 - `services/media/jellyfin-bootstrap.nix`: Jellyfin Movies/TV library and VAAPI transcoding bootstrap;
+- `services/media/jellyfin-plugins.nix`: Jellyfin plugin repositories and desired plugin set;
+- `services/media/jellyfin-sso-bootstrap.nix`: Jellyfin SSO plugin wiring to Authelia;
 - `services/media/downloads.nix`: SABnzbd and VPN-isolated qBittorrent;
 - `services/media/movies-tv.nix`: Sonarr, Radarr, Prowlarr, Bazarr, Flaresolverr, Neutarr;
 - `services/media/bazarr-bootstrap.nix`: Bazarr Sonarr/Radarr settings bootstrap;
@@ -57,6 +62,9 @@ The media stack is still split by domain:
 - `services/media/configarr.nix`: Configarr profile/custom-format/TRaSH sync for Sonarr and Radarr;
 - `services/media/qbit-manage.nix`: qBit Manage category/tag/cleanup skeleton;
 - `services/media/unpackerr.nix`: archive extraction for completed downloads;
+- `services/media/cleanuparr.nix`: stalled/malicious torrent cleanup;
+- `services/media/sportarr.nix`: Sportarr sports-event PVR (Sonarr fork, container);
+- `services/media/wizarr.nix`: Jellyfin invite onboarding;
 - `services/media/seerr-bootstrap.nix`: Seerr Jellyfin/Sonarr/Radarr settings bootstrap;
 - `services/media/books.nix`: Audiobookshelf, Calibre-Web, Shelfmark;
 - `services/media/music.nix`: Lidarr, Navidrome, Aurral, plus the Soulseek
@@ -104,9 +112,14 @@ Manage:
 ```text
 Sonarr -> tv
 Radarr -> movies
+Sportarr -> sports
 Shelfmark books -> books
 Shelfmark audiobooks -> audiobooks
 ```
+
+Sportarr's Prowlarr app link and download-client entries are configured once
+in its UI; they are not bootstrapped until its API is confirmed to match the
+Sonarr schema the existing Go bootstrappers speak.
 
 Other media apps are intentionally not wired to qBittorrent unless they submit
 downloads. Jellyfin, Audiobookshelf, Calibre-Web-Automated, Navidrome, and
@@ -119,8 +132,8 @@ app, so it gets Prowlarr and qBittorrent credentials from the Nix-generated
 reachable over Tailscale; the NixOS firewall keeps the LAN out) so it can
 reach the host-local Prowlarr, qBittorrent, and Calibre-Web-Automated APIs.
 
-NeutArr and Aurral are helper applications with first-run onboarding flows.
-They are kept in containers because neither has a native NixOS module today,
+NeutArr, Aurral, and Sportarr are applications with first-run onboarding flows.
+They are kept in containers because none has a native NixOS module today,
 but they use verified upstream images and run with host networking — host
 services are reachable at plain `127.0.0.1` from inside them, and their UIs
 are reachable over Tailscale only (LAN blocked by the firewall).
@@ -266,10 +279,12 @@ The host-side NAS layout is:
 |       |-- tv/
 |       |-- music/
 |       |-- books/
-|       `-- audiobooks/
+|       |-- audiobooks/
+|       `-- sports/
 `-- media/
     |-- movies/
     |-- tv/
+    |-- sports/
     |-- music/
     |-- books/
     |   `-- imports/
