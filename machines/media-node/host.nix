@@ -70,7 +70,7 @@ in
     };
     tailscale.enable = true;
     # Containers log to journald on NixOS; uncapped it had reached 2.6G.
-    journald.extraConfig = "SystemMaxUse=1G";
+    journald.settings.Journal.SystemMaxUse = "1G";
   };
 
   users = {
