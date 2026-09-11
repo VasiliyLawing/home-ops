@@ -118,7 +118,7 @@ Sportarr is the sports-event PVR (a Sonarr fork); Prowlarr links it through the
 same bootstrap as Sonarr/Radarr, while its download clients are set once in
 its UI. Dispatcharr turns an operator-supplied IPTV playlist into an
 HDHomeRun-style tuner for Jellyfin Live TV and an M3U/EPG feed for Sportarr's
-DVR. Wizarr issues
+DVR, and runs inside the same Gluetun VPN island as qBittorrent. Wizarr issues
 Jellyfin invites, Authelia fronts the public dashboard and books hosts, and
 Homepage ties the stack together. Shelfmark is wired to Prowlarr and qBittorrent
 through generated host-local secrets. qBittorrent's baseline paths and ports are

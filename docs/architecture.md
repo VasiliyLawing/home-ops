@@ -126,12 +126,24 @@ config seeder forces `AuthenticationMethod=External` and Sportarr rejects
 non-local clients in that mode. Sportarr has no `/downloadclient/schema`
 endpoint, so its download clients are configured once in the UI.
 
-Live sports run through Dispatcharr. It is the all-in-one image (Postgres on
-a unix socket, Redis on host loopback 6379) with host networking, so Jellyfin
-discovers its HDHomeRun emulation and both Jellyfin and Sportarr consume it at
-`127.0.0.1:9191`. The IPTV source itself (M3U or Xtream credentials), the
-Jellyfin tuner/guide, and Sportarr's IPTV source are added in the respective
-UIs; they are not bootstrapped until the provider URLs are stable.
+Live sports run through Dispatcharr, and Dispatcharr lives in the same
+Gluetun VPN island as qBittorrent (`--network=container:gluetun`): playlist
+fetches, EPG pulls and every stream leave via the VPN, and the kill switch cuts
+them off if the tunnel drops. It is the all-in-one image (Postgres on a unix
+socket, Redis on loopback inside the namespace). Gluetun publishes its port to
+host loopback only, and Caddy fronts it on `:9191` on all interfaces, which the
+firewall reduces to Tailscale — so people use `http://media-node:9191` and
+Jellyfin/Sportarr use `127.0.0.1:9191`. HDHomeRun auto-discovery does not
+cross the namespace; Jellyfin adds the tuner by URL. The IPTV source itself
+(M3U or Xtream credentials), the Jellyfin tuner/guide, and Sportarr's IPTV
+source are added in the respective UIs; they are not bootstrapped until the
+provider URLs are stable.
+
+What is and is not behind the VPN, by design: the two things that carry the
+content — torrent peers (qBittorrent) and IPTV streams (Dispatcharr) — only
+ever see the VPN exit. Sportarr/Prowlarr indexer searches, SABnzbd (TLS to the
+usenet provider) and Jellyfin serving the household stay on the host, the same
+trade Sonarr/Radarr already make.
 
 Other media apps are intentionally not wired to qBittorrent unless they submit
 downloads. Jellyfin, Audiobookshelf, Calibre-Web-Automated, Navidrome, and
