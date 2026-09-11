@@ -140,12 +140,20 @@ cross the namespace; Jellyfin adds the tuner by URL. The IPTV source itself
 source are added in the respective UIs; they are not bootstrapped until the
 provider URLs are stable.
 
-EPlusTV is the channel *source*: it logs into the operator's own NFL+,
-Sunday Ticket, ESPN and similar accounts and serves them as
-`http://127.0.0.1:8000/channels.m3u` + `/xmltv.xml`, which Dispatcharr imports
-like any playlist. It runs on host networking, outside Gluetun, on purpose:
-these are legitimate accounts, and a foreign VPN exit is the fastest way to
-get them geo-blocked.
+EPlusTV is the channel *source* for the operator's own NFL+, Sunday Ticket,
+ESPN and similar accounts, served as `http://127.0.0.1:8000/channels.m3u` +
+`/xmltv.xml` (events) and `/linear-channels.m3u` + `/linear-xmltv.xml`
+(NFL Network, RedZone). Jellyfin (M3U tuner + XMLTV provider) and Sportarr
+(IPTV source + EPG source per playlist) consume those directly: all three run
+on the host. It runs outside Gluetun on purpose — legitimate accounts, and a
+foreign VPN exit is the fastest way to get them geo-blocked.
+
+Dispatcharr is *not* in that path. Inside Gluetun's namespace `127.0.0.1` is
+Gluetun's own loopback (port 8000 there is Gluetun's control server, which
+answers 401), and routing an EPlusTV stream through the VPN would defeat the
+point above. Dispatcharr is reserved for playlists that must egress via the
+VPN; if one is ever added, Jellyfin and Sportarr get it as a second tuner /
+source alongside EPlusTV.
 
 What is and is not behind the VPN, by design: the two things that carry the
 content — torrent peers (qBittorrent) and IPTV streams (Dispatcharr) — only
