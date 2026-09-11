@@ -64,7 +64,6 @@ The media stack is still split by domain:
 - `services/media/unpackerr.nix`: archive extraction for completed downloads;
 - `services/media/cleanuparr.nix`: stalled/malicious torrent cleanup;
 - `services/media/sportarr.nix`: Sportarr sports-event PVR (Sonarr fork, container);
-- `services/media/dispatcharr.nix`: Dispatcharr IPTV manager / HDHomeRun emulator (container);
 - `services/media/eplustv.nix`: EPlusTV, own-subscription sports as M3U/XMLTV channels (container);
 - `services/media/wizarr.nix`: Jellyfin invite onboarding;
 - `services/media/seerr-bootstrap.nix`: Seerr Jellyfin/Sonarr/Radarr settings bootstrap;
@@ -127,19 +126,6 @@ config seeder forces `AuthenticationMethod=External` and Sportarr rejects
 non-local clients in that mode. Sportarr has no `/downloadclient/schema`
 endpoint, so its download clients are configured once in the UI.
 
-Live sports run through Dispatcharr, and Dispatcharr lives in the same
-Gluetun VPN island as qBittorrent (`--network=container:gluetun`): playlist
-fetches, EPG pulls and every stream leave via the VPN, and the kill switch cuts
-them off if the tunnel drops. It is the all-in-one image (Postgres on a unix
-socket, Redis on loopback inside the namespace). Gluetun publishes its port to
-host loopback only, and Caddy fronts it on `:9191` on all interfaces, which the
-firewall reduces to Tailscale — so people use `http://media-node:9191` and
-Jellyfin/Sportarr use `127.0.0.1:9191`. HDHomeRun auto-discovery does not
-cross the namespace; Jellyfin adds the tuner by URL. The IPTV source itself
-(M3U or Xtream credentials), the Jellyfin tuner/guide, and Sportarr's IPTV
-source are added in the respective UIs; they are not bootstrapped until the
-provider URLs are stable.
-
 EPlusTV is the channel *source* for the operator's own NFL+, Sunday Ticket,
 ESPN and similar accounts, served as `http://127.0.0.1:8000/channels.m3u` +
 `/xmltv.xml` (events) and `/linear-channels.m3u` + `/linear-xmltv.xml`
@@ -148,16 +134,8 @@ ESPN and similar accounts, served as `http://127.0.0.1:8000/channels.m3u` +
 on the host. It runs outside Gluetun on purpose — legitimate accounts, and a
 foreign VPN exit is the fastest way to get them geo-blocked.
 
-Dispatcharr is *not* in that path. Inside Gluetun's namespace `127.0.0.1` is
-Gluetun's own loopback (port 8000 there is Gluetun's control server, which
-answers 401), and routing an EPlusTV stream through the VPN would defeat the
-point above. Dispatcharr is reserved for playlists that must egress via the
-VPN; if one is ever added, Jellyfin and Sportarr get it as a second tuner /
-source alongside EPlusTV.
-
-What is and is not behind the VPN, by design: the two things that carry the
-content — torrent peers (qBittorrent) and IPTV streams (Dispatcharr) — only
-ever see the VPN exit. Sportarr/Prowlarr indexer searches, SABnzbd (TLS to the
+What is and is not behind the VPN, by design: torrent peers (qBittorrent)
+only ever see the VPN exit. Sportarr/Prowlarr indexer searches, SABnzbd (TLS to the
 usenet provider) and Jellyfin serving the household stay on the host, the same
 trade Sonarr/Radarr already make.
 

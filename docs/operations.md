@@ -231,31 +231,6 @@ SABnzbd:     http://127.0.0.1:8080, category sports
 Root folder: /data/media/sports
 ```
 
-Dispatcharr uses the upstream GHCR all-in-one image:
-
-```text
-ghcr.io/dispatcharr/dispatcharr:0.30.0
-```
-
-It runs inside Gluetun's network namespace (VPN-only egress, like
-qBittorrent) listening on `9190`, published to host loopback and fronted by
-Caddy on `9191` (Tailscale-only). State lives in `/var/lib/dispatcharr`. Add
-the IPTV provider only after this is deployed, so the provider never sees the
-home IP. If Gluetun restarts, `systemctl restart docker-dispatcharr` too.
-First-run wiring, all in UIs:
-
-```text
-Dispatcharr :9191   add M3U/Xtream source + EPG, select channels
-Jellyfin            Live TV -> Tuner Devices -> HDHomeRun, URL http://127.0.0.1:9191/hdhr
-                    guide: XMLTV http://127.0.0.1:9191/output/epg
-Sportarr            Settings -> IPTV Sources -> M3U http://127.0.0.1:9191/output/m3u
-                    + the same EPG URL; map channels to leagues for DVR
-```
-
-Only for sources that must egress via the VPN. EPlusTV is consumed directly
-(see below), not through Dispatcharr: from inside Gluetun's namespace
-`127.0.0.1:8000` is Gluetun's control server, not EPlusTV.
-
 EPlusTV uses the upstream Docker Hub image:
 
 ```text
