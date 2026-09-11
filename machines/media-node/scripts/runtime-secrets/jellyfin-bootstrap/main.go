@@ -49,7 +49,7 @@ func request(method string, endpoint string, apiKey string, body []byte) ([]byte
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("X-Emby-Token", apiKey)
+	req.Header.Set("Authorization", "MediaBrowser Token=\""+apiKey+"\"")
 	req.Header.Set("Accept", "application/json")
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
