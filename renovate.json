@@ -6,26 +6,65 @@
     ":semanticCommitTypeAll(chore)"
   ],
   "timezone": "America/Chicago",
-  "schedule": ["before 6am on monday"],
-  "nix": { "enabled": true },
+  "schedule": [
+    "before 6am on monday"
+  ],
+  "nix": {
+    "enabled": true
+  },
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": ["before 6am on monday"],
+    "schedule": [
+      "before 6am on monday"
+    ],
     "automerge": true,
     "commitMessageAction": "flake.lock: refresh nixpkgs + inputs"
   },
   "packageRules": [
     {
       "description": "Auto-merge nix flake input bumps (nixpkgs channel commits, etc.) once CI is green.",
-      "matchManagers": ["nix"],
+      "matchManagers": [
+        "nix"
+      ],
       "automerge": true,
-      "matchUpdateTypes": ["digest", "minor", "patch"]
+      "matchUpdateTypes": [
+        "digest",
+        "minor",
+        "patch"
+      ]
     },
     {
-      "description": "Auto-merge GitHub Actions bumps except majors — those need eyes.",
-      "matchManagers": ["github-actions"],
+      "description": "Auto-merge GitHub Actions bumps except majors \u2014 those need eyes.",
+      "matchManagers": [
+        "github-actions"
+      ],
       "automerge": true,
-      "matchUpdateTypes": ["digest", "minor", "patch"]
+      "matchUpdateTypes": [
+        "digest",
+        "minor",
+        "patch"
+      ]
+    },
+    {
+      "description": "Container image bumps need eyes: no automerge, batched weekly.",
+      "matchDatasources": [
+        "docker"
+      ],
+      "automerge": false,
+      "groupName": "container images"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Pinned container images in NixOS modules (image option defaults).",
+      "managerFilePatterns": [
+        "/^machines/.*\\.nix$/"
+      ],
+      "matchStrings": [
+        "default = \"(?<depName>[a-z0-9.-]+(?:/[a-z0-9._-]+)+):(?<currentValue>v?[0-9][A-Za-z0-9._-]*)\";"
+      ],
+      "datasourceTemplate": "docker"
     }
   ]
 }

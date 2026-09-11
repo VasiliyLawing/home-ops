@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.homeOps.media.eplustv;
@@ -42,6 +47,21 @@ in
       # http://127.0.0.1:8000/{channels,linear-channels}.m3u and
       # /{xmltv,linear-xmltv}.xml directly.
       extraOptions = [ "--network=host" ];
+    };
+
+    # EPlusTV keeps a provider stream session per channel and re-uses it after
+    # NFL's CDN has expired it (410 -> the channel 404s until a restart). A
+    # nightly restart is the crude fix; logins persist in dataDir.
+    systemd.services.eplustv-restart = {
+      description = "Restart EPlusTV to drop stale provider stream sessions";
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.systemd}/bin/systemctl restart docker-eplustv.service";
+      };
+    };
+    systemd.timers.eplustv-restart = {
+      wantedBy = [ "timers.target" ];
+      timerConfig.OnCalendar = "04:00";
     };
   };
 }
