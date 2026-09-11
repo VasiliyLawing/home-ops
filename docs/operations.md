@@ -237,13 +237,16 @@ Dispatcharr uses the upstream GHCR all-in-one image:
 ghcr.io/dispatcharr/dispatcharr:0.30.0
 ```
 
-It runs with host networking on port `9191` (Tailscale-only) with state in
-`/var/lib/dispatcharr`. First-run wiring, all in UIs:
+It runs inside Gluetun's network namespace (VPN-only egress, like
+qBittorrent) listening on `9190`, published to host loopback and fronted by
+Caddy on `9191` (Tailscale-only). State lives in `/var/lib/dispatcharr`. Add
+the IPTV provider only after this is deployed, so the provider never sees the
+home IP. If Gluetun restarts, `systemctl restart docker-dispatcharr` too.
+First-run wiring, all in UIs:
 
 ```text
 Dispatcharr :9191   add M3U/Xtream source + EPG, select channels
-Jellyfin            Live TV -> tuner auto-discovered as HDHomeRun
-                    (fallback: http://127.0.0.1:9191/hdhr)
+Jellyfin            Live TV -> Tuner Devices -> HDHomeRun, URL http://127.0.0.1:9191/hdhr
                     guide: XMLTV http://127.0.0.1:9191/output/epg
 Sportarr            Settings -> IPTV Sources -> M3U http://127.0.0.1:9191/output/m3u
                     + the same EPG URL; map channels to leagues for DVR
