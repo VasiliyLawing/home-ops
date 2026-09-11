@@ -123,9 +123,22 @@ in
       };
       serviceConfig = {
         Type = "oneshot";
-        # jellyfin.service reports "active" before it's bound to :8096, so a
-        # wants= dependency isn't enough — poll until the port answers.
-        ExecStartPre = "${pkgs.curl}/bin/curl --retry 60 --retry-delay 1 --retry-all-errors --retry-connrefused -sSf -o /dev/null http://127.0.0.1:8096/System/Ping";
+        # jellyfin.service reports "active" before the API is usable, and
+        # /System/Ping answers 200 while everything else still returns 503
+        # "Server is loading" (seen on the first boot on Jellyfin 12). Poll
+        # the endpoint the bootstrap actually needs, authenticated.
+        ExecStartPre = pkgs.writeShellScript "home-ops-wait-jellyfin-api" ''
+          key=$(< ${cfg.apiKeyFile})
+          for _ in $(seq 1 90); do
+            code=$(${pkgs.curl}/bin/curl -s -o /dev/null -w '%{http_code}' \
+              -H "Authorization: MediaBrowser Token=\"$key\"" \
+              http://127.0.0.1:8096/Repositories)
+            [ "$code" = 200 ] && exit 0
+            sleep 2
+          done
+          echo "Jellyfin API not ready after 180s (last HTTP $code)" >&2
+          exit 1
+        '';
         ExecStart = "${bootstrapPlugins}/bin/home-ops-bootstrap-jellyfin-plugins";
       };
     };

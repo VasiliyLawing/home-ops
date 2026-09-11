@@ -99,6 +99,13 @@
   #   install -m 600 /dev/stdin /var/lib/home-ops/secrets/cloudflare-token <<< "<token>"
   # A records for all listed hostnames must already exist in Cloudflare —
   # this service only UPDATES existing records to the current IP.
+  # Runs at boot before the uplink is up otherwise (every IP-check service
+  # "unreachable", exit 2); the timer would catch up, but the unit shows failed.
+  systemd.services.cloudflare-dyndns = {
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+  };
+
   services.cloudflare-dyndns = {
     enable = true;
     apiTokenFile = "/var/lib/home-ops/secrets/cloudflare-token";
