@@ -53,6 +53,8 @@ in
     firewall = {
       enable = true;
       trustedInterfaces = [ "tailscale0" ];
+      # LAN scanners were filling the journal with refused-packet lines.
+      logRefusedConnections = false;
     };
   };
 
@@ -61,10 +63,14 @@ in
       enable = true;
       settings = {
         PasswordAuthentication = false;
+        # NixOS default is true; with PAM that is a second password path.
+        KbdInteractiveAuthentication = false;
         PermitRootLogin = "prohibit-password";
       };
     };
     tailscale.enable = true;
+    # Containers log to journald on NixOS; uncapped it had reached 2.6G.
+    journald.extraConfig = "SystemMaxUse=1G";
   };
 
   users = {

@@ -11,10 +11,18 @@ let
       copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
     }
   '';
+  # Every public vhost: HSTS and no upstream Server banner.
+  hardeningHeaders = ''
+    header {
+      Strict-Transport-Security "max-age=31536000; includeSubDomains"
+      -Server
+    }
+  '';
   autheliaProtects = host: autheliaCfg.enable && (lib.elem host autheliaCfg.protectedHosts);
   # Homepage: browser-only, no native clients — safe to gate the whole thing.
   dashboardRouteBlock =
-    (lib.optionalString (autheliaProtects dashboardCfg.host) forwardAuthBlock)
+    hardeningHeaders
+    + (lib.optionalString (autheliaProtects dashboardCfg.host) forwardAuthBlock)
     + ''
       reverse_proxy 127.0.0.1:${toString dashboardCfg.port}
     '';
@@ -22,7 +30,8 @@ let
   # gate so ereader/OPDS clients can hit Calibre-Web's own HTTP Basic auth
   # (they can't follow OIDC redirects, same story as Seerr /api/*).
   booksRouteBlock =
-    if autheliaProtects cfg.booksHost then
+    hardeningHeaders
+    + (if autheliaProtects cfg.booksHost then
       ''
         handle /opds* {
           reverse_proxy 127.0.0.1:8083
@@ -38,7 +47,7 @@ let
     else
       ''
         reverse_proxy 127.0.0.1:8083
-      '';
+      '');
 in
 {
   options.homeOps.ingress = {
@@ -76,12 +85,12 @@ in
       '';
       virtualHosts = lib.mkMerge [
         {
-          ${cfg.jellyfinHost}.extraConfig = ''
+          ${cfg.jellyfinHost}.extraConfig = hardeningHeaders + ''
             reverse_proxy 127.0.0.1:8096
           '';
         }
         (lib.mkIf autheliaCfg.enable {
-          ${autheliaCfg.host}.extraConfig = ''
+          ${autheliaCfg.host}.extraConfig = hardeningHeaders + ''
             reverse_proxy 127.0.0.1:${toString autheliaCfg.port}
           '';
         })
@@ -93,7 +102,7 @@ in
         # Putting Authelia in front defeats the point.
         (lib.mkIf wizarrCfg.enable {
           # 5690 is Wizarr's fixed container port (host networking).
-          "invite.lawing.net".extraConfig = ''
+          "invite.lawing.net".extraConfig = hardeningHeaders + ''
             reverse_proxy 127.0.0.1:5690
           '';
         })

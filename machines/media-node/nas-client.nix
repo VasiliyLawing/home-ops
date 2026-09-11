@@ -39,6 +39,8 @@ in
       options = [
         "nfsvers=3"
         "proto=tcp"
+        # Parallel TCP connections for the dedicated 10.10.10.0/24 link.
+        "nconnect=4"
         "mountproto=tcp"
         "nolock"
         "x-systemd.automount"

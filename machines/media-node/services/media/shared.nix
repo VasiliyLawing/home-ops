@@ -52,6 +52,12 @@ in
 
     virtualisation.oci-containers.backend = "docker";
     virtualisation.docker.enable = true;
+    # Images are pinned in Nix, so anything unreferenced is safe to drop.
+    virtualisation.docker.autoPrune = {
+      enable = true;
+      dates = "weekly";
+      flags = [ "--all" ];
+    };
 
     services.jellyfin = {
       enable = true;

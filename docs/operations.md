@@ -260,6 +260,11 @@ the numbered "EPlusTV N" slots a couple of days ahead; Sportarr's DVR resolves
 the slot per game through the EPG, so an empty guide means EPlusTV has not
 found events yet, not a wiring fault.
 
+EPlusTV is restarted nightly at 04:00 (`eplustv-restart.timer`) because it
+re-uses provider stream sessions after NFL's CDN expires them. If a channel
+that should work 404s mid-day, `systemctl restart docker-eplustv` is the same
+fix by hand.
+
 Aurral uses the upstream GHCR image pinned to the stable 1.x line:
 
 ```text
