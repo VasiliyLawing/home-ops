@@ -23,6 +23,7 @@
     ./services/media/music.nix
     ./services/media/wizarr.nix
     ./services/media/cleanuparr.nix
+    ./services/media/sportarr.nix
     ./services/ingress.nix
     ./services/security.nix
     ./services/authelia.nix
@@ -65,6 +66,7 @@
       music.enable = true;
       wizarr.enable = true;
       cleanuparr.enable = true;
+      sportarr.enable = true;
     };
 
     dashboard.enable = true;

@@ -45,6 +45,7 @@ machines/media-node
 |-- NixOS
 |-- Jellyfin with host GPU access
 |-- movies / TV services
+|-- sports event PVR (Sportarr)
 |-- books / audiobooks services, including Shelfmark search/download wiring
 |-- music / podcast services
 |-- SABnzbd
@@ -66,11 +67,19 @@ machines/
 |   |   `-- runtime-secrets/
 |   `-- services/
 |       |-- ingress.nix
+|       |-- security.nix
+|       |-- authelia.nix
+|       |-- dashboard.nix
 |       `-- media/
 |           |-- config/
+|           |   |-- configarr/
+|           |   |-- prowlarr/
+|           |   |-- qbit-manage/
+|           |   `-- soularr/
 |           |-- shared.nix
 |           |-- jellyfin-bootstrap.nix
 |           |-- jellyfin-plugins.nix
+|           |-- jellyfin-sso-bootstrap.nix
 |           |-- downloads.nix
 |           |-- arr-download-clients.nix
 |           |-- bazarr-bootstrap.nix
@@ -78,11 +87,14 @@ machines/
 |           |-- configarr.nix
 |           |-- qbit-manage.nix
 |           |-- unpackerr.nix
+|           |-- cleanuparr.nix
 |           |-- seerr-bootstrap.nix
 |           |-- smoke-test.nix
 |           |-- movies-tv.nix
+|           |-- sportarr.nix
 |           |-- books.nix
-|           `-- music.nix
+|           |-- music.nix
+|           `-- wizarr.nix
 `-- shared/
     `-- default.nix
 ```
@@ -100,7 +112,11 @@ wiring when a real Jellyfin API key is placed on the host. Jellyfin plugin repos
 desired plugin set are installed through an on-demand bootstrap service. Bazarr's
 Sonarr/Radarr connections are bootstrapped from the same generated Arr API keys. Configarr owns Sonarr/Radarr quality
 profiles and TRaSH-Guides sync declaratively. Unpackerr handles archive
-extraction after downloads. Shelfmark is wired to Prowlarr and qBittorrent
+extraction after downloads and Cleanuparr prunes stalled or malicious torrents.
+Sportarr is the sports-event PVR (a Sonarr fork) and is wired to Prowlarr and
+the download clients once in its UI rather than bootstrapped. Wizarr issues
+Jellyfin invites, Authelia fronts the public dashboard and books hosts, and
+Homepage ties the stack together. Shelfmark is wired to Prowlarr and qBittorrent
 through generated host-local secrets. qBittorrent's baseline paths and ports are
 seeded before startup, qBit Manage owns category/tag hygiene after startup, and
 the smoke test verifies the live Web API state instead of mutating it during
