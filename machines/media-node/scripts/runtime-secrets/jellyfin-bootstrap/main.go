@@ -204,6 +204,8 @@ func run() error {
 	libraries := []desiredLibrary{
 		{Name: "Movies", CollectionType: "movies", Path: "/mnt/nas/data/media/movies"},
 		{Name: "TV", CollectionType: "tvshows", Path: "/mnt/nas/data/media/tv"},
+		// Sportarr plugin expects a Shows library in {Series}/Season {year}/ layout.
+		{Name: "Sports", CollectionType: "tvshows", Path: "/mnt/nas/data/media/sports"},
 	}
 	if err := ensureWithRetry(baseURL, apiKey, libraries); err != nil {
 		return err
