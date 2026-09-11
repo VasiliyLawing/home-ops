@@ -19,8 +19,10 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    # 0700: the DB files hold NFL/Google session tokens. The container writes
+    # them 0644, so the directory is what keeps other service users out.
     systemd.tmpfiles.rules = [
-      "d ${cfg.dataDir} 0775 homeops media -"
+      "d ${cfg.dataDir} 0700 homeops media -"
     ];
 
     virtualisation.oci-containers.containers.eplustv = {
