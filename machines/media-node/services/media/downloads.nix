@@ -165,6 +165,10 @@ in
             name = "movies";
             dir = "movies";
           };
+          sports = {
+            name = "sports";
+            dir = "sports";
+          };
         };
       };
     };
