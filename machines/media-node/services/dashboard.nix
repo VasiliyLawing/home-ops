@@ -97,13 +97,6 @@ in
               };
             }
             {
-              Dispatcharr = {
-                href = "http://media-node:9191";
-                description = "IPTV channels + guide";
-                icon = "dispatcharr.svg";
-              };
-            }
-            {
               EPlusTV = {
                 href = "http://media-node:8000";
                 description = "NFL+ / Sunday Ticket as channels";

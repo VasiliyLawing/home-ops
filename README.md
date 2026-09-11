@@ -45,7 +45,7 @@ machines/media-node
 |-- NixOS
 |-- Jellyfin with host GPU access
 |-- movies / TV services
-|-- sports event PVR (Sportarr) + live TV (EPlusTV; Dispatcharr for VPN'd sources)
+|-- sports event PVR (Sportarr) + live TV (EPlusTV)
 |-- books / audiobooks services, including Shelfmark search/download wiring
 |-- music / podcast services
 |-- SABnzbd
@@ -92,7 +92,6 @@ machines/
 |           |-- smoke-test.nix
 |           |-- movies-tv.nix
 |           |-- sportarr.nix
-|           |-- dispatcharr.nix
 |           |-- eplustv.nix
 |           |-- books.nix
 |           |-- music.nix
@@ -119,9 +118,7 @@ Sportarr is the sports-event PVR (a Sonarr fork); Prowlarr links it through the
 same bootstrap as Sonarr/Radarr, while its download clients are set once in
 its UI. EPlusTV turns the operator's own NFL+/Sunday Ticket/ESPN subscriptions into
 M3U + XMLTV linear channels that Jellyfin Live TV and Sportarr's DVR consume
-directly on the host. Dispatcharr runs inside the same Gluetun VPN island as
-qBittorrent and is the home for any IPTV source that must egress via the VPN;
-it cannot reach host services on loopback, so it does not front EPlusTV. Wizarr issues
+directly on the host. Wizarr issues
 Jellyfin invites, Authelia fronts the public dashboard and books hosts, and
 Homepage ties the stack together. Shelfmark is wired to Prowlarr and qBittorrent
 through generated host-local secrets. qBittorrent's baseline paths and ports are
