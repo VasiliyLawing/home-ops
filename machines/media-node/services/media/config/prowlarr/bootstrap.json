@@ -15,6 +15,16 @@
       "baseUrl": "http://127.0.0.1:7878",
       "apiKeyFileEnv": "HOME_OPS_RADARR_API_KEY_FILE",
       "syncLevel": "addOnly"
+    },
+    {
+      "name": "Sportarr",
+      "implementation": "Sonarr",
+      "baseUrl": "http://127.0.0.1:1867",
+      "apiKeyFileEnv": "HOME_OPS_SPORTARR_API_KEY_FILE",
+      "syncLevel": "addOnly",
+      "fields": {
+        "syncCategories": [5000, 5010, 5020, 5030, 5040, 5045, 5050, 5060, 5090]
+      }
     }
   ],
   "indexerProxies": [

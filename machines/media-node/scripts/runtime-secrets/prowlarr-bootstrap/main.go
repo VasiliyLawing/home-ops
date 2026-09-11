@@ -44,6 +44,8 @@ type desiredApplication struct {
 	BaseURL        string `json:"baseUrl"`
 	APIKeyFileEnv  string `json:"apiKeyFileEnv"`
 	SyncLevel      string `json:"syncLevel"`
+	// Fields overrides schema defaults by field name (e.g. syncCategories).
+	Fields map[string]interface{} `json:"fields"`
 }
 
 type desiredIndexer struct {
@@ -325,6 +327,9 @@ func configureApplication(cfg bootstrapConfig, apiKey string, schemas []provider
 	desired.Fields = setField(desired.Fields, "prowlarrUrl", cfg.ProwlarrURL)
 	desired.Fields = setField(desired.Fields, "baseUrl", app.BaseURL)
 	desired.Fields = setField(desired.Fields, "apiKey", appAPIKey)
+	for name, value := range app.Fields {
+		desired.Fields = setField(desired.Fields, name, value)
+	}
 
 	return createOrUpdate(cfg.BaseURL, apiKey, "applications", desired)
 }
