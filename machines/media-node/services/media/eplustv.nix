@@ -35,8 +35,10 @@ in
       # Deliberately NOT in the Gluetun island: these are the operator's own
       # paid accounts, and logging into NFL/ESPN from a foreign VPN exit is
       # how they get geo-blocked or flagged. Host networking on port 8000,
-      # Tailscale-only via trustedInterfaces=tailscale0. Dispatcharr consumes
-      # http://127.0.0.1:8000/channels.m3u and /xmltv.xml.
+      # Tailscale-only via trustedInterfaces=tailscale0. Jellyfin (M3U tuner
+      # + XMLTV) and Sportarr (IPTV + EPG source) consume
+      # http://127.0.0.1:8000/{channels,linear-channels}.m3u and
+      # /{xmltv,linear-xmltv}.xml directly.
       extraOptions = [ "--network=host" ];
     };
   };
