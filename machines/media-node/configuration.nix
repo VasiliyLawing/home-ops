@@ -25,6 +25,7 @@
     ./services/media/cleanuparr.nix
     ./services/media/sportarr.nix
     ./services/media/dispatcharr.nix
+    ./services/media/eplustv.nix
     ./services/ingress.nix
     ./services/security.nix
     ./services/authelia.nix
@@ -69,6 +70,7 @@
       cleanuparr.enable = true;
       sportarr.enable = true;
       dispatcharr.enable = true;
+      eplustv.enable = true;
     };
 
     dashboard.enable = true;
