@@ -113,8 +113,9 @@ desired plugin set are installed through an on-demand bootstrap service. Bazarr'
 Sonarr/Radarr connections are bootstrapped from the same generated Arr API keys. Configarr owns Sonarr/Radarr quality
 profiles and TRaSH-Guides sync declaratively. Unpackerr handles archive
 extraction after downloads and Cleanuparr prunes stalled or malicious torrents.
-Sportarr is the sports-event PVR (a Sonarr fork) and is wired to Prowlarr and
-the download clients once in its UI rather than bootstrapped. Wizarr issues
+Sportarr is the sports-event PVR (a Sonarr fork); Prowlarr links it through the
+same bootstrap as Sonarr/Radarr, while its download clients are set once in
+its UI. Wizarr issues
 Jellyfin invites, Authelia fronts the public dashboard and books hosts, and
 Homepage ties the stack together. Shelfmark is wired to Prowlarr and qBittorrent
 through generated host-local secrets. qBittorrent's baseline paths and ports are

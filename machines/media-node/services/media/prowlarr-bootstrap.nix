@@ -50,6 +50,7 @@ in
         "prowlarr.service"
         "sonarr.service"
         "radarr.service"
+        "home-ops-sportarr-api-key.service"
       ]
       ++ lib.optionals config.services.flaresolverr.enable [
         "flaresolverr.service"
@@ -65,12 +66,14 @@ in
       requires = [
         "home-ops-runtime-secrets.service"
         "home-ops-arr-configs.service"
+        "home-ops-sportarr-api-key.service"
       ];
       environment = {
         HOME_OPS_PROWLARR_BOOTSTRAP_CONFIG = "${cfg.configFile}";
         HOME_OPS_PROWLARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/prowlarr-api-key";
         HOME_OPS_SONARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/sonarr-api-key";
         HOME_OPS_RADARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/radarr-api-key";
+        HOME_OPS_SPORTARR_API_KEY_FILE = "${config.homeOps.secrets.directory}/sportarr-api-key";
         # Operator-provisioned (external account secret, like cloudflare-token):
         #   install -m 600 /dev/stdin /var/lib/home-ops/secrets/nzbgeek-api-key <<< "<key>"
         HOME_OPS_NZBGEEK_API_KEY_FILE = "${config.homeOps.secrets.directory}/nzbgeek-api-key";

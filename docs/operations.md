@@ -220,13 +220,14 @@ sportarr/sportarr:4.1.7.1117
 
 It runs with host networking on its fixed port `1867` (Tailscale-only), stores
 config in `/var/lib/home-ops/sportarr`, and sees the NAS as `/data` like the
-other Arr apps. First-run wiring is manual in its UI, using loopback like
-NeutArr:
+other Arr apps. Prowlarr links it automatically (`home-ops-prowlarr-bootstrap`
+reads the key Sportarr generated via `home-ops-sportarr-api-key.service`).
+Download clients and the root folder are set once in its UI, using loopback
+like NeutArr:
 
 ```text
-Prowlarr:    http://127.0.0.1:9696  (add Sportarr as an app in Prowlarr too)
 qBittorrent: 127.0.0.1:8081, category sports
-SABnzbd:     http://127.0.0.1:8080
+SABnzbd:     http://127.0.0.1:8080, category sports
 Root folder: /data/media/sports
 ```
 

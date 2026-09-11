@@ -98,7 +98,7 @@ configuration is split so tools do not fight each other:
   hardware decode, HEVC/AV1 encode, HDR tone mapping, transcode throttling).
 - `home-ops-bazarr-bootstrap.service` owns Bazarr's Sonarr/Radarr connections.
 - `home-ops-prowlarr-bootstrap.service` owns Prowlarr app links to
-  Sonarr/Radarr and shared indexer proxies such as FlareSolverr.
+  Sonarr/Radarr/Sportarr and shared indexer proxies such as FlareSolverr.
 - `home-ops-seerr-bootstrap.service` owns Seerr's Sonarr/Radarr settings and
   wires Jellyfin once a real Jellyfin API key exists on the host.
 - `home-ops-arr-download-clients.service` owns Sonarr/Radarr qBittorrent
@@ -117,9 +117,13 @@ Shelfmark books -> books
 Shelfmark audiobooks -> audiobooks
 ```
 
-Sportarr's Prowlarr app link and download-client entries are configured once
-in its UI; they are not bootstrapped until its API is confirmed to match the
-Sonarr schema the existing Go bootstrappers speak.
+Sportarr speaks the Sonarr v3 API, so `home-ops-prowlarr-bootstrap` links it
+as a Sonarr-type app (with `TV/Sport` added to the synced categories). Its
+API key is the one Sportarr generates itself, exported by
+`home-ops-sportarr-api-key.service` rather than seeded, because the Arr
+config seeder forces `AuthenticationMethod=External` and Sportarr rejects
+non-local clients in that mode. Sportarr has no `/downloadclient/schema`
+endpoint, so its download clients are configured once in the UI.
 
 Other media apps are intentionally not wired to qBittorrent unless they submit
 downloads. Jellyfin, Audiobookshelf, Calibre-Web-Automated, Navidrome, and
