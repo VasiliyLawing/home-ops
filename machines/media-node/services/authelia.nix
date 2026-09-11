@@ -203,14 +203,14 @@ in
       # /var/lib/authelia-main/oidc-clients.yml because the client_secret has
       # to be pbkdf2-hashed by the authelia CLI at bootstrap time.
       settingsFiles = [ "${stateDir}/oidc-clients.yml" ];
-      # Authelia runs as authelia-main and can't read root-owned secrets;
-      # systemd LoadCredential (below) copies them to a per-service credentials
-      # tmpfs owned by the service user.
+      # Root-only files are fine here: the upstream module LoadCredential's each
+      # of these itself (as root, before dropping to authelia-main), so they
+      # must be the real paths, not the credentials directory.
       secrets = {
-        jwtSecretFile = "/run/credentials/authelia-${instanceName}.service/jwt-secret";
-        storageEncryptionKeyFile = "/run/credentials/authelia-${instanceName}.service/storage-encryption-key";
-        oidcHmacSecretFile = "/run/credentials/authelia-${instanceName}.service/oidc-hmac-secret";
-        oidcIssuerPrivateKeyFile = "/run/credentials/authelia-${instanceName}.service/oidc-jwks-key";
+        jwtSecretFile = "/var/lib/home-ops/secrets/authelia-jwt-secret";
+        storageEncryptionKeyFile = "/var/lib/home-ops/secrets/authelia-storage-encryption-key";
+        oidcHmacSecretFile = "/var/lib/home-ops/secrets/authelia-oidc-hmac-secret";
+        oidcIssuerPrivateKeyFile = "/var/lib/home-ops/secrets/authelia-oidc-jwks-key";
       };
       settings = {
         server.address = "tcp://0.0.0.0:${toString cfg.port}/";
@@ -254,13 +254,6 @@ in
 
     systemd.tmpfiles.rules = [
       "d ${stateDir} 0750 authelia-${instanceName} authelia-${instanceName} -"
-    ];
-
-    systemd.services."authelia-${instanceName}".serviceConfig.LoadCredential = [
-      "jwt-secret:/var/lib/home-ops/secrets/authelia-jwt-secret"
-      "storage-encryption-key:/var/lib/home-ops/secrets/authelia-storage-encryption-key"
-      "oidc-hmac-secret:/var/lib/home-ops/secrets/authelia-oidc-hmac-secret"
-      "oidc-jwks-key:/var/lib/home-ops/secrets/authelia-oidc-jwks-key"
     ];
 
     systemd.services.home-ops-authelia-seed = {
