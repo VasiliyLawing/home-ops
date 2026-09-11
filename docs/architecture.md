@@ -42,6 +42,7 @@ machine-owned concerns.
 - `secrets.nix`: host-local runtime secret generation and Arr config seeding;
 - `scripts/runtime-secrets/`: small bootstrap helpers for secrets, Arr
   `config.xml` files, and qBittorrent WebUI credentials;
+- `services/backups.nix`: nightly restic backup of `/var/lib` to the NAS;
 - `services/ingress.nix`: Caddy routes;
 - `services/security.nix`: host hardening;
 - `services/authelia.nix`: SSO in front of the public dashboard and books hosts;

@@ -22,6 +22,9 @@ Everything is declarative except a handful of one-time manual steps:
    `/var/lib/home-ops/secrets/jellyfin-api-key`, then start the on-demand
    Jellyfin/Seerr bootstrap units.
 5. Add Prowlarr indexers in the UI (deliberately not code).
+6. Copy `/var/lib/home-ops/secrets/restic-password` somewhere off the box.
+   Nightly restic backups of `/var/lib` land on the NAS under
+   `backups/media-node`; without that key they are unreadable after a rebuild.
 
 ## Credentials
 
@@ -66,6 +69,7 @@ machines/
 |   |-- scripts/
 |   |   `-- runtime-secrets/
 |   `-- services/
+|       |-- backups.nix
 |       |-- ingress.nix
 |       |-- security.nix
 |       |-- authelia.nix

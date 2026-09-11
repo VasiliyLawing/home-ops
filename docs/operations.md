@@ -274,6 +274,28 @@ Tailscale; the old `8098` docker remap is gone), persists app data in
 /mnt/nas/data/media/music/aurral
 ```
 
+## Backups
+
+`restic-backups-media-node.timer` runs nightly (02:30 + up to 15 min jitter)
+and snapshots `/var/lib` (minus docker, systemd, logs) into the restic
+repository at `/mnt/nas/data/backups/media-node`, keeping 30 daily and 8
+weekly snapshots. That covers every runtime secret, the Jellyfin/Arr/Authelia/
+EPlusTV databases and VPN state; the media itself already lives on the NAS.
+
+The repository key is `/var/lib/home-ops/secrets/restic-password` — generated
+on first boot like the other secrets, and the one secret that must also exist
+somewhere else, or the backups are unreadable after a rebuild.
+
+```bash
+systemctl status restic-backups-media-node.timer
+systemctl start restic-backups-media-node.service   # run one now
+restic-media-node snapshots                          # wrapper with repo + key preset
+restic-media-node restore latest --target /tmp/restore --include /var/lib/home-ops/secrets
+```
+
+Databases are copied live (SQLite with WAL), which is fine for these apps in
+practice; stop the relevant service first if a snapshot must be exact.
+
 ## Soulseek music pipeline
 
 Music acquisition runs over Soulseek instead of the indexer path:
