@@ -13,6 +13,7 @@
     ./services/media/movies-tv.nix
     ./services/media/bazarr-bootstrap.nix
     ./services/media/arr-download-clients.nix
+    ./services/media/arr-jellyfin-notification.nix
     ./services/media/prowlarr-bootstrap.nix
     ./services/media/configarr.nix
     ./services/media/qbit-manage.nix
@@ -58,6 +59,7 @@
       moviesTv.enable = true;
       bazarrBootstrap.enable = true;
       arrDownloadClients.enable = true;
+      arrJellyfinNotification.enable = true;
       prowlarrBootstrap.enable = true;
       configarr.enable = true;
       qbitManage.enable = true;
