@@ -60,7 +60,7 @@ in
       };
       image = lib.mkOption {
         type = lib.types.str;
-        default = "ghcr.io/qdm12/gluetun:v3.41.1";
+        default = "ghcr.io/qdm12/gluetun:v3.41.3";
         description = "Pinned Gluetun container image.";
       };
       environmentFile = lib.mkOption {
