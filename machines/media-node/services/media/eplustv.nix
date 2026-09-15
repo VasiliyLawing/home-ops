@@ -13,7 +13,7 @@ in
     enable = lib.mkEnableOption "EPlusTV — turns your own NFL+/Sunday Ticket/ESPN/etc. subscriptions into M3U + XMLTV linear channels";
     image = lib.mkOption {
       type = lib.types.str;
-      default = "m0ngr31/eplustv:v4.16.3";
+      default = "m0ngr31/eplustv:v4.16.5";
       description = "Pinned EPlusTV image. Provider logins break often; keep this current.";
     };
     dataDir = lib.mkOption {
