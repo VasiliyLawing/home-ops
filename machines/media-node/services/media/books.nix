@@ -48,7 +48,7 @@ in
       };
       image = lib.mkOption {
         type = lib.types.str;
-        default = "ghcr.io/calibrain/shelfmark:v1.3.3";
+        default = "ghcr.io/calibrain/shelfmark:v1.3.15";
         description = "Pinned Shelfmark container image.";
       };
       webuiPort = lib.mkOption {
