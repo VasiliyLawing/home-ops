@@ -8,7 +8,7 @@ in
     enable = lib.mkEnableOption "Wizarr Jellyfin invitation service";
     image = lib.mkOption {
       type = lib.types.str;
-      default = "ghcr.io/wizarrrr/wizarr:v2026.7.1";
+      default = "ghcr.io/wizarrrr/wizarr:v2026.9.1";
       description = "Pinned Wizarr container image.";
     };
     # No port option: the container image listens on a fixed 5690 and host
