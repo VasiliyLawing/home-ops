@@ -25,7 +25,7 @@ jobs:
     # from Renovate (lockfile maintenance). Human pushes touching flake.lock
     # still require a manual dispatch.
     if: github.event_name == 'workflow_dispatch' || github.actor == 'renovate[bot]'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment: homelab
     steps:
       - name: Refuse non-main refs
