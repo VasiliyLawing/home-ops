@@ -15,7 +15,7 @@ in
     enable = lib.mkEnableOption "qBit Manage qBittorrent category/tag/cleanup sync";
     image = lib.mkOption {
       type = lib.types.str;
-      default = "ghcr.io/stuffanthings/qbit_manage:v4.9.1";
+      default = "ghcr.io/stuffanthings/qbit_manage:v4.13.0";
       description = "Pinned qBit Manage container image.";
     };
     configDir = lib.mkOption {
