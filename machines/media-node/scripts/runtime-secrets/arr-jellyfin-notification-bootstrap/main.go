@@ -7,16 +7,17 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 )
 
-// Adds a "Jellyfin Library Update" notification (Emby/Jellyfin connection) to
-// Sonarr and Radarr so that on import/upgrade/rename they tell Jellyfin to scan
-// the affected path immediately. /mnt/nas is NFS, where Jellyfin's real-time
-// file monitor never fires, so without this new media only appears on the
-// scheduled library scan.
+// Adds a "Jellyfin Library Update" Custom Script notification to Sonarr and
+// Radarr so that on import/upgrade/rename they tell Jellyfin to scan the
+// affected path immediately. /mnt/nas is NFS, where Jellyfin's real-time file
+// monitor never fires, so without this new media only appears on the scheduled
+// library scan. A script rather than the built-in Emby/Jellyfin connection:
+// that one sends a bare token header, which Jellyfin 12 rejects (401) unless
+// EnableLegacyAuthorization is turned on.
 
 const notificationName = "Jellyfin Library Update"
 
@@ -124,18 +125,11 @@ func setFieldIfPresent(fields []field, name string, value interface{}) []field {
 
 // applyDesiredFields sets the connection fields we care about, leaving any
 // schema field the running arr version does not expose untouched.
-func applyDesiredFields(fields []field, host string, port int, apiKey string) []field {
-	fields = setFieldIfPresent(fields, "host", host)
-	fields = setFieldIfPresent(fields, "port", port)
-	fields = setFieldIfPresent(fields, "useSsl", false)
-	fields = setFieldIfPresent(fields, "urlBase", "")
-	fields = setFieldIfPresent(fields, "apiKey", apiKey)
-	fields = setFieldIfPresent(fields, "notify", false)
-	fields = setFieldIfPresent(fields, "updateLibrary", true)
-	return fields
+func applyDesiredFields(fields []field, scriptPath string) []field {
+	return setFieldIfPresent(fields, "path", scriptPath)
 }
 
-func jellyfinSchema(app appConfig) (notification, error) {
+func customScriptSchema(app appConfig) (notification, error) {
 	body, err := request("GET", normalizeBaseURL(app.BaseURL)+"/api/v3/notification/schema", app.APIKey, nil)
 	if err != nil {
 		return notification{}, err
@@ -147,9 +141,9 @@ func jellyfinSchema(app appConfig) (notification, error) {
 	}
 
 	for _, schema := range schemas {
-		if schema.Implementation == "MediaBrowser" {
-			if !hasField(schema.Fields, "updateLibrary") {
-				return notification{}, fmt.Errorf("%s: MediaBrowser schema missing updateLibrary field", app.Name)
+		if schema.Implementation == "CustomScript" {
+			if !hasField(schema.Fields, "path") {
+				return notification{}, fmt.Errorf("%s: CustomScript schema missing path field", app.Name)
 			}
 			schema.ID = 0
 			schema.Name = notificationName
@@ -161,7 +155,7 @@ func jellyfinSchema(app appConfig) (notification, error) {
 		}
 	}
 
-	return notification{}, fmt.Errorf("%s: MediaBrowser notification schema not found", app.Name)
+	return notification{}, fmt.Errorf("%s: CustomScript notification schema not found", app.Name)
 }
 
 func existingNotification(app appConfig, name string) (*notification, error) {
@@ -184,16 +178,26 @@ func existingNotification(app appConfig, name string) (*notification, error) {
 	return nil, nil
 }
 
-func configureApp(app appConfig, host string, port int, jellyfinKey string) error {
-	desired, err := jellyfinSchema(app)
+func configureApp(app appConfig, scriptPath string) error {
+	desired, err := customScriptSchema(app)
 	if err != nil {
 		return err
 	}
-	desired.Fields = applyDesiredFields(desired.Fields, host, port, jellyfinKey)
+	desired.Fields = applyDesiredFields(desired.Fields, scriptPath)
 
 	existing, err := existingNotification(app, desired.Name)
 	if err != nil {
 		return err
+	}
+
+	// An older deploy registered this name as the built-in MediaBrowser
+	// connection; the arrs won't change a provider's implementation in place.
+	if existing != nil && existing.Implementation != desired.Implementation {
+		if _, err := request("DELETE", fmt.Sprintf("%s/api/v3/notification/%d", normalizeBaseURL(app.BaseURL), existing.ID), app.APIKey, nil); err != nil {
+			return err
+		}
+		fmt.Printf("%s: removed %s %q notification\n", app.Name, existing.Implementation, existing.Name)
+		existing = nil
 	}
 
 	if existing == nil {
@@ -212,10 +216,10 @@ func configureApp(app appConfig, host string, port int, jellyfinKey string) erro
 	return nil
 }
 
-func configureAppWithRetry(app appConfig, host string, port int, jellyfinKey string) error {
+func configureAppWithRetry(app appConfig, scriptPath string) error {
 	var lastErr error
 	for attempt := 1; attempt <= 30; attempt++ {
-		if err := configureApp(app, host, port, jellyfinKey); err != nil {
+		if err := configureApp(app, scriptPath); err != nil {
 			lastErr = err
 			fmt.Fprintf(os.Stderr, "%s: waiting for API readiness (%d/30): %v\n", app.Name, attempt, err)
 			time.Sleep(2 * time.Second)
@@ -235,21 +239,9 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	jellyfinKeyFile, err := requiredEnv("HOME_OPS_JELLYFIN_API_KEY_FILE")
+	scriptPath, err := requiredEnv("HOME_OPS_JELLYFIN_NOTIFY_SCRIPT")
 	if err != nil {
 		return err
-	}
-	jellyfinHost, err := requiredEnv("HOME_OPS_JELLYFIN_HOST")
-	if err != nil {
-		return err
-	}
-	jellyfinPortText, err := requiredEnv("HOME_OPS_JELLYFIN_PORT")
-	if err != nil {
-		return err
-	}
-	jellyfinPort, err := strconv.Atoi(jellyfinPortText)
-	if err != nil {
-		return fmt.Errorf("invalid HOME_OPS_JELLYFIN_PORT: %w", err)
 	}
 
 	sonarrKey, err := readSecret(sonarrKeyFile)
@@ -260,10 +252,6 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	jellyfinKey, err := readSecret(jellyfinKeyFile)
-	if err != nil {
-		return err
-	}
 
 	apps := []appConfig{
 		{Name: "Sonarr", BaseURL: "http://127.0.0.1:8989", APIKey: sonarrKey},
@@ -271,7 +259,7 @@ func run() error {
 	}
 
 	for _, app := range apps {
-		if err := configureAppWithRetry(app, jellyfinHost, jellyfinPort, jellyfinKey); err != nil {
+		if err := configureAppWithRetry(app, scriptPath); err != nil {
 			return err
 		}
 	}
