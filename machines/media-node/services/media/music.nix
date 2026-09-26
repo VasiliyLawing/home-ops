@@ -41,7 +41,7 @@ in
     };
     aurral.image = lib.mkOption {
       type = lib.types.str;
-      default = "ghcr.io/lklynet/aurral:1.76.0";
+      default = "ghcr.io/lklynet/aurral:1.76.51";
       description = "Pinned Aurral container image.";
     };
     soulseek.enable = lib.mkOption {

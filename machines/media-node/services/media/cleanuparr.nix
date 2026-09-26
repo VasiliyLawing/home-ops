@@ -8,7 +8,7 @@ in
     enable = lib.mkEnableOption "Cleanuparr — automatic cleanup for stalled/malicious torrents";
     image = lib.mkOption {
       type = lib.types.str;
-      default = "ghcr.io/cleanuparr/cleanuparr:2.9.16";
+      default = "ghcr.io/cleanuparr/cleanuparr:2.10.8";
     };
     port = lib.mkOption {
       type = lib.types.int;
