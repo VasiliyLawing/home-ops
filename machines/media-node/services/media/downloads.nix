@@ -79,7 +79,7 @@ in
       enable = lib.mkEnableOption "qBittorrent container sharing Gluetun's VPN network namespace";
       image = lib.mkOption {
         type = lib.types.str;
-        default = "lscr.io/linuxserver/qbittorrent:5.2.3";
+        default = "lscr.io/linuxserver/qbittorrent:20.04.1";
         description = "Pinned qBittorrent container image.";
       };
       webuiPort = lib.mkOption {
