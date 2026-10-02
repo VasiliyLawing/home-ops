@@ -15,7 +15,7 @@ in
     enable = lib.mkEnableOption "Sportarr — sports event PVR (Sonarr fork)";
     image = lib.mkOption {
       type = lib.types.str;
-      default = "sportarr/sportarr:4.1.7.1117";
+      default = "sportarr/sportarr:4.1.9.1119";
       description = "Pinned Sportarr container image.";
     };
     dataDir = lib.mkOption {
