@@ -22,7 +22,7 @@ in
     };
     neutarr.image = lib.mkOption {
       type = lib.types.str;
-      default = "iampuid0/neutarr:1.8.0";
+      default = "iampuid0/neutarr:1.11.1";
       description = "Pinned NeutArr container image.";
     };
   };

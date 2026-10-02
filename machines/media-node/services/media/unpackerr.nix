@@ -13,7 +13,7 @@ in
     enable = lib.mkEnableOption "Unpackerr archive extraction for completed downloads";
     image = lib.mkOption {
       type = lib.types.str;
-      default = "ghcr.io/unpackerr/unpackerr:0.15.2";
+      default = "ghcr.io/unpackerr/unpackerr:v0.16.1";
       description = "Pinned Unpackerr container image.";
     };
     configDir = lib.mkOption {

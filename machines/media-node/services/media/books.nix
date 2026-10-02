@@ -27,7 +27,7 @@ in
       };
       image = lib.mkOption {
         type = lib.types.str;
-        default = "crocodilestick/calibre-web-automated:v4.0.6";
+        default = "crocodilestick/calibre-web-automated:v4.0.8";
         description = "Pinned Calibre-Web-Automated container image.";
       };
       # No webuiPort option: the container hardcodes CWA_PORT_OVERRIDE=8083
@@ -48,7 +48,7 @@ in
       };
       image = lib.mkOption {
         type = lib.types.str;
-        default = "ghcr.io/calibrain/shelfmark:v1.3.3";
+        default = "ghcr.io/calibrain/shelfmark:v1.4.0";
         description = "Pinned Shelfmark container image.";
       };
       webuiPort = lib.mkOption {
